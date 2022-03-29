@@ -1,0 +1,198 @@
+#***************************************************************************************************************************
+# Integrate Azure Container Registry
+#***************************************************************************************************************************
+# Below steps must be done from JumpBox VM
+# Use Git Bash Terminal on the JumpBox VM to execute code from Visual Studio Code
+
+# Azure Login
+az login
+az account set -s $SUBSCRIPTIONID
+
+# Connect to ARO cluster
+AROCLUSTERPWD=$(az aro list-credentials --name $AROCLUSTER --resource-group $SPOKERGNAME --query 'kubeadminPassword' -o tsv)
+
+# Connect using the OpenShift CLI
+apiServer=$(az aro show -g $SPOKERGNAME -n $AROCLUSTER --query apiserverProfile.url -o tsv)
+
+# Login to the OpenShift cluster's API server
+oc login $apiServer -u kubeadmin -p $AROCLUSTERPWD
+
+# Integrate ACR with OC (assuming workload image in 'ratingsapp' namespace)
+ACRPWD=$(az acr credential show -n $ACR_NAME --query 'passwords[0].value' -o tsv)
+
+oc create ns ratingsapp
+
+oc create secret docker-registry \
+    --docker-server=$ACR_NAME.azurecr.io \
+    --docker-username=$ACR_NAME \
+    --docker-password=$ACRPWD \
+    --docker-email=unused \
+    acr-secret -n ratingsapp
+
+oc secrets link default acr-secret --for=pull,mount
+
+
+#***************************************************************************************************************************
+# Integrate Azure Key Vault
+#***************************************************************************************************************************
+# Below steps must be done from JumpBox VM
+# Create csi namespace
+oc new-project csi
+
+oc adm policy add-scc-to-user privileged system:serviceaccount:csi:secrets-store-csi-driver
+oc adm policy add-scc-to-user privileged system:serviceaccount:csi:csi-secrets-store-provider-azure
+
+# Integrate keyvault
+helm repo add csi-secrets-store-provider-azure https://azure.github.io/secrets-store-csi-driver-provider-azure/charts
+helm repo update
+helm install csi csi-secrets-store-provider-azure/csi-secrets-store-provider-azure -n csi --set secrets-store-csi-driver.syncSecret.enabled=true
+
+# Create a service principal to access keyvault
+SERVICE_PRINCIPAL_NAME="fta-aro-akv-sp"
+SERVICE_PRINCIPAL_CLIENT_SECRET="$(az ad sp create-for-rbac --skip-assignment --name $SERVICE_PRINCIPAL_NAME --query 'password' -o tsv)"
+SERVICE_PRINCIPAL_CLIENT_ID="$(az ad sp list --display-name fta-aro-akv-sp --query [0].'appId' -o tsv)"
+
+az keyvault set-policy -n $KV_NAME --secret-permissions get --spn ${SERVICE_PRINCIPAL_CLIENT_ID}
+
+# Create OC Secret
+oc create secret generic secrets-store-creds --from-literal clientid=${SERVICE_PRINCIPAL_CLIENT_ID} --from-literal clientsecret=${SERVICE_PRINCIPAL_CLIENT_SECRET} -n ratingsapp
+oc label secret secrets-store-creds secrets-store.csi.k8s.io/used=true -n ratingsapp
+
+# Create Keyvault Secret
+# Get the Connection string for cosmos db and replace $COSMOSDB_URI_CONNECTIONSTRING
+cosmosKey=$(az cosmosdb keys list -n $COSMOSDB_NAME -g $SPOKERGNAME --query "primaryMasterKey" -o tsv)
+COSMOSDB_URI_CONNECTIONSTRING="mongodb://$COSMOSDB_NAME:$cosmosKey@$COSMOSDB_NAME.mongo.cosmos.azure.com:10255/ratingsdb?ssl=true&replicaSet=globaldb&retrywrites=false&appName=@$COSMOSDB_NAME@"
+
+az keyvault secret set --vault-name ${KV_NAME} --name 'mongodburi' --value $COSMOSDB_URI_CONNECTIONSTRING
+
+# Deploy Secret Provider Class
+TENANT_ID=$(az account show --query tenantId -o tsv)
+
+# change default project (namespace)
+oc project ratingsapp
+
+cat <<EOF | oc apply -f -
+apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+kind: SecretProviderClass
+metadata:
+  name: mongo-secret-csi
+  namespace: ratingsapp
+spec:
+  provider: azure
+  secretObjects:
+    - secretName: mongodburi
+      type: Opaque
+      data:
+      - objectName: MONGODBURI
+        key: MONGODBURI
+  parameters:
+    keyvaultName: "${KV_NAME}"
+    usePodIdentity: "false"
+    useVMManagedIdentity: "false"
+    userAssignedIdentityID: ""
+    cloudName: ""
+    objects: |
+      array:
+        - |
+          objectName: MONGODBURI
+          objectType: secret
+          objectVersion: ""
+    tenantId: "${TENANT_ID}"
+EOF
+
+# Optional: Test SecretProviderClass by running busybox pod
+cat <<EOF | oc apply -f -
+kind: Pod
+apiVersion: v1
+metadata:
+  name: busybox-secrets-store-inline
+  namespace: ratingsapp
+spec:
+  containers:
+  - name: busybox
+    image: k8s.gcr.io/e2e-test-images/busybox:1.29
+    command:
+      - "/bin/sleep"
+      - "10000"
+    volumeMounts:
+    - name: secrets-store-inline
+      mountPath: "/mnt/secrets-store"
+      readOnly: true
+  volumes:
+    - name: secrets-store-inline
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "mongo-secret-csi"
+        nodePublishSecretRef:                       # Only required when using service principal mode
+          name: secrets-store-creds                 # Only required when using service principal mode
+EOF
+
+# Execute in to the pod to check the secrete from key vault is mounted successfully
+oc exec -it busybox-secrets-store-inline -- sh
+# Once you are inside the pod, following should display cosmosdb connection string which should match $COSMOSDB_URI_CONNECTIONSTRING
+cat /mnt/secrets-store/MONGODBURI
+# exit out of the pod
+exit
+
+# Now that we tested SecretProviderClass, delete the busybox pod
+oc delete po busybox-secrets-store-inline
+
+
+#***************************************************************************************************************************
+# Deploy Workload
+#***************************************************************************************************************************
+# Below steps must be executed from JumpBox VM
+# You can run these commands from Git Bash terminal but skip the sudo word
+
+# Deploy workload on JumpBox VM for testing
+git clone https://github.com/MicrosoftDocs/mslearn-aks-workshop-ratings-api.git
+git clone https://github.com/MicrosoftDocs/mslearn-aks-workshop-ratings-web.git
+
+# You should get Login Succeeded
+sudo az acr login -n $ACR_NAME
+
+cd mslearn-aks-workshop-ratings-api
+# If running from Git Bash terminal skip the sudo word
+sudo docker build . -t "$ACR_NAME.azurecr.io/ratings-api:v1"
+sudo docker push "$ACR_NAME.azurecr.io/ratings-api:v1"
+cd ..
+
+cd mslearn-aks-workshop-ratings-web
+# If running from Git Bash terminal skip the sudo word
+sudo docker build . -t "$ACR_NAME.azurecr.io/ratings-web:v1"
+sudo docker push "$ACR_NAME.azurecr.io/ratings-web:v1"
+
+# Create app namespace
+oc create namespace ratingsapp
+
+# Navigate to RatingsApp folder and make necessary changes
+ cd ..
+ cd aro-reference-architecture/Apps/RatingsApp/
+
+oc adm policy add-scc-to-user privileged \
+   system:serviceaccount:ratingsapp:secrets-store-csi-driver
+
+oc adm policy add-scc-to-user privileged \
+   system:serviceaccount:ratingsapp:csi-secrets-store-provider-azure
+
+# Deploy API
+# Change the Azure Container Registry name in the following yaml file
+oc apply -f 1-ratings-api-deployment.yaml -n ratingsapp
+
+# Verify API app is running
+oc describe pod <pod name> -n ratingsapp
+oc logs <pod name> -n ratingsapp
+
+# Deploy api service
+oc apply -f 2-ratings-api-service.yaml -n ratingsapp
+
+# Deploy web frontend
+oc apply -f 3a-ratings-web-deployment.yaml -n ratingsapp
+
+# Deploy frontend service
+oc apply -f 4-ratings-web-service.yaml -n ratingsapp
+
+# Deploy Ingress
+oc apply -f 5-http-ratings-web-ingress.yaml -n ratingsapp

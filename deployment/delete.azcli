@@ -1,0 +1,10 @@
+HUBRGNAME='hub-rg'
+SPOKERGNAME='spoke-rg'
+AROCLUSTER='ftaarocluster'
+
+# 1. Delete ARO cluster
+az aro delete --resource-group $SPOKERGNAME --name $AROCLUSTER -y
+
+# 2. Delete Resource Groups
+az group delete -n $SPOKERGNAME -y
+az group delete -n $HUBRGNAME -y
