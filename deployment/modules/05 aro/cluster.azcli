@@ -6,5 +6,4 @@ az aro create \
   --master-subnet $MASTERAROSUBNET_NAME \
   --worker-subnet $WORKERAROSUBNET_NAME \
   --apiserver-visibility Private \
-  --ingress-visibility Private \
-  --pull-secret $PULLSECRETLOCATION
+  --ingress-visibility Private

@@ -1,7 +1,7 @@
 # Important: Tested these scripts only through WSL Terminal. Git Bash doesn't work.
 
 #!/usr/bin/env bash
-SUBSCRIPTIONID='025f66df-d5dd-4a8c-a567-52f157cb8041'
+SUBSCRIPTIONID='xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
 HUBRGNAME='hub-aro-rg'
 SPOKERGNAME='spoke-aro-rg'
 ARCRGNAME='arc-aro-rg'
@@ -9,7 +9,7 @@ AZFW_NAME='azfw'
 BASTION_NAME='bastion-hub'
 LOCATION='eastus'
 AROCLUSTER='arocluster'
-PULLSECRETLOCATION=@/mnt/c/Users/umarm/Downloads/pull-secret.txt
+#PULLSECRETLOCATION=@/mnt/c/Users/umarm/Downloads/pull-secret.txt
 uniqueId=$RANDOM
 ACR_NAME='aroacr'$uniqueId
 COSMOSDB_NAME='cosmos'$uniqueId
@@ -17,8 +17,8 @@ KV_NAME='keyvault'$uniqueId
 LAWORKSPACE_NAME='arolw'
 AFD_NAME='aroafd'
 AFD_PLS_NAME='aro-pls'
-AFD_APP_CUSTOM_DOMAIN_NAME='ratingsapp-umar-cloud'
-ARO_APP_FQDN='ratingsapp.umar.cloud'
+AFD_APP_CUSTOM_DOMAIN_NAME='ratingsapp-<domain>-<name>' # Ex: ratingsapp-mydomain-com
+ARO_APP_FQDN='ratingsapp.<domain>.<name>' # Ex: ratingsapp.mydomain.com
 
 # VNet Name and IP Addresses
 HUBVNET_NAME='hub-vnet'

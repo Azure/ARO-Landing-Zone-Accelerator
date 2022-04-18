@@ -81,6 +81,24 @@ az network private-endpoint-connection approve \
   --description 'Approved' \
   --id $privatelink_pe_id
 
+################################################################################
+### Working in proguress
+################################################################################
+# Command to list/show private endpoint connection that will be used as a reference to approve it
+az network private-link-service show -g $SPOKERGNAME -n $AFD_PLS_NAME
+
+az network private-link-service list
+az network private-link-service show -g spoke-aro-rg -n aro-pls --query 'privateEndpointConnections[0].privateEndpoint.id' -o tsv
+
+az network private-endpoint-connection approve \
+  --description 'Approved' \
+  --id "/subscriptions/xxxxxxx/resourceGroups/spoke-aro-rg/providers/Microsoft.Network/privateLinkServices/aro-pls/privateEndpointConnections/xxxxx"
+
+Get-AzPrivateEndpointConnection -Name 8d50911c-b405-4c81-xxxx -ResourceGroupName spoke-aro-rg -ServiceName aro-pls
+Approve-AzPrivateEndpointConnection -Name 8d50911c-b405-4c81-xxxx -ResourceGroupName spoke-aro-rg -ServiceName aro-pls
+
+################################################################################
+
 az afd custom-domain create \
   --certificate-type ManagedCertificate \
   --custom-domain-name $AFD_APP_CUSTOM_DOMAIN_NAME \

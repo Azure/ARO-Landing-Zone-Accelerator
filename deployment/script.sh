@@ -10,8 +10,8 @@ logpath=/var/log/deploymentscriptlog
 echo "#############################" >> $logpath
 echo "Upgrading Linux Distribution" >> $logpath
 echo "#############################" >> $logpath
-sudo apt-get update >> $logpath
-sudo apt-get -y upgrade >> $logpath
+#sudo apt-get update >> $logpath
+#sudo apt-get -y upgrade >> $logpath
 echo " " >> $logpath
 
 #############################
@@ -25,12 +25,12 @@ curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 #############################
 #Install Docker
 #############################
-echo "#############################" >> $logpath
-echo "Installing Docker" >> $logpath
-echo "#############################" >> $logpath
-wget -qO- https://get.docker.com/ | sh >> $logpath
-sudo usermod -aG docker $1
-echo " " >> $logpath
+# echo "#############################" >> $logpath
+# echo "Installing Docker" >> $logpath
+# echo "#############################" >> $logpath
+# wget -qO- https://get.docker.com/ | sh >> $logpath
+# sudo usermod -aG docker $1
+# echo " " >> $logpath
 
 #############################
 #Install Kubectl
@@ -61,8 +61,12 @@ sudo apt-get install helm
 #############################
 #Install OC CLI
 #############################
-mkdir /opt/openshift
-cd /opt/openshift
+echo "#############################" >> $logpath
+echo "Installing OC" >> $logpath
+echo "#############################" >> $logpath
 wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
-tar -zxvf openshift-client-linux.tar.gz -C /opt/openshift
-echo 'export PATH=$PATH:/opt/openshift' >> /etc/profile && source /etc/profile
+tar -zxvf openshift-client-linux.tar.gz
+sudo mv oc /usr/local/bin
+rm README.md
+rm kubectl
+rm openshift-client-linux.tar.gz

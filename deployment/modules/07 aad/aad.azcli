@@ -48,6 +48,10 @@ az ad app permission add \
  --api-permissions 311a71cc-e848-46a1-bdf8-97ff7156d8e6=Scope \
  --id $app_id
 
+# The previous command may show the following warning message:
+# Invoking "az ad app permission grant --id xxxxxxxxxxxxxx --api 00000002-0000-0000-c000-000000000000" is needed to make the change effective
+# It can be safely ignored
+
 # Retrieve the kubeadmin credentials. Run the following command to find the password for the kubeadmin user.
 kubeadmin_password=$(az aro list-credentials --name $AROCLUSTER --resource-group $SPOKERGNAME --query kubeadminPassword --output tsv)
 

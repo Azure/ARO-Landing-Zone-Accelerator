@@ -11,6 +11,7 @@ spec:
       labels:
         app: ratings-web # the label for the pods and the deployments
     spec:
+      serviceAccountName: svcrattingsapp
       volumes:
         - name: aks-tls-akv
           csi:
