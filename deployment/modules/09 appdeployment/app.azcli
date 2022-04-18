@@ -17,6 +17,10 @@ apiServer=$(az aro show -g $SPOKERGNAME -n $AROCLUSTER --query apiserverProfile.
 # Login to the OpenShift cluster's API server
 oc login $apiServer -u kubeadmin -p $AROCLUSTERPWD
 
+# Load Variables
+$ACR_NAME=$(az acr list -g $SPOKERGNAME --query '[0].name' -o tsv)
+$KV_NAME=$(az keyvault list -g spoke-aro-rg --query '[0].name' -o tsv)
+
 # Integrate ACR with OC (assuming workload image in 'ratingsapp' namespace)
 ACRPWD=$(az acr credential show -n $ACR_NAME --query 'passwords[0].value' -o tsv)
 
@@ -48,7 +52,7 @@ helm repo update
 helm install csi csi-secrets-store-provider-azure/csi-secrets-store-provider-azure -n csi --set secrets-store-csi-driver.syncSecret.enabled=true
 
 # Create a service principal to access keyvault
-SERVICE_PRINCIPAL_NAME="fta-aro-akv-sp"
+SERVICE_PRINCIPAL_NAME="service-principal-name" # Ex: fta-aro-akv-sp
 SERVICE_PRINCIPAL_CLIENT_SECRET="$(az ad sp create-for-rbac --skip-assignment --name $SERVICE_PRINCIPAL_NAME --query 'password' -o tsv)"
 SERVICE_PRINCIPAL_CLIENT_ID="$(az ad sp list --display-name $SERVICE_PRINCIPAL_NAME --query [0].'appId' -o tsv)"
 
