@@ -11,6 +11,7 @@ spec:
       labels:
         app: ratings-web # the label for the pods and the deployments
     spec:
+      serviceAccountName: svcrattingsapp
       containers:
       - name: ratings-web
         image: <acr name>.azurecr.io/ratings-web:v1 # IMPORTANT: update with your own repository

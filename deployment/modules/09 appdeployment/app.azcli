@@ -29,7 +29,7 @@ oc create secret docker-registry \
     --docker-email=unused \
     acr-secret -n ratingsapp
 
-oc secrets link default acr-secret --for=pull,mount
+# oc secrets link default acr-secret --for=pull,mount
 
 
 #***************************************************************************************************************************
@@ -50,7 +50,7 @@ helm install csi csi-secrets-store-provider-azure/csi-secrets-store-provider-azu
 # Create a service principal to access keyvault
 SERVICE_PRINCIPAL_NAME="fta-aro-akv-sp"
 SERVICE_PRINCIPAL_CLIENT_SECRET="$(az ad sp create-for-rbac --skip-assignment --name $SERVICE_PRINCIPAL_NAME --query 'password' -o tsv)"
-SERVICE_PRINCIPAL_CLIENT_ID="$(az ad sp list --display-name fta-aro-akv-sp --query [0].'appId' -o tsv)"
+SERVICE_PRINCIPAL_CLIENT_ID="$(az ad sp list --display-name $SERVICE_PRINCIPAL_NAME --query [0].'appId' -o tsv)"
 
 az keyvault set-policy -n $KV_NAME --secret-permissions get --spn ${SERVICE_PRINCIPAL_CLIENT_ID}
 
@@ -177,6 +177,20 @@ oc adm policy add-scc-to-user privileged \
 oc adm policy add-scc-to-user privileged \
    system:serviceaccount:ratingsapp:csi-secrets-store-provider-azure
 
+# Fix for this error when describing the replicaset
+#   Warning  FailedCreate  25s (x15 over 106s)  replicaset-controller  Error creating: pods "ratings-api-d997c8f74-" is forbidden: unable to validate against any security context constraint: [provider "anyuid": Forbidden: not usable by user or serviceaccount, spec.volumes[0]: Invalid value: "csi": csi volumes are not allowed to be used, provider "nonroot": Forbidden: not usable by user or serviceaccount, provider "hostmount-anyuid": Forbidden: not usable by user or serviceaccount, provider "machine-api-termination-handler": Forbidden: not usable by user or serviceaccount, provider "hostnetwork": Forbidden: not usable by user or serviceaccount, provider "hostaccess": Forbidden: not usable by user or serviceaccount, provider "kube-aad-proxy-scc": Forbidden: not usable by user or serviceaccount, provider "node-exporter": Forbidden: not usable by user or serviceaccount, provider "privileged": Forbidden: not usable by user or serviceaccount, provider "privileged-genevalogging": Forbidden: not usable by user or serviceaccount]
+# I have to add a serviceaccount for api deployment and add this privilige
+oc adm policy add-scc-to-user privileged \
+   system:serviceaccount:ratingsapp:svcrattingsapp
+
+# Fix for unable to pull image from ACR
+# Failed to pull image "aroacr10737.azurecr.io/ratings-api:v1": rpc error: code = Unknown desc = unable to retrieve auth token: invalid username/password: unauthorized: authentication required, visit https://aka.ms/acr/authorization for more information.
+oc secrets link svcrattingsapp acr-secret --for=pull,mount -n ratingsapp
+
+
+# Deploy ratings service account
+oc apply -f 0-ratings-serviceaccount.yaml -n ratingsapp
+
 # Deploy API
 # Change the Azure Container Registry name in the following yaml file
 oc apply -f 1-ratings-api-deployment.yaml -n ratingsapp
@@ -189,10 +203,12 @@ oc logs <pod name> -n ratingsapp
 oc apply -f 2-ratings-api-service.yaml -n ratingsapp
 
 # Deploy web frontend
+# Change the Azure Container Registry name in the following yaml file
 oc apply -f 3a-ratings-web-deployment.yaml -n ratingsapp
 
 # Deploy frontend service
 oc apply -f 4-ratings-web-service.yaml -n ratingsapp
 
 # Deploy Ingress
+# Change the FQDN to Azure Front Door FQDN
 oc apply -f 5-http-ratings-web-ingress.yaml -n ratingsapp

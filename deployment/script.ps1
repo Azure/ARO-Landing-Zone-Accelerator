@@ -1,3 +1,6 @@
+$scriptblock = {
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-ExecutionPolicy Unrestricted -File `"$PSCommandPath`"" -Verb RunAs; exit }
+
 # Creating InstallDir
 $Downloaddir = "C:\InstallDir"
 if ((Test-Path -Path $Downloaddir) -ne $true) {
@@ -117,7 +120,7 @@ Log("#############################")
 $helm_repo = "helm/helm"
 # https://get.helm.sh/helm-v3.8.1-windows-amd64.zip
 $releases = "https://api.github.com/repos/$helm_repo/releases"
-$tag = (Invoke-WebRequest $releases | ConvertFrom-Json)[0].tag_name
+$tag = (Invoke-WebRequest $releases -UseBasicParsing | ConvertFrom-Json)[0].tag_name
 $helm_file_basename = "helm-$tag-windows-amd64"
 $helm_file =  "$helm_file_basename.zip"
 $download = "https://get.helm.sh/$helm_file"
@@ -160,6 +163,8 @@ $GitInstallResult = (Start-Process ($Downloaddir+"\"+$installer) $git_install_ar
 if ($GitInstallResult -eq 0) {
     Log("Install Git Success")
 }
+Log("Cleaning up Git files")
+Remove-Item ($Downloaddir+"\"+$installer) -Force
 
 Log("#############################")
 Log("#Install Docker Desktop")
@@ -168,14 +173,55 @@ $docker_installer = "Docker_Desktop_Installer.exe"
 $docker_url = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
 Log("Downloading Docker Desktop")
 Invoke-WebRequest -Uri $docker_url -OutFile $docker_installer
+Log("Installing Docker Desktop")
 $docker_install_args = "install --quiet --noreboot"
 $DockerInstallResult = (Start-Process ($Downloaddir+"\"+$docker_installer) $docker_install_args -Wait -Passthru).ExitCode
 if ($DockerInstallResult -eq 0) {
     Log("Install Docker Desktop Success")
 }
+Log("Cleaning up Docker Desktop files")
+Remove-Item ($Downloaddir+"\"+$docker_installer) -Force
+
+Log("#############################")
+Log("#Clean RunOnce Registry")
+Log("#############################")
+Log("Clean RunOnce Registry")
+reg load hklm\temphive C:\Users\Default\NTUSER.DAT
+$RunKey = "HKLM:\temphive\Software\Microsoft\Windows\CurrentVersion\Run"
+Remove-ItemProperty $RunKey "NextRun"
+reg unload hklm\temphive
+$RunKeyLocal = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+Remove-ItemProperty $RunKeyLocal "NextRun"
+
+Log("#############################")
+Log("#Download WSL Script")
+Log("#############################")
+Log("Download WSL Script")
+$wsl_script_url = "https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/deployment/script.sh"
+$wsl_script_name = "script.sh"
+Invoke-WebRequest -Uri $wsl_script_url -OutFile $wsl_script_name
 
 Log("#############################")
 Log("#Reboot")
 Log("#############################")
 Log("Restarting Computer")
-Restart-Computer
+Restart-Computer -Force
+}
+
+$ProgressPreference = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# Creating InstallDir
+$Downloaddir = "C:\InstallDir"
+$scriptblock_fileName = "scriptblock.ps1"
+if ((Test-Path -Path $Downloaddir) -ne $true) {
+    mkdir $Downloaddir
+}
+cd $Downloaddir
+
+$scriptblock | out-file $scriptblock_fileName -Width 4096
+
+reg load hklm\temphive C:\Users\Default\NTUSER.DAT
+$RunKey = "HKLM:\temphive\Software\Microsoft\Windows\CurrentVersion\Run"
+set-itemproperty $RunKey "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + "$Downloaddir\$scriptblock_fileName")
+reg unload hklm\temphive

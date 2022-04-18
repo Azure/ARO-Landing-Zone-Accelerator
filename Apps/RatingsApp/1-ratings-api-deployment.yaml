@@ -1,5 +1,9 @@
 # Before this deployment, ensure that MongoDB has been created using Helm.
-
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svcrattingsapp
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,6 +17,7 @@ spec:
       labels:
         app: ratings-api # the label for the pods and the deployments
     spec:
+      serviceAccountName: svcrattingsapp
       containers:
         - name: ratings-api
           image: <acr name>.azurecr.io/ratings-api:v1 # IMPORTANT: update with your own repository

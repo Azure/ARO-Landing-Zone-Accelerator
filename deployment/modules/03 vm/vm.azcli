@@ -37,16 +37,6 @@ az network bastion create \
 az vm create \
   --name 'JumpBox' \
   --resource-group $HUBRGNAME \
-  --image Win2019Datacenter \
-  --admin-username 'azureuser' \
-  --size 'Standard_D2s_v3' \
-  --vnet-name $HUBVNET_NAME \
-  --subnet $VMSUBNET_NAME \
-  --public-ip-address ""
-
-az vm create \
-  --name 'JumpBox2' \
-  --resource-group $HUBRGNAME \
   --image MicrosoftWindowsDesktop:windows-11:win11-21h2-pro:22000.556.220303 \
   --admin-username 'azureuser' \
   --size 'Standard_D4s_v3' \
@@ -54,11 +44,28 @@ az vm create \
   --subnet $VMSUBNET_NAME \
   --public-ip-address ""
 
-# ToDo: Install tools in the JumpBox VM
-# ToDo: script.ps1 is not fully done yet. For now, check script.ps1 and manually install necessary tools on the VM
 az vm run-command invoke \
   --resource-group $HUBRGNAME \
-  --name 'ToolsBox' \
+  --name 'JumpBox' \
   --command-id RunPowerShellScript \
-  --scripts "https://raw.githubusercontent.com/UmarMohamedUsman/aro-reference-architecture/main/deployment/script.ps1"
+  --scripts @script.ps1
 
+#################################################################
+# Reference Only: Invoke PowerShell script from a remote file
+#################################################################
+az vm run-command invoke \
+  --resource-group $HUBRGNAME \
+  --name 'JumpBox' \
+  --command-id RunPowerShellScript \
+  --scripts "https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/dry-run/deployment/script.ps1"
+
+#################################################################
+# Reference Only: PowerShell Steps using Custom Script Extension
+#################################################################
+
+$protectedSettings = @{
+  "fileUris"= @("https://raw.githubusercontent.com/Welasco/test/main/start_script.ps1")
+  "commandToExecute"= "powershell -ExecutionPolicy Unrestricted -File start_script.ps1"
+}
+Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location EastUS -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ProtectedSettings $protectedSettings
+Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location EastUS -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ForceRerun "1" -ProtectedSettings $protectedSettings

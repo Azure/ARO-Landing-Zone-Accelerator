@@ -10,7 +10,7 @@ logpath=/var/log/deploymentscriptlog
 echo "#############################" >> $logpath
 echo "Upgrading Linux Distribution" >> $logpath
 echo "#############################" >> $logpath
-sudo apt-get update >> $logpath
+#sudo apt-get update >> $logpath
 #sudo apt-get -y upgrade >> $logpath
 echo " " >> $logpath
 
