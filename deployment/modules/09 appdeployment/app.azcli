@@ -187,13 +187,12 @@ oc adm policy add-scc-to-user privileged \
 oc adm policy add-scc-to-user privileged \
    system:serviceaccount:ratingsapp:svcrattingsapp
 
+# Deploy ratings service account
+oc apply -f 0-ratings-serviceaccount.yaml -n ratingsapp
+
 # Fix for unable to pull image from ACR
 # Failed to pull image "aroacr10737.azurecr.io/ratings-api:v1": rpc error: code = Unknown desc = unable to retrieve auth token: invalid username/password: unauthorized: authentication required, visit https://aka.ms/acr/authorization for more information.
 oc secrets link svcrattingsapp acr-secret --for=pull,mount -n ratingsapp
-
-
-# Deploy ratings service account
-oc apply -f 0-ratings-serviceaccount.yaml -n ratingsapp
 
 # Deploy API
 # Change the Azure Container Registry name in the following yaml file
