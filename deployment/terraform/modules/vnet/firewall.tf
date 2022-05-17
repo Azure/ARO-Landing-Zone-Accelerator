@@ -381,4 +381,24 @@ resource "azurerm_virtual_network_dns_servers" "spoke" {
   dns_servers = ["${azurerm_firewall.fw.ip_configuration[0].private_ip_address}"]
 }
 
-# TODO: Add Diagnostic Settings
+# Diagnostic Settings
+resource "azurerm_monitor_diagnostic_setting" "fw_diag" {
+  name = var.hub_name
+  target_resource_id = azurerm_firewall.fw.id
+  log_analytics_workspace_id = var.la_id
+
+  log {
+    category = "AzureFirewallApplicationRule"
+    enabled = true
+  }
+
+  log {
+    category = "AzureFirewallNetworkRule"
+    enabled = true
+  }
+
+  log {
+    category = "AzureFirewallDnsProxy"
+    enabled = true
+  }
+}

@@ -9,6 +9,13 @@ resource "azurerm_resource_group" "spoke" {
   location = var.location
 }
 
+resource "azurerm_log_analytics_workspace" "la" {
+  name                = var.hub_name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.hub.name
+  sku                 = "PerGB2018"
+}
+
 module "vnet" {
   source = "./modules/vnet"
 
@@ -19,5 +26,5 @@ module "vnet" {
   spoke_rg_name = azurerm_resource_group.spoke.name
 
   location = var.location
-
+  la_id    = azurerm_log_analytics_workspace.la.id
 }
