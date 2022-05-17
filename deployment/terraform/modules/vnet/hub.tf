@@ -5,15 +5,6 @@ resource "azurerm_virtual_network" "hub" {
 
   address_space = var.hub_prefix
 
-  subnet {
-    name = "AzureBastionSubnet"
-    address_prefix = var.bastion_subnet_prefix
-  }
-
-  subnet {
-    name = var.vm_subnet_name
-    address_prefix = var.vm_subnet_prefix
-  }
 }
 
 resource "azurerm_subnet" "fw" {
@@ -21,4 +12,18 @@ resource "azurerm_subnet" "fw" {
   resource_group_name = var.hub_rg_name
   virtual_network_name = azurerm_virtual_network.hub.name
   address_prefixes = var.fw_subnet_prefix
+}
+
+resource "azurerm_subnet" "bastion" {
+  name = "AzureBastionSubnet"
+  resource_group_name = var.hub_rg_name
+  virtual_network_name = azurerm_virtual_network.hub.name
+  address_prefixes = var.bastion_subnet_prefix
+}
+
+resource "azurerm_subnet" "vm" {
+  name = var.vm_subnet_name
+  resource_group_name = var.hub_rg_name
+  virtual_network_name = azurerm_virtual_network.hub.name
+  address_prefix = var.vm_subnet_prefix
 }
