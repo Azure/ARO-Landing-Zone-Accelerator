@@ -74,7 +74,6 @@ module "vm" {
 module "supporting" {
   source = "./modules/supporting"
 
-  location = var.location
   depends_on = [
     module.vnet
   ]
