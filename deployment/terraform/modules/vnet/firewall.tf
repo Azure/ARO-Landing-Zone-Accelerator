@@ -13,6 +13,10 @@ resource "azurerm_firewall" "fw" {
   sku_name = "AZFW_VNet"
   sku_tier = "Standard"
 
+  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+  # This is the Azure VIP for DNS and is an workaround tracked in issue: https://github.com/hashicorp/terraform-provider-azurerm/issues/9184
+  dns_servers = ["168.63.129.16"]
+
   ip_configuration {
     name = "azfw-ipconfig"
     subnet_id = azurerm_subnet.fw.id

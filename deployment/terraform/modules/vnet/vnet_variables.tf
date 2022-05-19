@@ -90,8 +90,8 @@ variable "private_runner_name" {
 }
 
 variable "private_runner_subnet_prefix" {
-  type = string
-  default = "10.1.4.0/24"
+  type = list
+  default = ["10.1.4.0/24"]
 }
 
 variable "app_gw_subnet" {
@@ -100,8 +100,8 @@ variable "app_gw_subnet" {
 }
 
 variable "app_gw_subnet_prefix" {
-  type = string
-  default = "10.1.5.0/27"
+  type = list
+  default = ["10.1.5.0/27"]
 }
 
 # Azure Firewall
