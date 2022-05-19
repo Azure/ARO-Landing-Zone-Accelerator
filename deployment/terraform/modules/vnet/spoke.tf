@@ -4,18 +4,21 @@ resource "azurerm_virtual_network" "spoke" {
   resource_group_name = var.spoke_rg_name
 
   address_space = var.spoke_prefix
-
-  subnet {
-    name = var.app_gw_subnet
-    address_prefix = var.app_gw_subnet_prefix
-  }
-
-  subnet {
-    name = var.private_runner_name
-    address_prefix = var.private_runner_subnet_prefix
-  }
 }
 
+resource "azurerm_subnet" "gw" {
+  name = var.app_gw_subnet
+  resource_group_name = var.spoke_rg_name
+  virtual_network_name = azurerm_virtual_network.spoke.name
+  address_prefixes = var.app_gw_subnet_prefix
+}
+
+resource "azurerm_subnet" "private_runner" {
+  name = var.private_runner_name
+  resource_group_name = var.spoke_rg_name
+  virtual_network_name = azurerm_virtual_network.spoke.name
+  address_prefixes = var.private_runner_subnet_prefix
+}
 
 resource "azurerm_subnet" "master_aro" {
   name = var.master_aro_name
