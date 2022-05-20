@@ -29,27 +29,6 @@ module "vnet" {
   la_id    = azurerm_log_analytics_workspace.la.id
 }
 
-resource "random_password" "pw" {
-  length      = 16
-  special     = true
-  min_lower   = 3
-  min_special = 2
-  min_upper   = 3
-
-  keepers = {
-    location = var.location
-  }
-}
-
-resource "random_string" "user" {
-  length  = 16
-  special = false
-
-  keepers = {
-    location = var.location
-  }
-}
-
 
 module "kv" {
   source = "./modules/keyvault"
