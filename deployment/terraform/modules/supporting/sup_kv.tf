@@ -1,6 +1,6 @@
 resource "azurerm_key_vault" "sub_kv" {
-  name = "keyvault${random_integer.ri.result}"
-  location = data.azurerm_resource_group.spoke.location
+  name = local.key_vault_name
+  location = var.location
   resource_group_name = data.azurerm_resource_group.spoke.name
   tenant_id = data.azurerm_client_config.current.tenant_id
   sku_name = "standard"
@@ -14,8 +14,8 @@ resource "azurerm_key_vault" "sub_kv" {
 resource "azurerm_private_endpoint" "kv" {
   name = "kvPvtEndpoint"
   resource_group_name = data.azurerm_resource_group.spoke.name
-  location = data.azurerm_resource_group.spoke.location
-  subnet_id = data.azurerm_subnet.private_endpoint_subnet_name.id
+  location = var.location
+  subnet_id = var.private_endpoint_subnet_id
 
   private_service_connection {
     name = "kvConnection"
@@ -41,6 +41,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "kv" {
   name = "KeyVaultDNSLink"
   resource_group_name = data.azurerm_resource_group.spoke.name
   private_dns_zone_name = azurerm_private_dns_zone.kv.name
-  virtual_network_id = data.azurerm_virtual_network.hub_vnet.id
+  virtual_network_id = var.spoke_vnet_id
   registration_enabled = false
 }

@@ -9,7 +9,7 @@ resource "random_string" "acr" {
 resource "azurerm_container_registry" "acr" {
   name = "${var.base_name}${random_string.acr.result}"
   resource_group_name = var.spoke_rg_name
-  location = data.azurerm_resource_group.spoke.location
+  location = var.location
   sku = "Premium"
   admin_enabled = true
   public_network_access_enabled = false
@@ -18,8 +18,8 @@ resource "azurerm_container_registry" "acr" {
 resource "azurerm_private_endpoint" "acr" {
   name = "arcPvtEndpoint"
   resource_group_name = var.spoke_rg_name
-  location = data.azurerm_resource_group.spoke.location
-  subnet_id = data.azurerm_subnet.private_endpoint_subnet_name.id
+  location = var.location
+  subnet_id = var.private_endpoint_subnet_id
 
   private_dns_zone_group {
     name = "ACR-ZoneGroup"
@@ -45,6 +45,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dns_link" {
   name = "AcrDNSLink"
   resource_group_name = var.spoke_rg_name
   private_dns_zone_name = azurerm_private_dns_zone.dns.name
-  virtual_network_id = data.azurerm_virtual_network.spoke_vnet.id
+  virtual_network_id = var.spoke_vnet_id
 }
 
