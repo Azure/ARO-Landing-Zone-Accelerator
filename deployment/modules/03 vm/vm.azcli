@@ -37,7 +37,7 @@ az network bastion create \
 az vm create \
   --name 'JumpBox' \
   --resource-group $HUBRGNAME \
-  --image MicrosoftWindowsDesktop:windows-11:win11-21h2-pro:22000.556.220303 \
+  --image MicrosoftWindowsDesktop:windows-11:win11-21h2-pro:latest \
   --admin-username 'azureuser' \
   --size 'Standard_D4s_v3' \
   --vnet-name $HUBVNET_NAME \
@@ -67,5 +67,5 @@ $protectedSettings = @{
   "fileUris"= @("https://raw.githubusercontent.com/Welasco/test/main/start_script.ps1")
   "commandToExecute"= "powershell -ExecutionPolicy Unrestricted -File start_script.ps1"
 }
-Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location EastUS -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ProtectedSettings $protectedSettings
-Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location EastUS -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ForceRerun "1" -ProtectedSettings $protectedSettings
+Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location $LOCATION -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ProtectedSettings $protectedSettings
+Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location $LOCATION -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ForceRerun "1" -ProtectedSettings $protectedSettings
