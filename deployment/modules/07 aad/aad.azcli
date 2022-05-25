@@ -14,7 +14,7 @@ client_secret=FTAaro@Hack$randomNum
 # Create an Azure Active Directory application and retrieve the created application identifier.
 app_id=$(az ad app create \
   --query appId -o tsv \
-  --display-name fta-aro-auth \
+  --display-name fta-aro-auth-$uniqueId \
   --reply-urls $oauthCallbackURL \
   --password $client_secret)
 
