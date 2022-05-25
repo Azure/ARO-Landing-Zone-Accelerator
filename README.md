@@ -4,7 +4,7 @@
 
 This repo is for building Azure Red Hat OpenShift reference architecture and to integrate with other Azure Service
 
-Currently we’ve no reference architectures in Azure Architecture Center for deploying Azure Red Hat OpenShift (ARO) and integrating with various Azure Services. This is been a  pain point for customers looking to deploy ARO following Microsoft recommended best practices and continue to hinder ARO adoption.
+Currently we’ve no reference architectures in Azure Architecture Center for deploying Azure Red Hat OpenShift (ARO) and integrating with various Azure Services. This has been a pain point for customers looking to deploy ARO following Microsoft recommended best practices and continue to hinder ARO adoption.
 
 Goal of this hackathon project is to come up with Reference Architecture/Reference Implementation to deploy following services:
 
