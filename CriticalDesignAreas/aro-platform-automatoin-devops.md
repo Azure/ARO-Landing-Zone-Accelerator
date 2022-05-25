@@ -1,5 +1,5 @@
 ---
-title: Deployment option considerations for Azure Kubernetes Service (AKS)
+title: Platform Automation and DevOps for Azure Kubernetes Service (AKS)
 description: Learn more about design recommendations and considerations for Azure Kubernetes Service (AKS) platform automation and DevOps.
 author: BrianBlanchard
 ms.author: brblanch
