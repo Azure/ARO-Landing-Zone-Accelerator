@@ -62,6 +62,13 @@ resource "azurerm_windows_virtual_machine" "jumpbox" {
     sku       = "2016-Datacenter"
     version   = "latest"
   }
+
+  lifecycle {
+    ignore_changes = [
+      admin_username,
+      admin_password
+    ]
+  }
 }
 
 resource "azurerm_virtual_machine_extension" "jumpbox" {

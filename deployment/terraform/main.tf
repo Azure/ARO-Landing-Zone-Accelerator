@@ -29,44 +29,36 @@ module "vnet" {
   la_id    = azurerm_log_analytics_workspace.la.id
 }
 
-resource "random_password" "pw" {
-  length = 16
-  special = true
-  min_lower = 3
-  min_special = 2
-  min_upper = 3
-
-  keepers = {
-    location = var.location
-  }
-}
-
-resource "random_string" "user" {
-  length = 16
-  special = false
-
-  keepers = {
-    location = var.location
-  }
-}
-
 
 module "kv" {
   source = "./modules/keyvault"
 
-  kv_name = var.hub_name
-  location = var.location
+  kv_name             = var.hub_name
+  location            = var.location
   resource_group_name = azurerm_resource_group.hub.name
-  vm_admin_username = random_string.user.result
-  vm_admin_password = random_password.pw.result
+  vm_admin_username   = random_string.user.result
+  vm_admin_password   = random_password.pw.result
 }
 
 module "vm" {
   source = "./modules/vm"
 
   resource_group_name = azurerm_resource_group.hub.name
+  location            = var.location
+  bastion_subnet_id   = module.vnet.bastion_subnet_id
+  kv_id               = module.kv.kv_id
+  vm_subnet_id        = module.vnet.vm_subnet_id
+}
+
+module "supporting" {
+  source = "./modules/supporting"
+
   location = var.location
-  bastion_subnet_id = module.vnet.bastion_subnet_id
-  kv_id = module.kv.kv_id
-  vm_subnet_id = module.vnet.vm_subnet_id
+  hub_vnet_id = module.vnet.hub_vnet_id
+  spoke_vnet_id = module.vnet.spoke_vnet_id
+  private_endpoint_subnet_id = module.vnet.private_endpoint_subnet_id
+
+  depends_on = [
+    module.vnet
+  ]
 }
