@@ -18,3 +18,11 @@ output "spoke_vnet_id" {
 output "private_endpoint_subnet_id" {
   value = azurerm_subnet.private_endpoint.id
 }
+
+output "master_subnet_id" {
+  value = azurerm_subnet.master_aro.id
+}
+
+output "worker_subnet_id" {
+  value = azurerm_subnet.worker_aro.id
+}

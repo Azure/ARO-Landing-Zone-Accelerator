@@ -53,10 +53,24 @@ module "vm" {
 module "supporting" {
   source = "./modules/supporting"
 
-  location = var.location
-  hub_vnet_id = module.vnet.hub_vnet_id
-  spoke_vnet_id = module.vnet.spoke_vnet_id
+  location                   = var.location
+  hub_vnet_id                = module.vnet.hub_vnet_id
+  spoke_vnet_id              = module.vnet.spoke_vnet_id
   private_endpoint_subnet_id = module.vnet.private_endpoint_subnet_id
+
+  depends_on = [
+    module.vnet
+  ]
+}
+
+module "aro" {
+  source = "./modules/aro"
+
+  location = var.location
+
+  spoke_vnet_id = module.vnet.spoke_vnet_id
+  master_subnet_id = module.vnet.master_subnet_id
+  worker_subnet_id = module.vnet.worker_subnet_id
 
   depends_on = [
     module.vnet
