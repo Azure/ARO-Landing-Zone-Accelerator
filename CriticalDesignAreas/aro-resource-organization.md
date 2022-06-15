@@ -3,7 +3,7 @@ title: Resource organization considerations for ARO
 description: ARO guidelines for resource organization
 author: rolandotorio
 ms.author: rolandotorio
-ms.date: 02/25/2022
+ms.date: 06/14/2022
 ms.topic: conceptual
 ms.service: cloud-adoption-framework
 ms.subservice: scenario
@@ -43,6 +43,16 @@ For example, if you have public and private applications, separate them into dif
   - Flat structure to support many dedicated hosts in dedicated environments for decentralized operations run be each workload team.
   - Segmented structure to create a management group for centrally managed hosts and a separate management group for decentralized operations.
   - Hierarchical structure further segmenting environments to reflect billing, governance, or operational requirements.
+
+- Decide which Container Registry to use:
+
+  - Implement Internal OpenShift Registry, taking into consideration the following:
+    - Configuration of the built-in [OpenShift Container Registry](https://docs.microsoft.com/en-us/azure/openshift/built-in-container-registry).
+    - Use of [Red Hat Quay Registry](https://access.redhat.com/documentation/en-us/red_hat_quay/3.7) for enterprise-quality container registry.
+  - Implement [Azure Containter Registry](https://docs.microsoft.com/en-us/azure/openshift/howto-use-acr-with-aro), taking into consideration the following:  
+    - [Container registry best practices](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-best-practices).
+    - Use of [Quarantine pattern](https://github.com/AzureCR/QuarantinePattern-Spec) to assure the registry only contains images that have been vulnerability scanned.
+  - or, Third Party Container Registry.
 
 - Decide which container registry topology to use for OCI artifact distribution:
 
