@@ -1,3 +1,5 @@
+data "azurerm_client_config" "current" {}
+
 # Resource Groups
 resource "azurerm_resource_group" "hub" {
   name     = var.hub_name
@@ -76,3 +78,13 @@ module "aro" {
     module.vnet
   ]
 }
+
+# module "frontdoor" {
+#   source = "./modules/frontdoor"
+
+#   location = var.location
+#   aro_worker_subnet_id = module.vnet.worker_subnet_id
+#   aro_lb_frontend_ips = "" # Needs to be pullede from ARO and is not deploying correctly
+#   la_id = azurerm_log_analytics_workspace.la.id
+#   random = random_string.random.result
+# }
