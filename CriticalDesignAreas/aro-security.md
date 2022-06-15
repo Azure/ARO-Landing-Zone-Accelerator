@@ -1,3 +1,15 @@
+---
+title: Security for ARO
+description: Describes how to improve security for the Azure RedHat OpenShift Service.
+author: UmarMohamedUsman
+ms.author: umarm
+ms.date: 06/07/2022
+ms.topic: conceptual
+ms.service: cloud-adoption-framework
+ms.subservice: scenario
+ms.custom: think-tank, e2e-aro
+---
+
 ## Security for the ARO landing zone accelerator
 
 This article provides design considerations and recommendations for security when using the ARO landing zone accelerator.
@@ -29,6 +41,8 @@ Here are some other design considerations for ARO security governance and compli
 - Deploy a dedicated and private instance of [Azure Container Registry](/azure/container-registry/) to each landing zone subscription.
 - Use [Private Link for Azure Container Registry](/azure/container-registry/container-registry-private-link) to connect it to ARO.
 - Scan your images for vulnerabilities with [Microsoft Defender for container registries](/azure/security-center/defender-for-container-registries-introduction), or any other image scanning solution.
+
+- Use [Bastion Host](/azure/aks/operator-best-practices-network#securely-connect-to-nodes-through-a-bastion-host) and Jumpbox VM to securely access ARO Private Cluster.
 
 > [!IMPORTANT]
 > Microsoft Defender for Cloud image scanning is not compatible with Container Registry endpoints. For more information, see [Connect privately to a container registry using Private Link](/azure/container-registry/container-registry-private-link).
