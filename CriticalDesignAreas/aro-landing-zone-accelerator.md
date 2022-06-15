@@ -50,4 +50,4 @@ The following diagram shows ARO Landing Zone Accelerator architecture.
 
 ## Deploy ARO landing zone accelerator
 
-ARO landing zone accelerator is an open-source repo consist of Azure CLI reference implementation along with Critical Design Area recommendations, available in the [`ARO landing zone accelerator`](https://aka.ms/aks-reference-implementation) repo.
+ARO landing zone accelerator is an open-source repo consist of Azure CLI reference implementation along with Critical Design Area recommendations, available in the [`ARO landing zone accelerator`](https://aka.ms/aro-landing-zone-accelerator) repo.
