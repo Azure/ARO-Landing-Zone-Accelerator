@@ -43,3 +43,14 @@ resource "random_string" "user" {
     location = var.location
   }
 }
+
+resource "random_string" "random" {
+  length = 6
+  special = false
+  min_lower = 3
+  min_upper = 1
+
+  keepers = {
+    location = var.location
+  }
+}
