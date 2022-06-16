@@ -71,7 +71,7 @@ Consider the following factors:
   - A non-stateful service can be replicated efficiently.
   - If you need to store *state* in the cluster, back up the data frequently in the paired region.
 - Cluster upgrade and maintenance.
-  - Always keep your cluster up to date. Check for cluster upgrades [https://docs.microsoft.com/en-us/azure/openshift/howto-upgrade#check-for-azure-red-hat-openshift-cluster-upgrades]
+  - Always keep your cluster up to date. Check for [cluster upgrades](https://docs.microsoft.com/en-us/azure/openshift/howto-upgrade#check-for-azure-red-hat-openshift-cluster-upgrades)
   - Be aware of the release and deprecation process.
   - Control upgrades through schedules
 - Network connectivity if a failover occurs.
@@ -92,9 +92,9 @@ The following are best practices for your design:
 - Whenever possible, remove the service state from inside containers. Instead, use an Azure platform as a service (PaaS) that supports multiregion replication.
 - Ensure pod resources. It's highly recommended that deployments specify pod resource requirements. The scheduler can then appropriately schedule the pod. Reliability depreciates significantly when pods aren't scheduled.
 - Set up multiple replicas in the deployment to handle disruptions like hardware failures. For planned events like updates and upgrades, a disruption budget can ensure the required number of pod replicas exist to handle expected application load.
-- Leverage Pod Topology [https://docs.openshift.com/container-platform/4.9/nodes/scheduling/nodes-scheduler-pod-topology-spread-constraints.html] Constraints to automatically schedule pods on nodes throughout the cluster
+- Leverage [Pod Topology](https://docs.openshift.com/container-platform/4.9/nodes/scheduling/nodes-scheduler-pod-topology-spread-constraints.html) Constraints to automatically schedule pods on nodes throughout the cluster
 - Your applications might use Storage for their data and should ensure availability across regions if needed
-	- Using RWX storage with inbuilt Azure Files storage class [https://docs.microsoft.com/en-us/azure/openshift/howto-create-a-storageclass]
+	- Using RWX storage with inbuilt [Azure Files storage class](https://docs.microsoft.com/en-us/azure/openshift/howto-create-a-storageclass)
 	- Using CSI Drivers for storage provisioning
 - Create Application backup and plan for restore 	
 	- Include [persistent volumes](https://docs.microsoft.com/en-us/azure/openshift/howto-create-a-backup#create-a-backup-with-velero-to-include-snapshots) in the backup
@@ -104,7 +104,7 @@ The following are best practices for your design:
 - Set [pod priority](https://docs.openshift.com/container-platform/4.10/nodes/pods/nodes-pods-priority.html)/pod disruption budgets to limit the number of pod replicas that the cluster is allowed to take down for maintenance operations thereby ensuring availability.
 - Enforce resource quotas on the service namespaces. The resource quota on a namespace will ensure pod requests and limits are properly set on a deployment.
   - Setting resources quotas at the cluster level can cause problems when deploying partner services that don't have proper requests and limits.
-- Store your container images in Azure Container Registry [https://docs.microsoft.com/en-us/azure/openshift/howto-use-acr-with-aro] and [geo-replicate](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-geo-replication) the registry to each ARO region.
+- Store your container images in [Azure Container Registry](https://docs.microsoft.com/en-us/azure/openshift/howto-use-acr-with-aro) and [geo-replicate](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-geo-replication) the registry to each ARO region.
 - Use multiple regions and peering locations for [Azure ExpressRoute](/azure/expressroute/expressroute-introduction) connectivity.
   If an outage affecting an Azure region or peering provider location occurs, a redundant hybrid network architecture can help ensure uninterrupted cross-premises connectivity.
 - Interconnect regions with global virtual network peering. If the clusters need to talk to each other, connecting both virtual networks to each other can be achieved through virtual network peering. This technology interconnects virtual networks to each other providing high bandwidth across Microsoft's backbone network, even across different geographic regions.
