@@ -83,7 +83,7 @@ Traffic between the ARO pods and the private endpoints per default will not go t
 ## Design recommendations
 
 - If your security policy mandates having the ARO API with a private IP address (instead of a public IP address), [deploy a private ARO cluster](/azure/openshift/howto-create-private-cluster-4x).
-- Use Azure DDoS Protection Standard to protect the virtual network used for the AKS cluster **unless you use Azure Firewall or WAF in a centralized subscription**.
+- Use Azure DDoS Protection Standard to protect the virtual network used for the ARO cluster **unless you use Azure Firewall or WAF in a centralized subscription**.
 - Use the DNS configuration linked to the overall network setup with Azure Virtual WAN or hub and spoke architecture, Azure DNS zones, and your own DNS infrastructure.
 - Use Private Link to secure network connections and use private IP-based connectivity to other managed Azure services used that support Private Link, such as Azure Storage, Azure Container Registry, Azure SQL Database, and Azure Key Vault.
 - Use an ingress controller to provide advanced HTTP routing and security, and to offer a single endpoint for applications.
