@@ -54,3 +54,15 @@ resource "random_string" "random" {
     location = var.location
   }
 }
+
+variable "aro_sp_object_id" {
+  type = string
+}
+
+variable "aro_sp_password" {
+  type = string
+}
+
+variable "aro_rp_object_id" {
+  type = string
+}

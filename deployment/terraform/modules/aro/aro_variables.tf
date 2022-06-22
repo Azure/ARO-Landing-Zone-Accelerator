@@ -32,6 +32,19 @@ variable "location" {
   type = string
 }
 
+variable "aro_sp_object_id" {
+  type = string
+}
+
+variable "aro_sp_password" {
+  type = string
+  sensitive = true
+}
+
+variable "aro_rp_object_id" {
+  type = string
+}
+
 variable "roles" {
   description = "Roles to be assigned to the Principal"
   type        = list(object({ role = string }))
@@ -43,9 +56,4 @@ variable "roles" {
       role = "User Access Administrator"
     }
   ]
-}
-
-variable "aro_rp_object_id" {
-  type = string
-  default = "50c17c64-bc11-4fdd-a339-0ecd396bf911"
 }

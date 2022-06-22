@@ -74,6 +74,10 @@ module "aro" {
   master_subnet_id = module.vnet.master_subnet_id
   worker_subnet_id = module.vnet.worker_subnet_id
 
+  aro_sp_object_id = var.aro_sp_object_id
+  aro_sp_password = var.aro_sp_password
+  aro_rp_object_id = var.aro_rp_object_id
+
   depends_on = [
     module.vnet
   ]
