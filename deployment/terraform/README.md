@@ -59,3 +59,7 @@ terraform apply \
   -var aro_sp_password="<SP Password> \
   -var aro_rp_object_id="<Ado RP Object ID>"
 ```
+
+## Known Issues
+
+There is no ARO Terraform provider so this deployment uses an ARM template for the ARO deployment. This means that this is a one time install. Running this in a pipeline or as a state managed deployment will result in errors. 
