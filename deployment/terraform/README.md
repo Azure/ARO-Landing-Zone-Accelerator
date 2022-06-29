@@ -16,10 +16,11 @@ az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
 
 ## Service Principals
 
-ARO needs a service principal to deploy. the command below will create the SP. Take note of these values.
+ARO needs a service principal to deploy. the command below will create the SP.
 
 ```bash
-az ad sp create-for-rbac --role Contributor --scopes /subscriptions/<sub guid> --name <service_principal> 
+SPNAME=<service_principal>
+az ad sp create-for-rbac --role Contributor --scopes /subscriptions/<subscription id> --name $SPNAME
 ```
 
 _Example Output_
@@ -39,27 +40,34 @@ Retrying role assignment creation: 4/36
 }
 ```
 
-You will also need the Service Principal object ID for the OpenShift resource provider.
+**Take note of these values.** You will also need the Service Principal object ID for the OpenShift resource provider.
 
 ```bash
-az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].objectId -o tsv
+az ad sp list --display-name $SPNAME --query [0].appId -o tsv
 ```
 
 ## Deployment
 
-From the `deployment/terraform` directory run the following commands to deploy the environment.
+Clone the repository and navigate to the `deployment/terraform` directory.
+```bash
+git clone https://github.com/Azure/ARO-Landing-Zone-Accelerator
+
+cd deployment/terraform/
+```
+
+Run the following commands to deploy the environment.
 
 ```bash
 terraform init
 
 terraform apply \
-  -var tenant_id="<Tenant ID> \
+  -var tenant_id="<Tenant ID>" \
   -var subscription_id="<Sub ID>" \
   -var aro_sp_object_id="<SP Object ID>" \
-  -var aro_sp_password="<SP Password> \
+  -var aro_sp_password="<SP Password>" \
   -var aro_rp_object_id="<Ado RP Object ID>"
 ```
 
 ## Known Issues
 
-There is no ARO Terraform provider so this deployment uses an ARM template for the ARO deployment. This means that this is a one time install. Running this in a pipeline or as a state managed deployment will result in errors. 
+There is no ARO Terraform provider so this deployment uses an ARM template for the ARO deployment. This means that this is a one time install. Running this in a pipeline or as a state managed deployment will result in errors.
