@@ -3,49 +3,49 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
-      "type": "string",
+      "type": "String",
       "metadata": {
         "description": "The geo-location where the resource lives"
       }
     },
     "clusterName": {
-      "type": "string",
+      "type": "String",
       "metadata": {
         "description": "The name of the OpenShift cluster resource"
       }
     },
     "clusterResourceGroupName": {
-      "type": "string",
+      "type": "String",
       "metadata": {
         "description": "The ID of the cluster resource group (immutable)"
       }
     },
     "domain": {
-      "type": "string",
+      "type": "String",
       "metadata": {
         "description": "The domain for the cluster (immutable)"
       }
     },
     "workerSubnetId": {
-      "type": "string",
+      "type": "String",
       "metadata": {
         "description": "The Azure resource ID of the worker subnet (immutable)"
       }
     },
     "masterSubnetId": {
-      "type": "string",
+      "type": "String",
       "metadata": {
         "description": "The Azure resource ID of the master subnet (immutable)"
       }
     },
     "clientId": {
-      "type": "string",
+      "type": "String",
       "metadata": {
         "description": "The client ID used for the cluster (immutable)"
       }
     },
     "clientSecret": {
-      "type": "securestring",
+      "type": "SecureString",
       "metadata": {
         "description": "The client secret used for the cluster (immutable)"
       }
