@@ -19,32 +19,18 @@ az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
 ARO needs a service principal to deploy. the command below will create the SP.
 
 ```bash
-SPNAME=<service_principal>
-az ad sp create-for-rbac --role Contributor --scopes /subscriptions/<subscription id> --name $SPNAME
+SPNAME=<service_principal> # The name of the SP ARO will use
+SUB_ID=<subscription id> # The ID of the subscription where ARO will be deployed
+az ad sp create-for-rbac --role Contributor --scopes /subscriptions/$SUB_ID --name $SPNAME > app-service-principal.json
+SP_CLIENT_ID=$(jq -r '.appId' app-service-principal.json)
+SP_CLIENT_SECRET=$(jq -r '.password' app-service-principal.json)
+SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.objectId')
 ```
 
-_Example Output_
+You will also need the Service Principal object ID for the OpenShift resource provider.
 
 ```bash
-Changing "<service_principal>" to a valid URI of "http://<service_principal>", which is the required format used for service principal names
-Retrying role assignment creation: 1/36
-Retrying role assignment creation: 2/36
-Retrying role assignment creation: 3/36
-Retrying role assignment creation: 4/36
-{
-  "appId": "8bd0d04d-0ac2-43a8-928d-705c598c6956",
-  "displayName": "<service_principal>",
-  "name": "http://<service_principal>",
-  "password": "ac461d78-bf4b-4387-ad16-7e32e328aec6",
-  "tenant": "6048c7e9-b2ad-488d-a54e-dc3f6be6a7ee"
-}
-```
-
-**Take note of these values.** You will also need the Service Principal object ID for the OpenShift resource provider.
-
-```bash
-az ad sp list --display-name $SPNAME --query [0].appId -o tsv
-```
+ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].objectId -o tsv)```
 
 ## Deployment
 
@@ -63,9 +49,9 @@ terraform init
 terraform apply \
   -var tenant_id="<Tenant ID>" \
   -var subscription_id="<Sub ID>" \
-  -var aro_sp_object_id="<SP Object ID>" \
-  -var aro_sp_password="<SP Password>" \
-  -var aro_rp_object_id="<Ado RP Object ID>"
+  -var aro_sp_object_id="$SP_OBJECT_ID" \
+  -var aro_sp_password="$SP_CLIENT_SECRET" \
+  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID"
 ```
 
 ## Known Issues
