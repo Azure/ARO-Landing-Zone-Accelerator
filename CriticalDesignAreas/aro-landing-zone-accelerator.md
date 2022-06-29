@@ -51,3 +51,9 @@ The following diagram shows ARO Landing Zone Accelerator architecture.
 ## Deploy ARO landing zone accelerator
 
 ARO landing zone accelerator is an open-source repo consist of Azure CLI reference implementation along with Critical Design Area recommendations, available in the [`ARO landing zone accelerator`](https://aka.ms/aro-landing-zone-accelerator) repo.
+
+## Next steps
+
+Learn about design considerations for identity and access management in your Azure landing zones.
+
+[Identity and access management for Azure Red Hat Openshift (ARO) landing Zone accelerator scenario](./aro-identity-and-access-management.md).
