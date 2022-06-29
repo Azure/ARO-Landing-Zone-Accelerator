@@ -44,4 +44,11 @@ resource "azurerm_resource_group_template_deployment" "aro" {
   depends_on = [
     azurerm_role_assignment.resource_provider_assignment
   ]
+
+  lifecycle {
+    ignore_changes = [
+      parameters_content,
+      template_content,
+    ]
+  }
 }
