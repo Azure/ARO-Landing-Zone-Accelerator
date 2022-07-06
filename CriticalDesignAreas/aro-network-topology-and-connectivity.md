@@ -19,26 +19,33 @@ ms.custom: think-tank, e2e-aro
 - ARO requires two subnets a master subnet and worker subnet.
   - The master subnet is used to deploy the cluster's master nodes.
   - The worker subnet is used to deploy the cluster's worker nodes.
-  - Worker subnet and master subnet should be minimum /27 and must be planned in advance to accommodate the nodes.
+  - Worker subnet and master subnet should be minimum /27.
+  - Worker subnet and master subnet cannot be changed after cluster deployment.
+  - The master and worker subnets must not have a NSG associated. A NSG will be created and managed by ARO cluster.
+  - Worker subnet and master subnet cannot overlap with on-premises networks or any other Azure Network.
+
+  -
 - IP addressing and the size of the virtual network subnet must be carefully planned to support the scaling of the cluster. For example, you can add more nodes.
-- ARO services and [routes](https://docs.openshift.com/container-platform/4.10/networking/routes/route-configuration.html) can be exposed with public or internal load balancers. Internal load balancers will be configured in the same subnet as the worker nodes. In case of a restricted egress cluster public load balancers cannot be used due to asymmetric routing.
+- ARO services and [routes](https://docs.openshift.com/container-platform/latest/networking/routes/route-configuration.html) can be exposed with public or internal load balancers. Internal load balancers will be configured in the same subnet as the worker nodes. In case of a restricted egress cluster public load balancers cannot be used due to asymmetric routing.
 - ARO uses CoreDNS to provide name resolution to pods running in the cluster.
-  - [CoreDNS](https://docs.openshift.com/container-platform/4.10/networking/dns-operator.html) will resolve cluster-internal domains directly.
+  - [CoreDNS](https://docs.openshift.com/container-platform/latest/networking/dns-operator.html) will resolve cluster-internal domains directly.
   - ARO also supports [custom DNS servers](/azure/openshift/howto-custom-dns) in the Virtual Network.
   - Other domains will be forwarded to the DNS servers configured in Azure Virtual Network, which will be either the default Azure DNS resolver, or any custom DNS servers configured at the virtual network level.
   - It's possible to customize the [DNS forwarding in ARO CoreDNS](/azure/openshift/dns-forwarding).
+  - ARO will use the default Azure DNS resolver if no custom DNS servers are configured in the Virtual Network.
+  - For additional information on DNS, see [Azure Private Endpoint DNS configuration](/azure/private-link/private-endpoint-dns).
 - Outbound (egress) network traffic can be sent through an Azure Firewall or network virtual appliance cluster.
   - By default, ARO clusters have unrestricted egress internet access.
   - ARO can be deployed with restricted egress traffic by adding a User Defined Routing with a 0.0.0.0/0 route to an Azure Firewal or network virtual appliance. ARO has an [Egress lockdown](/azure/openshift/concepts-egress-lockdown) functionality that ensures access even if the outbound (egress) traffic is restricted by a firewall appliance or other means.
   - There are two deployment models for ARO with [private API server endpoint and a private ingress controller](/azure/openshift/howto-create-private-cluster-4x) or [public API server endpoint and public ingress controller](/azure/openshift/tutorial-create-cluster).
-  - If using unrestricted egress access, you must carefully manage outbound ports, since you might use up the available outbound ports.
-- By default, all pods in an ARO cluster can send and receive traffic without limitations. All pods in a project are accessible from other pods and network endpoints. To isolate one or more pods in a project, you can create NetworkPolicy objects in that project to indicate the allowed incoming connections. OpenShift SDN supports using [network policy](https://docs.openshift.com/container-platform/4.10/networking/network_policy/about-network-policy.html) in its default network isolation mode.
-- A service mesh provides capabilities like traffic management, resiliency, policy, security, strong identity, and observability. For more information about OpenShift service mesh, see [Service Mesh and Istio differences](https://docs.openshift.com/container-platform/4.10/service_mesh/v2x/ossm-vs-community.html).
+  - If using unrestricted egress access, you must carefully manage outbound ports, since you might use up the available outbound ports. For more information see [Use Source Network Address Translation (SNAT) for outbound connections](/azure/load-balancer/load-balancer-outbound-connections).
+- By default, all pods in an ARO cluster can send and receive traffic without limitations. All pods in a project are accessible from other pods and network endpoints. To isolate one or more pods in a project, you can create NetworkPolicy objects in that project to indicate the allowed incoming connections. OpenShift SDN supports using [network policy](https://docs.openshift.com/container-platform/latest/networking/network_policy/about-network-policy.html) in its default network isolation mode.
+- A service mesh provides capabilities like traffic management, resiliency, policy, security, strong identity, and observability. For more information about OpenShift service mesh, see [Service Mesh and Istio differences](https://docs.openshift.com/container-platform/latest/service_mesh/v2x/ossm-vs-community.html).
 - Global load-balancing mechanisms such as [Azure Traffic Manager](/azure/traffic-manager/traffic-manager-overview) and [Azure Front Door](/azure/openshift/howto-secure-openshift-with-front-door) increase resiliency by routing traffic across multiple clusters, potentially in different Azure regions.
 
 ### Private clusters
 
-ARO cluster IP visibility can be either public or private. [Private clusters](/azure/openshift/howto-create-private-cluster-4x) expose the ARO API over a private IP address, but not over a public one. The ARO API shouldn't be accessed through its IP address, [but instead through its fully qualified domain name (FQDN)](/azure/openshift/tutorial-connect-cluster). The resolution from the ARO API FQDN to its IP address will handled by Azure DNS.
+ARO API cluster IP visibility can be either public or private. [Private clusters](/azure/openshift/howto-create-private-cluster-4x) expose the ARO API over a private IP address, but not over a public one. The ARO API shouldn't be accessed through its IP address, [but instead through its fully qualified domain name (FQDN)](/azure/openshift/tutorial-connect-cluster). The resolution from the ARO API FQDN to its IP address will handled by Azure DNS.
 
 Following enterprise-scale proven practices, DNS resolution for Azure workloads is offered by centralized DNS servers deployed in the connectivity subscription, either in a hub virtual network or in a shared services virtual network connected to an Azure Virtual WAN. These servers will conditionally resolve Azure-specific and public names using Azure DNS (IP address 168.63.129.16), and private names using corporate DNS servers. This connectivity model is a common practice and is important to allow private access to other Azure resources when using Private Endpoints.
 
@@ -48,12 +55,15 @@ Following enterprise-scale proven practices, DNS resolution for Azure workloads 
 
 Incoming (ingress) controllers can be used to expose applications running in the ARO clusters.
 
-- [Ingress controllers](https://docs.openshift.com/container-platform/4.10/networking/ingress-operator.html) provide application-level routing at the cost of a slight complexity increase.
+- [Ingress controllers](https://docs.openshift.com/container-platform/latest/networking/ingress-operator.html) provide application-level routing at the cost of a slight complexity increase.
 - ARO creates a generic DNS entry that simplify access to exposed applications in the cluster like *.apps.<ClusterID>.<Region>.aroapp.io. It's useful for Private cluster to route traffic for the application.
-- ARO offers a built in [Ingress Controller and routes](https://docs.openshift.com/container-platform/4.10/networking/configuring_ingress_cluster_traffic/configuring-ingress-cluster-traffic-ingress-controller.html).
-- ARO Ingress can used with [Azure Front Door](/azure/openshift/howto-secure-openshift-with-front-door).
+- ARO offers a built in [Ingress Controller and routes](https://docs.openshift.com/container-platform/latest/networking/configuring_ingress_cluster_traffic/configuring-ingress-cluster-traffic-ingress-controller.html).
+- ARO Ingress can be used with [Azure Front Door](/azure/openshift/howto-secure-openshift-with-front-door).
 - The configuration should be aligned with the egress filtering design to avoid asymmetric routing. UDRs can cause asymmetric routing (potentially), but not necessarily.
-- If [TLS termination](https://docs.openshift.com/container-platform/4.10/networking/ingress-operator.html) is required, management of TLS certificates must be considered.
+- If [TLS termination](https://docs.openshift.com/container-platform/latest/networking/ingress-operator.html) is required, management of TLS certificates must be considered.
+
+> [!IMPORTANT]
+> When you use Azure Firewall to restrict egress traffic and create a user-defined route (UDR) to force all egress traffic, make sure you create an appropriate DNAT rule in Firewall to correctly allow ingress traffic. Using Azure Firewall with a UDR breaks the ingress setup due to asymmetric routing. (The issue occurs if the ARO subnet has a default route that goes to the firewall's private IP address, but you're using a public load balancer - ingress or Kubernetes service of type: LoadBalancer). In this case, the incoming load balancer traffic is received via its public IP address, but the return path goes through the firewall's private IP address. Because the firewall is stateful, it drops the returning packet because the firewall isn't aware of an established session. To learn how to integrate Azure Firewall with your ingress or service load balancer, see [Integrate Azure Firewall with Azure Standard Load Balancer](/azure/firewall/integrate-lb).
 
 The following flow applies when using [Azure Front Door](/azure/openshift/howto-secure-openshift-with-front-door) in conjunction with ARO Private Cluster and Ingress Controller:
 
