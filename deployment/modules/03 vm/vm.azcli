@@ -57,14 +57,14 @@ az vm run-command invoke \
   --resource-group $HUBRGNAME \
   --name 'JumpBox' \
   --command-id RunPowerShellScript \
-  --scripts "https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/dry-run/deployment/script.ps1"
+  --scripts "https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/deployment/script.ps1"
 
 #################################################################
 # Reference Only: PowerShell Steps using Custom Script Extension
 #################################################################
 
 $protectedSettings = @{
-  "fileUris"= @("https://raw.githubusercontent.com/Welasco/test/main/start_script.ps1")
+  "fileUris"= @("https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/deployment/modules/03%20vm/start_script.ps1")
   "commandToExecute"= "powershell -ExecutionPolicy Unrestricted -File start_script.ps1"
 }
 Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location $LOCATION -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ProtectedSettings $protectedSettings
