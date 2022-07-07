@@ -91,3 +91,11 @@ module "frontdoor" {
   la_id = azurerm_log_analytics_workspace.la.id
   random = random_string.random.result
 }
+
+module "containerinsights" {
+  source = "./modules/containerinsights"
+
+  location = azurerm_log_analytics_workspace.la.location
+  workspace_resource_id = azurerm_log_analytics_workspace.la.id
+  workspace_name = azurerm_log_analytics_workspace.la.name
+}
