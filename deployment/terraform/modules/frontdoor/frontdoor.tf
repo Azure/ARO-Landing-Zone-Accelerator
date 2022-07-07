@@ -76,4 +76,25 @@ resource "azurerm_monitor_diagnostic_setting" "afd_diag" {
 resource "azurerm_cdn_frontdoor_endpoint" "fd" {
   name = "aro-ilb${var.random}"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fd.id
+  enabled = true
 }
+
+# This functionality has not been released yet.
+
+# The below resource has not been mereged
+# resource "azurerm_cdn_frontdoor_origin_group" "fd" {
+#   name = "aro-ilb${var.random}"
+#   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.fd.id
+#   health_probe {
+#     path = "/"
+#     protocol = "Http"
+#     request_type = "GET"
+#     interval_in_seconds = 100
+#   }
+
+#   load_balancing {
+#     sample_count = 4
+#     successful_samples_required = 3
+#     additional_latency_in_millisectonds = 50
+#   }
+# }
