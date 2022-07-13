@@ -55,6 +55,7 @@ Here are some design recommendations for ARO platform automation and DevOps:
 - Deploy using [cloud-native](/dotnet/architecture/cloud-native/introduction) options. Use [infrastructure as code](/devops/deliver/what-is-infrastructure-as-code) to deploy infrastructure and use [Helm](https://helm.sh/) and the [Operator pattern in Kubernetes](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) to deploy and maintain Kubernetes native components.
 
 - Use [GitOps](/azure/azure-arc/kubernetes/conceptual-gitops-flux2-ci-cd) to deploy and maintain applications. GitOps uses the Git repository as a single source of truth, avoiding configuration drift and increasing productivity and reliability during rollbacks and related procedures.
+  - [Red Hat OpenShift GitOps](https://docs.openshift.com/container-platform/4.10/cicd/gitops/understanding-openshift-gitops.html) can also be considered, which uses Argo CD to maintain cluster resources and for continuous integration and continuous deployment (CI/CD) of applications.
 
 - Use [Azure Key Vault provider for Secrets Store CSI Driver](/azure/azure-arc/kubernetes/tutorial-akv-secrets-provider) to protect secrets, certificates, and connection strings.
 
