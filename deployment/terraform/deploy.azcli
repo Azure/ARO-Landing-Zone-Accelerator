@@ -42,3 +42,6 @@ terraform apply \
   -var aro_sp_object_id="$SP_OBJECT_ID" \
   -var aro_sp_password="$SP_CLIENT_SECRET" \
   -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID"
+
+# Inform user that additional steps are required to complete the deployment. These must be completed from the JumpBox.
+echo "Additional steps are required to complete the deployment. These must be completed from the JumpBox. Please consult the readme file"
