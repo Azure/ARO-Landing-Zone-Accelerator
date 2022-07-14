@@ -390,19 +390,125 @@ resource "azurerm_monitor_diagnostic_setting" "fw_diag" {
   name = var.hub_name
   target_resource_id = azurerm_firewall.fw.id
   log_analytics_workspace_id = var.la_id
+  log_analytics_destination_type = "AzureDiagnostics"
 
   log {
     category = "AzureFirewallApplicationRule"
     enabled = true
+    retention_policy {
+      days = 0
+      enabled = false
+    }
   }
 
   log {
     category = "AzureFirewallNetworkRule"
     enabled = true
+    retention_policy {
+      days = 0
+      enabled = false
+    }
   }
 
   log {
     category = "AzureFirewallDnsProxy"
     enabled = true
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+
+  log {
+    category = "AZFWApplicationRule"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+  
+  log {
+    category = "AZFWApplicationRuleAggregation"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+  log {
+    category = "AZFWDnsQuery"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+  log {
+    category = "AZFWFqdnResolveFailure"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+
+  log {
+    category = "AZFWIdpsSignature"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+  log {
+    category = "AZFWNatRule"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+  log {
+    category = "AZFWNatRuleAggregation"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+  log {
+    category = "AZFWNetworkRule"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+  log {
+    category = "AZFWNetworkRuleAggregation"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+  log {
+    category = "AZFWThreatIntel"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
+
+  metric {
+  category = "AllMetrics"
+  enabled  = false
+
+    retention_policy {
+      days    = 0
+      enabled = false
+      }
   }
 }

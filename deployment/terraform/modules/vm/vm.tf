@@ -62,6 +62,13 @@ resource "azurerm_windows_virtual_machine" "jumpbox" {
     sku       = "2016-Datacenter"
     version   = "latest"
   }
+
+  lifecycle {
+    ignore_changes = [
+      admin_username,
+      admin_password
+    ]
+  }
 }
 
 resource "azurerm_virtual_machine_extension" "jumpbox" {
@@ -73,7 +80,7 @@ resource "azurerm_virtual_machine_extension" "jumpbox" {
 
   settings = <<SETTINGS
   {
-    "fileUris": ["https://raw.githubusercontent.com/Welasco/test/main/start_script.ps1"],
+    "fileUris": ["https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/deployment/modules/03%20vm/start_script.ps1"],
     "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File start_script.ps1"
   }
   SETTINGS
