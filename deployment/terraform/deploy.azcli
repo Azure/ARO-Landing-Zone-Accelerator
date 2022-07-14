@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Prerequisites Check
+if [ "$(which terraform)" == "" ]; then
+  echo "Terraform not found. Please install terraform before running this script."
+  exit 1
+fi
+
 # Check if the RedHat Openshift Provider Is Installed
 RHO_PROVIDER=$(az provider show --namespace Microsoft.RedHatOpenShift --query "[registrationState]" --output tsv)
 if [ "$RHO_PROVIDER" != "Registered" ]; then
@@ -8,3 +14,31 @@ if [ "$RHO_PROVIDER" != "Registered" ]; then
     echo "RedHat OpenShift Provider has been installed Installed"
 fi
 
+# Prompt user for an Service Principal Name and Subscription ID
+echo "Enter the Name of the Service Principal for ARO to use:"
+read -r SPNNAME
+echo "Enter the Subscription ID where you want ARO deployed:"
+read -r SUBSCRIPTIONID
+
+# Create the Service Principal
+az ad sp create-for-rbac --name $SPNNAME --scopes /subscriptions/$SUBSCRIPTIONID --role Contributor --output json > /tmp/sp.json
+
+# Set variables from the Service Principal
+SP_CLIENT_ID=$(jq -r '.appId' /tmp/sp.json)
+SP_CLIENT_SECRET=$(jq -r '.password' /tmp/sp.json)
+SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.objectId')
+
+# Set variable for ARO Provider SP Object ID
+ARO_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].objectId --output tsv)
+
+### Deploy Environment ###
+# Initialize Terraform
+terraform init
+
+# Terraform Apply
+terraform apply \
+  -var tenant_id="$SPNAME" \
+  -var subscription_id="$SUBSCRIPTIONID" \
+  -var aro_sp_object_id="$SP_OBJECT_ID" \
+  -var aro_sp_password="$SP_CLIENT_SECRET" \
+  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID"
