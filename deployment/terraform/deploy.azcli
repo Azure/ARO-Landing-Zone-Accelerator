@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Check if the RedHat Openshift Provider Is Installed
+RHO_PROVIDER=$(az provider show --namespace Microsoft.RedHatOpenShift --query "[registrationState]" --output tsv)
+if [ "$RHO_PROVIDER" != "Registered" ]; then
+    echo "RedHat OpenShift Provider Is Not Installed"
+    az provider register --namespace Microsoft.RedHatOpenShift --wait
+    echo "RedHat OpenShift Provider has been installed Installed"
+fi
+
