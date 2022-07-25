@@ -31,7 +31,7 @@ SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.objectId')
 You will also need the Service Principal object ID for the OpenShift resource provider.
 
 ```bash
-ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].objectId -o tsv)```
+ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].id -o tsv)```
 
 ## Deployment
 
