@@ -25,7 +25,7 @@ SUB_ID=<subscription id> # The ID of the subscription where ARO will be deployed
 az ad sp create-for-rbac --role Contributor --scopes /subscriptions/$SUB_ID --name $SPNAME > app-service-principal.json
 SP_CLIENT_ID=$(jq -r '.appId' app-service-principal.json)
 SP_CLIENT_SECRET=$(jq -r '.password' app-service-principal.json)
-SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.objectId')
+SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.id')
 ```
 
 You will also need the Service Principal object ID for the OpenShift resource provider.
