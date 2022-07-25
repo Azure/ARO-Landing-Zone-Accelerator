@@ -12,7 +12,7 @@ az provider show --namespace Microsoft.RedHatOpenShift -o table
 If this returns a registration status other than `registered`, the command below needs to bue run to register it with the [`az provider`](https://docs.microsoft.com/en-us/cli/azure/provider?view=azure-cli-latest) command
 
 ```bash
-az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
+az provider register --namespace Microsoft.RedHatOpenShift --wait
 ```
 
 ## Service Principals
