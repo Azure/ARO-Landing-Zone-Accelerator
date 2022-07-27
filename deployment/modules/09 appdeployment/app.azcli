@@ -39,23 +39,18 @@ oc create secret docker-registry \
 #***************************************************************************************************************************
 # Integrate Azure Key Vault
 #***************************************************************************************************************************
-# Below steps must be done from JumpBox VM
-# Create csi namespace
-oc new-project csi
-
-oc adm policy add-scc-to-user privileged system:serviceaccount:csi:secrets-store-csi-driver
-oc adm policy add-scc-to-user privileged system:serviceaccount:csi:csi-secrets-store-provider-azure
-
-# Integrate keyvault
-helm repo add csi-secrets-store-provider-azure https://azure.github.io/secrets-store-csi-driver-provider-azure/charts
-helm repo update
-helm install csi csi-secrets-store-provider-azure/csi-secrets-store-provider-azure -n csi --set secrets-store-csi-driver.syncSecret.enabled=true
+az k8s-extension create --name akvsecretsprovider \
+    --cluster-name $AROCLUSTER \
+    --resource-group $SPOKERGNAME \
+    --cluster-type connectedClusters \
+    --extension-type Microsoft.AzureKeyVaultSecretsProvider 
 
 # Create a service principal to access keyvault
 SERVICE_PRINCIPAL_NAME="service-principal-name" # Ex: fta-aro-akv-sp
 SERVICE_PRINCIPAL_CLIENT_SECRET="$(az ad sp create-for-rbac --skip-assignment --name $SERVICE_PRINCIPAL_NAME --query 'password' -o tsv)"
 SERVICE_PRINCIPAL_CLIENT_ID="$(az ad sp list --display-name $SERVICE_PRINCIPAL_NAME --query [0].'appId' -o tsv)"
 
+# Below steps must be done from JumpBox VM
 az keyvault set-policy -n $KV_NAME --secret-permissions get --spn ${SERVICE_PRINCIPAL_CLIENT_ID}
 
 # Create OC Secret
@@ -76,7 +71,7 @@ TENANT_ID=$(az account show --query tenantId -o tsv)
 oc project ratingsapp
 
 cat <<EOF | oc apply -f -
-apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+apiVersion: secrets-store.csi.x-k8s.io/v1
 kind: SecretProviderClass
 metadata:
   name: mongo-secret-csi
@@ -187,13 +182,12 @@ oc adm policy add-scc-to-user privileged \
 oc adm policy add-scc-to-user privileged \
    system:serviceaccount:ratingsapp:svcrattingsapp
 
+# Deploy ratings service account
+oc apply -f 0-ratings-serviceaccount.yaml -n ratingsapp
+
 # Fix for unable to pull image from ACR
 # Failed to pull image "aroacr10737.azurecr.io/ratings-api:v1": rpc error: code = Unknown desc = unable to retrieve auth token: invalid username/password: unauthorized: authentication required, visit https://aka.ms/acr/authorization for more information.
 oc secrets link svcrattingsapp acr-secret --for=pull,mount -n ratingsapp
-
-
-# Deploy ratings service account
-oc apply -f 0-ratings-serviceaccount.yaml -n ratingsapp
 
 # Deploy API
 # Change the Azure Container Registry name in the following yaml file
