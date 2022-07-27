@@ -35,7 +35,7 @@ module "vnet" {
 module "kv" {
   source = "./modules/keyvault"
 
-  kv_name             = var.hub_name
+  kv_name             = "${var.hub_name}${random.random.value}"
   location            = var.location
   resource_group_name = azurerm_resource_group.hub.name
   vm_admin_username   = random_string.user.result
