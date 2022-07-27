@@ -90,6 +90,10 @@ module "frontdoor" {
   aro_worker_subnet_id = module.vnet.worker_subnet_id
   la_id = azurerm_log_analytics_workspace.la.id
   random = random_string.random.result
+  
+  depends_on = [
+    module.aro
+  ]
 }
 
 module "containerinsights" {

@@ -2,7 +2,7 @@
 
 data "external" "aro_ilb_name" {
   program = [
-    "az", "network", "lb", "list", "-g", "openshift-cluster-aro", "--query", "[0].{name:name}", "-o", "json"
+    "az", "network", "lb", "list", "-g", var.aro_resource_group_name, "--query", "[0].{name:name}", "-o", "json"
   ]
 }
 
