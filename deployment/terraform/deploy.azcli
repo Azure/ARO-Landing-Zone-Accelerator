@@ -29,7 +29,7 @@ SP_CLIENT_SECRET=$(jq -r '.password' /tmp/sp.json)
 SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.objectId')
 
 # Set variable for ARO Provider SP Object ID
-ARO_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].objectId --output tsv)
+ARO_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].id" -o tsv)
 
 ### Deploy Environment ###
 # Initialize Terraform
