@@ -54,14 +54,10 @@ terraform plan \
   -var subscription_id="$SUB_ID" \
   -var aro_sp_object_id="$SP_OBJECT_ID" \
   -var aro_sp_password="$SP_CLIENT_SECRET" \
-  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID"
+  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID" \
+  -out aro-deployment.tfplan
 
-terraform apply \
-  -var tenant_id="$TENANT_ID" \
-  -var subscription_id="$SUB_ID" \
-  -var aro_sp_object_id="$SP_OBJECT_ID" \
-  -var aro_sp_password="$SP_CLIENT_SECRET" \
-  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID"
+terraform apply aro-deployment.tfplan
 ```
 
 ## Known Issues
