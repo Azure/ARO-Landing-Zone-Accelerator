@@ -27,6 +27,8 @@ module "vnet" {
   spoke_name    = var.spoke_name
   spoke_rg_name = azurerm_resource_group.spoke.name
 
+  diag_name = "${var.hub_name}${random_string.random.result}"
+
   location = var.location
   la_id    = azurerm_log_analytics_workspace.la.id
 }
@@ -35,7 +37,7 @@ module "vnet" {
 module "kv" {
   source = "./modules/keyvault"
 
-  kv_name             = "${var.hub_name}${random.random.value}"
+  kv_name             = "${var.hub_name}${random_string.random.result}"
   location            = var.location
   resource_group_name = azurerm_resource_group.hub.name
   vm_admin_username   = random_string.user.result
