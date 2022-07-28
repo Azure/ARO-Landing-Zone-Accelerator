@@ -37,6 +37,7 @@ terraform init
 
 # Terraform Apply
 terraform apply \
+  -auto-approve \
   -var tenant_id="$SPNAME" \
   -var subscription_id="$SUBSCRIPTIONID" \
   -var aro_sp_object_id="$SP_OBJECT_ID" \
