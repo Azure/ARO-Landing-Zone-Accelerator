@@ -21,6 +21,7 @@ echo "Enter the Subscription ID where you want ARO deployed:"
 read -r SUBSCRIPTIONID
 
 # Create the Service Principal
+# TODO: Add check to see if the SPN already exists
 az ad sp create-for-rbac --name $SPNNAME --scopes /subscriptions/$SUBSCRIPTIONID --role Contributor --output json > /tmp/sp.json
 
 # Set variables from the Service Principal
