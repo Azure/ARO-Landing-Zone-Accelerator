@@ -19,6 +19,7 @@ AFD_NAME='aroafd'
 AFD_PLS_NAME='aro-pls'
 AFD_APP_CUSTOM_DOMAIN_NAME='ratingsapp-<domain>-<name>' # Ex: ratingsapp-mydomain-com
 ARO_APP_FQDN='ratingsapp.<domain>.<name>' # Ex: ratingsapp.mydomain.com
+ARO_AAD_APP_NAME='aro-aad-auth-sp-'$uniqueId
 
 # VNet Name and IP Addresses
 HUBVNET_NAME='hub-vnet'

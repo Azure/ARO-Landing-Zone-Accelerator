@@ -7,46 +7,51 @@ apiServer=$(az aro show -g $SPOKERGNAME -n $AROCLUSTER --query apiserverProfile.
 webConsole=$(az aro show -g $SPOKERGNAME -n $AROCLUSTER --query consoleProfile.url -o tsv)
 
 oauthCallbackURL=https://oauth-openshift.apps.$domain.$location.aroapp.io/oauth2callback/AAD
-# Generate a random number for client secret
-let randomNum=$RANDOM*$RANDOM*$RANDOM
-client_secret=FTAaro@Hack$randomNum
 
 # Create an Azure Active Directory application and retrieve the created application identifier.
-app_id=$(az ad app create \
+client_id=$(az ad app create \
   --query appId -o tsv \
-  --display-name fta-aro-auth-$uniqueId \
-  --reply-urls $oauthCallbackURL \
-  --password $client_secret)
+  --display-name $ARO_AAD_APP_NAME \
+  --web-redirect-uris $oauthCallbackURL)
+
+client_secret=$(az ad app credential reset --id $client_id \
+  --append --display-name aro-secret \
+  --years 1 \
+  --query password --output tsv)  
 
 # Retrieve the tenant ID of the subscription that owns the application.
 tenant_id=$(az account show --query tenantId -o tsv)
 
 # Create a manifest.json file to configure the Azure Active Directory application.
 cat > manifest.json<< EOF
-[{
-  "name": "upn",
-  "source": null,
-  "essential": false,
-  "additionalProperties": []
-},
 {
-"name": "email",
-  "source": null,
-  "essential": false,
-  "additionalProperties": []
-}]
+  "idToken": [
+    {
+      "name": "upn",
+      "source": null,
+      "essential": false,
+      "additionalProperties": []
+    },
+    {
+    "name": "email",
+      "source": null,
+      "essential": false,
+      "additionalProperties": []
+    }
+  ]
+}
 EOF
 
 # Update the Azure Active Directory application's optionalClaims with a manifest
 az ad app update \
-  --set optionalClaims.idToken=@manifest.json \
-  --id $app_id
+  --optional-claims @manifest.json \
+  --id $client_id
 
 # Add permission for the Azure Active Directory Graph.User.Read scope to enable sign in and read user profile.
-az ad app permission add \
+az ad app permission grant \
  --api 00000002-0000-0000-c000-000000000000 \
  --api-permissions 311a71cc-e848-46a1-bdf8-97ff7156d8e6=Scope \
- --id $app_id
+ --id $client_id
 
 # The previous command may show the following warning message:
 # Invoking "az ad app permission grant --id xxxxxxxxxxxxxx --api 00000002-0000-0000-c000-000000000000" is needed to make the change effective
