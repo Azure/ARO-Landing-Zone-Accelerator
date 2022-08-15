@@ -12,6 +12,11 @@ variable "spoke_rg_name" {
   default = "spoke-aro"
 }
 
+variable "aro_name" {
+  type = string
+  default = "aro"
+}
+
 variable "afd_pls_name" {
   type = string
   default = "aro-pls"

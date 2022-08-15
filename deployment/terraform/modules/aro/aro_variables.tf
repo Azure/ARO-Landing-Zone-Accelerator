@@ -20,6 +20,10 @@ variable "spoke_vnet_id" {
   type = string
 }
 
+variable "hub_vnet_id" {
+  type = string
+}
+
 variable "master_subnet_id" {
   type = string
 }
@@ -32,18 +36,18 @@ variable "location" {
   type = string
 }
 
-variable "aro_sp_object_id" {
-  type = string
-}
+# variable "aro_sp_object_id" {
+#   type = string
+# }
 
-variable "aro_sp_password" {
-  type = string
-  sensitive = true
-}
+# variable "aro_sp_password" {
+#   type = string
+#   sensitive = true
+# }
 
-variable "aro_rp_object_id" {
-  type = string
-}
+# variable "aro_rp_object_id" {
+#   type = string
+# }
 
 variable "roles" {
   description = "Roles to be assigned to the Principal"

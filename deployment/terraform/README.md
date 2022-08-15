@@ -17,23 +17,7 @@ az provider register --namespace Microsoft.RedHatOpenShift --wait
 
 ## Service Principals
 
-ARO needs a service principal to deploy. the command below will create the SP.
-
-```bash
-SPNAME=<service_principal> # The name of the SP ARO will use
-SUB_ID=<subscription id> # The ID of the subscription where ARO will be deployed
-TENANT_ID=<Tenant ID> # The ID of the Azure tenant in which ARO is deployed
-az ad sp create-for-rbac --role Contributor --scopes /subscriptions/$SUB_ID --name $SPNAME > app-service-principal.json
-SP_CLIENT_ID=$(jq -r '.appId' app-service-principal.json)
-SP_CLIENT_SECRET=$(jq -r '.password' app-service-principal.json)
-SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.id')
-```
-
-You will also need the Service Principal object ID for the OpenShift resource provider.
-
-```bash
-ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].id -o tsv)
-```
+Terraform will create a service principal for the cluster. This service principal will be used to authenticate to the cluster.
 
 ## Deployment
 
@@ -50,11 +34,6 @@ Run the following commands to deploy the environment.
 terraform init
 
 terraform plan \
-  -var tenant_id="$TENANT_ID" \
-  -var subscription_id="$SUB_ID" \
-  -var aro_sp_object_id="$SP_OBJECT_ID" \
-  -var aro_sp_password="$SP_CLIENT_SECRET" \
-  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID" \
   -out aro-deployment.tfplan
 
 terraform apply aro-deployment.tfplan
@@ -62,4 +41,4 @@ terraform apply aro-deployment.tfplan
 
 ## Known Issues
 
-There is no ARO Terraform provider so this deployment uses an ARM template for the ARO deployment. This means that this is a one time install. Running this in a pipeline or as a state managed deployment will result in errors.
+
