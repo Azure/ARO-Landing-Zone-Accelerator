@@ -1,22 +1,5 @@
-# There are lots of items missting from the Azure FD TF provider: https://github.com/hashicorp/terraform-provider-azurerm/issues?page=2&q=is%3Aissue+is%3Aopen+frontdoor
-
-# data "external" "aro_resource_group" {
-#   program = [
-#     "az", "aro", "show", "--name", var.aro_name,
-#     "--resource-group", var.spoke_rg_name, "--query",
-#     "clusterProfile.{resourceGroupId:resourceGroupId}",
-#     "-o", "json"
-#   ]
-# }
-
-data "external" "aro_ilb_name" {
-  program = [
-    "az", "network", "lb", "list", "-g", var.aro_resource_group_name, "--query", "[0].{name:name}", "-o", "json"
-  ]
-}
-
 data "azurerm_lb" "aro_ilb" {
-  name = data.external.aro_ilb_name.result.name
+  name = var.aro_cluster_lb_name
   resource_group_name = var.aro_resource_group_name
 }
 

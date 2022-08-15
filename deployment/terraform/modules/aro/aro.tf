@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azureopenshift = {
       source    = "rh-mobb/azureopenshift"
-      version   = "~>0.0.5"
+      version   = "~>0.0.6"
     }
   }
 }

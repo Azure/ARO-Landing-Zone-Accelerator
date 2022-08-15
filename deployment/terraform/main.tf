@@ -88,9 +88,10 @@ module "frontdoor" {
   la_id = azurerm_log_analytics_workspace.la.id
   random = random_string.random.result
   aro_resource_group_name = basename(module.aro.cluster_resource_group_id)
-
+  aro_cluster_lb_name = "${module.aro.cluster_name}-${module.aro.cluster_internal_id}-internal"
   spoke_rg_name = var.spoke_name
-  aro_name = "openshift-cluster-${var.base_name}"
+  aro_name = module.aro.cluster_name
+
 
   depends_on = [
     module.aro
