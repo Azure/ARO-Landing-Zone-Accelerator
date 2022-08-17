@@ -1,0 +1,4 @@
+app-service-principal.json
+*.tfplan
+*.tfvars
+

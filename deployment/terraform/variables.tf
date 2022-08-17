@@ -1,13 +1,5 @@
 # Variables
 
-variable "tenant_id" {
-  type = string
-}
-
-variable "subscription_id" {
-  type = string
-}
-
 variable "location" {
   type    = string
   default = "eastus"
@@ -21,6 +13,11 @@ variable "hub_name" {
 variable "spoke_name" {
   type    = string
   default = "spoke-aro"
+}
+
+variable "base_name" {
+  type = string
+  default = "aro"
 }
 
 resource "random_password" "pw" {
@@ -53,16 +50,4 @@ resource "random_string" "random" {
   keepers = {
     location = var.location
   }
-}
-
-variable "aro_sp_object_id" {
-  type = string
-}
-
-variable "aro_sp_password" {
-  type = string
-}
-
-variable "aro_rp_object_id" {
-  type = string
 }

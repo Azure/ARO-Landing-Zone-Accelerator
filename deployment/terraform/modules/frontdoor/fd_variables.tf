@@ -12,6 +12,11 @@ variable "spoke_rg_name" {
   default = "spoke-aro"
 }
 
+variable "aro_name" {
+  type = string
+  default = "aro"
+}
+
 variable "afd_pls_name" {
   type = string
   default = "aro-pls"
@@ -35,6 +40,16 @@ variable "random" {
 }
 
 variable "aro_resource_group_name" {
-  type = string
+  type    = string
   default = "openshift-cluster-aro"
+}
+
+variable "aro_cluster_lb_name" {
+  type    = string
+  default = "aro-internal-id"
+}
+
+variable "aro_cluster_name" {
+  type    = string
+  default = "aro-cluster"
 }

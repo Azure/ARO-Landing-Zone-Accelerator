@@ -70,13 +70,10 @@ module "aro" {
 
   location = var.location
 
-  spoke_vnet_id = module.vnet.spoke_vnet_id
+  hub_vnet_id      = module.vnet.hub_vnet_id
+  spoke_vnet_id    = module.vnet.spoke_vnet_id
   master_subnet_id = module.vnet.master_subnet_id
   worker_subnet_id = module.vnet.worker_subnet_id
-
-  aro_sp_object_id = var.aro_sp_object_id
-  aro_sp_password = var.aro_sp_password
-  aro_rp_object_id = var.aro_rp_object_id
 
   depends_on = [
     module.vnet
@@ -90,7 +87,12 @@ module "frontdoor" {
   aro_worker_subnet_id = module.vnet.worker_subnet_id
   la_id = azurerm_log_analytics_workspace.la.id
   random = random_string.random.result
-  
+  aro_resource_group_name = basename(module.aro.cluster_resource_group_id)
+  aro_cluster_lb_name = "${module.aro.cluster_name}-${module.aro.cluster_internal_id}-internal"
+  spoke_rg_name = var.spoke_name
+  aro_name = module.aro.cluster_name
+
+
   depends_on = [
     module.aro
   ]
