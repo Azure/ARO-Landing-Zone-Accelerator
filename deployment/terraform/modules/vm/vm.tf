@@ -80,7 +80,7 @@ resource "azurerm_virtual_machine_extension" "jumpbox" {
 
   settings = <<SETTINGS
   {
-    "fileUris": ["https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/terraform/deployment/script.ps1?token=GHSAT0AAAAAABXBWKU7FSYMIF5RATN4CHTAYXJVGJQ"],
+    "fileUris": ["https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/terraform/deployment/terraform/modules/vm/start_script.ps1?token=GHSAT0AAAAAABXBWKU65G3ZBU46JIP2TN3QYX5PMDQ"],
     "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File start_script.ps1"
   }
   SETTINGS
