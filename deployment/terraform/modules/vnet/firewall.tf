@@ -387,7 +387,7 @@ resource "azurerm_virtual_network_dns_servers" "spoke" {
 
 # Diagnostic Settings
 resource "azurerm_monitor_diagnostic_setting" "fw_diag" {
-  name = var.hub_name
+  name = var.diag_name
   target_resource_id = azurerm_firewall.fw.id
   log_analytics_workspace_id = var.la_id
   log_analytics_destination_type = "AzureDiagnostics"

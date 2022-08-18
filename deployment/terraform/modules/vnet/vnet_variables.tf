@@ -18,6 +18,10 @@ variable "hub_name" {
   type = string
 }
 
+variable "diag_name" {
+  type = string
+}
+
 variable "hub_prefix" {
   type = list
   default = ["10.0.0.0/16"]

@@ -1,64 +1,25 @@
 # Terraform Deployment
+
 This Terraform deployment uses the `azurerm_resource_group_template_deployment` for the actual ARO deployment. Update to a native provider is currently blocked but is being tracked in [Issue #19](https://github.com/Azure/ARO-Landing-Zone-Accelerator/issues/19). This means that this deployment will only deploy ARO. It cannot be managed via IAC after the initial deployment. Changes to the ARM template or parameters will be ignored in subsequent deployments.
 
-## RedHat OpenShift Provider
+This deployment uses a single Azure CLI script to do the following:
 
-The RedHat OpenShift provider is required in the subscription you want to deploy this solution into. The command below will show if the provider has been registered in the subscription.
+* Checks to if Terraform is installed. Terraform is required for this deployment. More information on how to install Terraform can be found [here](https://www.terraform.io/docs/commands/install.html).
+* Checks your Azure Subscription to see if the RedHatOpenShift provider is enabled. If it is not enabled, it will be enabled.
+* Asks the user to provide the name to be used for the Service Principal it will create.
+* Asks the user to provide the Subscription ID where ARO is to be deployed.
+* Creates the SP based on the name provided.
+* Gets the SP for the ARO Provider
+* Initializes Terraform
+* Deploys the environment
 
-```bash
-az provider show --namespace Microsoft.RedHatOpenShift -o table
-```
+## Post Deployment Tasks
 
-If this returns a registration status other than `registered`, the command below needs to bue run to register it with the [`az provider`](https://docs.microsoft.com/en-us/cli/azure/provider?view=azure-cli-latest) command
+There are a few tasks that need to be completed after the deployment. These scripts must be run from the Jumpbox that is created during the deployment. These scripts are listed below.
 
-```bash
-az provider register --namespace Microsoft.RedHatOpenShift --wait
-```
-
-## Service Principals
-
-ARO needs a service principal to deploy. the command below will create the SP.
-
-```bash
-SPNAME=<service_principal> # The name of the SP ARO will use
-SUB_ID=<subscription id> # The ID of the subscription where ARO will be deployed
-TENANT_ID=<Tenant ID> # The ID of the Azure tenant in which ARO is deployed
-az ad sp create-for-rbac --role Contributor --scopes /subscriptions/$SUB_ID --name $SPNAME > app-service-principal.json
-SP_CLIENT_ID=$(jq -r '.appId' app-service-principal.json)
-SP_CLIENT_SECRET=$(jq -r '.password' app-service-principal.json)
-SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.id')
-```
-
-You will also need the Service Principal object ID for the OpenShift resource provider.
-
-```bash
-ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].id -o tsv)
-```
-
-## Deployment
-
-Clone the repository and navigate to the `deployment/terraform` directory.
-```bash
-git clone https://github.com/Azure/ARO-Landing-Zone-Accelerator
-
-cd deployment/terraform/
-```
-
-Run the following commands to deploy the environment.
-
-```bash
-terraform init
-
-terraform plan \
-  -var tenant_id="$TENANT_ID" \
-  -var subscription_id="$SUB_ID" \
-  -var aro_sp_object_id="$SP_OBJECT_ID" \
-  -var aro_sp_password="$SP_CLIENT_SECRET" \
-  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID" \
-  -out aro-deployment.tfplan
-
-terraform apply aro-deployment.tfplan
-```
+* [AAD Integration](../modules/07%20aad/)
+* [Container Insights Integration](../modules/08%20container%20insights/)
+* [Application Deployment](../modules/09%20application/)
 
 ## Known Issues
 
