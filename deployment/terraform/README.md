@@ -23,4 +23,4 @@ There are a few tasks that need to be completed after the deployment. These scri
 
 ## Known Issues
 
-There is no ARO Terraform provider so this deployment uses an ARM template for the ARO deployment. This means that this is a one time install. Running this in a pipeline or as a state managed deployment will result in errors.
+There is no ARO Terraform provider so this deployment uses an ARM template for the ARO deployment. This means that this is a one time install. Running this Terraform deployment as Infrastructure as Code will allow management of the environment supporting ARO but not ARO itself. Changes made to ARO after the initial deployment will be ignored.
