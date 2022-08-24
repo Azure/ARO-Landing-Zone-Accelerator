@@ -9,7 +9,7 @@ fi
 # Check if the RedHat Openshift Provider Is Installed
 RHO_PROVIDER=$(az provider show --namespace Microsoft.RedHatOpenShift --query "[registrationState]" --output tsv)
 if [ "$RHO_PROVIDER" != "Registered" ]; then
-    echo "RedHat OpenShift Provider Is Not Installed"
+    echo "RedHat OpenShift Provider Is Not Installed, installing..."
     az provider register --namespace Microsoft.RedHatOpenShift --wait
     echo "RedHat OpenShift Provider has been installed Installed"
 fi
@@ -21,22 +21,24 @@ echo "Enter the Subscription ID where you want ARO deployed:"
 read -r SUBSCRIPTIONID
 
 # Create the Service Principal
-# TODO: Add check to see if the SPN already exists
+echo "==> Creating Service Principal or updating it if it already exists..."
 az ad sp create-for-rbac --name $SPNNAME --scopes /subscriptions/$SUBSCRIPTIONID --role Contributor --output json > /tmp/sp.json
-
 # Set variables from the Service Principal
 SP_CLIENT_ID=$(jq -r '.appId' /tmp/sp.json)
 SP_CLIENT_SECRET=$(jq -r '.password' /tmp/sp.json)
 SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.objectId')
+
 
 # Set variable for ARO Provider SP Object ID
 ARO_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].id" -o tsv)
 
 ### Deploy Environment ###
 # Initialize Terraform
+echo "==> Initializing Terraform"
 terraform init
 
 # Terraform Apply
+echo "==> Applying Terraform"
 terraform apply \
   -auto-approve \
   -var tenant_id="$SPNAME" \
