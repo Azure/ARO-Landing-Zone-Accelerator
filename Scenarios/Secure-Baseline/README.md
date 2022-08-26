@@ -6,7 +6,7 @@ There are various ways to secure your ARO cluster. From a network security persp
 
 By the end of this, you would have deployed a secure ARO cluster, compliant with ARO landing zone accelerator guidance and best practices. We will also be deploying a workload known as the Ratings app that is also featured in the [Azure Kubernetes Services Workshop](https://docs.microsoft.com/en-us/learn/modules/aks-workshop/). Check out the workshop for some intermediate level training on AKS.
 
-For this scenario, we have various IaC technology as well an the Azure CLI option that you can choose from depending on your preference. At this time only the Terraform version is available in IaC. 
+For this scenario, we have various IaC technology as well as the Azure CLI option that you can choose from depending on your preference. At this time only the Terraform version is available in IaC.
 
 ## Deployment
 
@@ -21,6 +21,7 @@ Below is the architecture of this scenario:
 The architecture is very similar to the [AKS secure baseline private cluster](https://github.com/Azure/AKS-Landing-Zone-Accelerator/tree/main/Scenarios/AKS-Secure-Baseline-PrivateCluster) architecture with minor tweaks to optimize it for ARO. The main differences are as follows:
 1. The use of Front door as opposed to application gateway to take advantage of more of the ARO features including its proprietary ingress controller
 1. The use for Azure ARC for Kubernetes in order to take advantage of native monitoring of the cluster
+1. The use of CosmosDB as opposed to using a database pod
 
 For more information about the architecture, please check out the [ARO Landing Zone Accelerator documentation](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/app-platform/azure-red-hat-openshift/landing-zone-accelerator) on Microsoft Docs.
 

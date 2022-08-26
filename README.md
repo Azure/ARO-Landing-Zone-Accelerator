@@ -1,6 +1,6 @@
 # ARO Reference Architecture
 
-![Architectural diagram for the secure baseline scenario.](./CriticalDesignAreas/media/aro_landing_zone_Architecture.png)
+![Architectural diagram for the secure baseline scenario.](./media/aro_landing_zone_Architecture.png)
 
 This repo is for building Azure Red Hat OpenShift reference architecture and to integrate with other Azure Service
 
