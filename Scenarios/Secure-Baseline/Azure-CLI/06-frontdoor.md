@@ -2,4 +2,4 @@
 
 ### Next step
 
-:arrow_forward: [Deploy vnets](./03-network-hub.md)
+:arrow_forward: [Deploy AAD and configure RBAC](./07-aad.md)

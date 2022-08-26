@@ -8,6 +8,7 @@ This section is organized using folders that match the steps outlined below. Mak
 4. [Deploy Supporting services](./04-supporting-services.md)
 5. [Deploy ARO](./05-aro.md)
 6. [Deploy front door](./06-frontdoor.md)
-7. [Deploy AAD and configure RBAC](./07-/aad.md)
+7. [Deploy AAD and configure RBAC](./07-aad.md)
 8. [Configure container insights](./08-container-insights.md)
 1. [Deploy Sample app](./09-app-deployment.md)
+1. [Cleanup]()
