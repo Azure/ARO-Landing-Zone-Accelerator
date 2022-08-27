@@ -2,6 +2,14 @@
 
 This Terraform deployment uses the `azurerm_resource_group_template_deployment` for the actual ARO deployment. Update to a native provider is currently blocked but is being tracked in [Issue #19](https://github.com/Azure/ARO-Landing-Zone-Accelerator/issues/19). This means that this deployment will only deploy ARO. It cannot be managed via IAC after the initial deployment. Changes to the ARM template or parameters will be ignored in subsequent deployments.
 
+
+## Prerequisites
+Before you run the commands, you need to create a service principal that will be used by ARO in Azure. You also need to have the following installed:
+* [jq](https://stedolan.github.io/jq/)
+* [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+
+## Deployment steps
+To run the deployment, execute the commands in "Scenarios\Secure-Baseline\terraform\deploy.azcli" file. 
 This deployment uses a single Azure CLI script to do the following:
 
 * Checks to if Terraform is installed. Terraform is required for this deployment. More information on how to install Terraform can be found [here](https://www.terraform.io/docs/commands/install.html).
@@ -15,11 +23,16 @@ This deployment uses a single Azure CLI script to do the following:
 
 ## Post Deployment Tasks
 
-There are a few tasks that need to be completed after the deployment. These scripts must be run from the Jumpbox that is created during the deployment. These scripts are listed below.
+There are a few tasks that need to be completed after the deployment. These scripts must be run from the Jumpbox that is created during the deployment. These scripts are in the files in the folders listed below.
 
-* [AAD Integration](../modules/07%20aad/)
-* [Container Insights Integration](../modules/08%20container%20insights/)
-* [Application Deployment](../modules/09%20application/)
+* [AAD Integration](../Azure-CLI/07-aad-RBAC)
+* [Container Insights Integration](../Azure-CLI/08-containerinsights)
+* [Application Deployment](../Azure-CLI/09-appdeployment)
+
+## Cleanup
+In this step you will delete all the resources that were created during the previous steps.
+
+Execute the code in the "Scenarios\Secure-Baseline\delete.azcli" file.
 
 ## Known Issues
 
