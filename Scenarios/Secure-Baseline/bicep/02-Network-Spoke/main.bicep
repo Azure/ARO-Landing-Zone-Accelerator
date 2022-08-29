@@ -122,7 +122,7 @@ module privatednsACRZone 'modules/vnet/privatednszone.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'privatednsACRZone'
   params: {
-    privateDNSZoneName: 'privatelink.azureacr.io'
+    privateDNSZoneName: 'privatelink.${toLower(location)}.azureacr.io'
   }
 }
 
@@ -139,7 +139,7 @@ module privatednsVaultZone 'modules/vnet/privatednszone.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'privatednsVaultZone'
   params: {
-    privateDNSZoneName: 'privatelink.vaultcore.azure.net'
+    privateDNSZoneName: 'privatelink.${toLower(location)}.vaultcore.azure.net'
   }
 }
 
@@ -156,7 +156,7 @@ module privatednsSAZone 'modules/vnet/privatednszone.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'privatednsSAZone'
   params: {
-    privateDNSZoneName: 'privatelink.file.core.windows.net'
+    privateDNSZoneName: 'privatelink.${toLower(location)}.file.core.windows.net'
   }
 }
 
@@ -173,7 +173,7 @@ module privatednsAROZone 'modules/vnet/privatednszone.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'privatednsAROZone'
   params: {
-    privateDNSZoneName: 'privatelink.${toLower(location)}.azmk8s.io'
+    privateDNSZoneName: 'privatelink.${toLower(location)}.arolza.io'
   }
 }
 

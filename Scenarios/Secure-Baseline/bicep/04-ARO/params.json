@@ -1,0 +1,60 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "eastus"
+      },
+      "domain": {
+        "value": "arolza.io"
+      },      
+      "rhps": {
+        "value": "insert redhat pull secret here"
+      },
+      "clusterVnetName": {
+        "value": "spoke-aro"
+      },
+      "masterVmSize": {
+        "value": "Standard_D8s_v3"
+      },
+      "workerVmSize": {
+        "value": "Standard_D4s_v3"
+      },
+      "workerVmDiskSize": {
+        "value": 128
+      },
+      "workerCount": {
+        "value": 3
+      },
+      "podCidr": {
+        "value": "10.128.0.0/14"
+      },
+      "serviceCidr": {
+        "value": "172.30.0.0/16"
+      },
+      "clusterName": {
+        "value": "cluster"
+      },
+      "apiServerVisibility": {
+        "value": "private"
+      },
+      "ingressVisibility": {
+        "value": "private"
+      },
+      "aadClientId": {
+        "value": "insert_value_here"
+      },
+      "rpObjectId": {
+        "value": "insert_value_here"
+      },
+      "aadClientSecret": {
+        "value": "insert_value_here"
+      },
+      "tags": {
+        "value": {
+           "env": "Dev",
+           "dept": "Ops" 
+        }
+      }
+    }
+}        

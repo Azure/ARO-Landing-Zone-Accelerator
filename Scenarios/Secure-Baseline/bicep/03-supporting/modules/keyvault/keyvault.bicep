@@ -15,7 +15,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2019-09-01' = {
     tenantId: tenantId
     enabledForDiskEncryption: true
     softDeleteRetentionInDays: 7
-    enablePurgeProtection: true
+    enablePurgeProtection: false
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Deny'
