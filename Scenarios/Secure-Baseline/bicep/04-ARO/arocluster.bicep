@@ -1,48 +1,24 @@
-@description('Location')
-param location string = 'eastus'
+param location string
+param domain string
+param rhps string
+param clusterVnetName string
+param masterVmSize string
+param workerVmSize string
+param podCidr string
+param serviceCidr string
+param clusterName string
+param aadClientId string
+param rpObjectId string
+param aadObjectId string
 
-@description('Domain Prefix')
-param domain string = ''
+@secure()
+param aadClientSecret string
 
-@description('Pull secret from cloud.redhat.com. The json should be input as a string')
-param pullSecret string
-
-@description('Name of ARO vNet')
-param clusterVnetName string = 'aro-vnet'
-
-@description('ARO vNet Address Space')
-param clusterVnetCidr string = '10.100.0.0/15'
-
-@description('Worker node subnet address space')
-param workerSubnetCidr string = '10.100.70.0/23'
-
-@description('Master node subnet address space')
-param masterSubnetCidr string = '10.100.76.0/24'
-
-@description('Master Node VM Type')
-param masterVmSize string = 'Standard_D8s_v3'
-
-@description('Worker Node VM Type')
-param workerVmSize string = 'Standard_D4s_v3'
-
-@description('Worker Node Disk Size in GB')
 @minValue(128)
 param workerVmDiskSize int = 128
 
-@description('Number of Worker Nodes')
-@minValue(3)
-param workerCount int = 3
-
-@description('Cidr for Pods')
-param podCidr string = '10.128.0.0/14'
-
-@metadata({
-  description: 'Cidr of service'
-})
-param serviceCidr string = '172.30.0.0/16'
-
-@description('Unique name for the cluster')
-param clusterName string
+@minValue(2)
+param workerCount int
 
 @description('Tags for resources')
 param tags object = {
@@ -50,34 +26,36 @@ param tags object = {
   dept: 'Ops'
 }
 
-@description('Api Server Visibility')
 @allowed([
   'Private'
   'Public'
 ])
-param apiServerVisibility string = 'Public'
+param apiServerVisibility string
 
 @description('Ingress Visibility')
 @allowed([
   'Private'
   'Public'
 ])
-param ingressVisibility string = 'Public'
-
-@description('The Application ID of an Azure Active Directory client application')
-param aadClientId string
-
-@description('The Object ID of an Azure Active Directory client application')
-param aadObjectId string
-
-@description('The secret of an Azure Active Directory client application')
-@secure()
-param aadClientSecret string
-
-@description('The ObjectID of the Resource Provider Service Principal')
-param rpObjectId string
+param ingressVisibility string
 
 var contribRole = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
+
+resource clusterVnetName_Microsoft_Authorization_id_name_aadObjectId 'Microsoft.Network/virtualNetworks/providers/roleAssignments@2018-09-01-preview' = {
+  name: '${clusterVnetName}/Microsoft.Authorization/${guid(resourceGroup().id, deployment().name, aadObjectId)}'
+  properties: {
+    roleDefinitionId: contribRole
+    principalId: aadObjectId
+  }
+}
+
+resource clusterVnetName_Microsoft_Authorization_id_name_rpObjectId 'Microsoft.Network/virtualNetworks/providers/roleAssignments@2018-09-01-preview' = {
+  name: '${clusterVnetName}/Microsoft.Authorization/${guid(resourceGroup().id, deployment().name, rpObjectId)}'
+  properties: {
+    roleDefinitionId: contribRole
+    principalId: rpObjectId
+  }
+}
 
 resource clusterName_resource 'Microsoft.RedHatOpenShift/OpenShiftClusters@2020-04-30' = {
   name: clusterName
@@ -87,7 +65,7 @@ resource clusterName_resource 'Microsoft.RedHatOpenShift/OpenShiftClusters@2020-
     clusterProfile: {
       domain: domain
       resourceGroupId: '/subscriptions/${subscription().subscriptionId}/resourceGroups/aro-${domain}-${location}'
-      pullSecret: pullSecret
+      pullSecret: rhps
     }
     networkProfile: {
       podCidr: podCidr
@@ -121,4 +99,3 @@ resource clusterName_resource 'Microsoft.RedHatOpenShift/OpenShiftClusters@2020-
     ]
   }
 }
-
