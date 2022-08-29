@@ -26,7 +26,7 @@ az ad sp create-for-rbac --name $SPNNAME --scopes /subscriptions/$SUBSCRIPTIONID
 # Set variables from the Service Principal
 SP_CLIENT_ID=$(jq -r '.appId' /tmp/sp.json)
 SP_CLIENT_SECRET=$(jq -r '.password' /tmp/sp.json)
-SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.objectId')
+SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.id')
 
 
 # Set variable for ARO Provider SP Object ID
