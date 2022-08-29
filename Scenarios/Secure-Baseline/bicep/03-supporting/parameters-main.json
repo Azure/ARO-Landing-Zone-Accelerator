@@ -21,13 +21,13 @@
       "value": "PrivateEndpoint"
     },
     "privateDNSZoneACRName": {
-      "value": "privatelink.azureacr.io"
+      "value": "privatelink.eastus.azureacr.io"
     },
     "privateDNSZoneKVName": {
-      "value": "privatelink.vaultcore.azure.net"
+      "value": "privatelink.eastus.vaultcore.azure.net"
     },
     "privateDNSZoneSAName": {
-      "value": "privatelink.file.core.windows.net"
+      "value": "privatelink.eastus.file.core.windows.net"
     },
     "storageAccountType": {
       "value": "Standard_GZRS"
