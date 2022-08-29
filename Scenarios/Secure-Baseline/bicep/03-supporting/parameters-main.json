@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rgName": {
+      "value": "spoke-aro"
+    },
+    "keyVaultPrivateEndpointName": {
+      "value": "keyvault-pvt-ep"
+    },
+    "acrPrivateEndpointName": {
+      "value": "acr-pvt-ep"
+    },
+    "saPrivateEndpointName": {
+      "value": "sa-pvt-ep"
+    },
+    "vnetName": {
+      "value": "spoke-vnet"
+    },
+    "subnetName": {
+      "value": "PrivateEndpoint"
+    },
+    "privateDNSZoneACRName": {
+      "value": "privatelink.azureacr.io"
+    },
+    "privateDNSZoneKVName": {
+      "value": "privatelink.vaultcore.azure.net"
+    },
+    "privateDNSZoneSAName": {
+      "value": "privatelink.file.core.windows.net"
+    },
+    "storageAccountType": {
+      "value": "Standard_GZRS"
+    }
+  }
+}

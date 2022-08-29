@@ -1,0 +1,68 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rgName": {
+      "value": "spokeRG"
+    },
+    "vnetSpokeName": {
+      "value": "spokeVnetName"
+    },
+    "spokeVNETaddPrefixes": {
+      "value": [
+        "10.1.0.0/16"
+      ]
+    },
+    "spokeSubnets": {
+      "value": [
+        {
+          "name": "master-aro",
+          "properties": {
+            "addressPrefix": "10.1.0.0/23"
+          }
+        },
+        {
+          "name": "worker-aro",
+          "properties": {
+            "addressPrefix": "10.1.2.0/23"
+          }
+        },
+        {
+          "name": "PrivateEndpoint",
+          "properties": {
+            "addressPrefix": "10.1.6.0/24"
+          }
+        },
+        {
+          "name": "PrivateRunner",
+          "properties": {
+            "addressPrefix": "10.1.4.0/24",
+            "privateEndpointNetworkPolicies": "Disabled"
+          }
+        }
+      ]
+    },
+    "rtAROSubnetName": {
+      "value": "ARO-RT"
+    },
+    "firewallIP": {
+      "value": "10.0.1.4"
+    },
+    "vnetHubName": {
+      "value": "hub-vnet"
+    },
+    "vnetHUBRGName": {
+      "value": "hub-aro"
+    },
+    "nsgAROName": {
+      "value": "aro-nsg"
+    },
+    "dhcpOptions": {
+      "value": {
+        "dnsServers": [
+          "10.0.1.4"
+        ]
+      }
+    }
+  }
+}

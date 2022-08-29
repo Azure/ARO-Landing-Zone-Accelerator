@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rgName" : {
+      "value": "hubRG"
+    },
+    "vnetSubnetName" : {
+      "value": "hubVnetSubnet"
+    },
+    "vnetName" : {
+      "value": "hub-vnet"
+    },
+    "vmSize" : {
+      "value": "Standard_B2ms"
+    },
+    "adminUsername" : {
+      "value": "VmUsername"
+    },
+    "adminPassword" : {
+      "value": "enter_a_secure_password_here"
+    }
+  }
+}
