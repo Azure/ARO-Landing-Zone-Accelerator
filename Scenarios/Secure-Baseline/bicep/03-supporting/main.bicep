@@ -10,7 +10,7 @@ param privateDNSZoneACRName string
 param privateDNSZoneKVName string
 param privateDNSZoneSAName string
 param acrName string = 'arolzaacr'
-param keyvaultName string = 'arolzakv'
+param keyvaultName string = 'arolzakv3'
 param storageAccountName string = 'arolzastor'
 param storageAccountType string
 param location string = deployment().location
@@ -146,7 +146,7 @@ module privateEndpointSADNSSetting 'modules/vnet/privatedns.bicep' = {
   }
 }
 
-module aksIdentity 'modules/Identity/userassigned.bicep' = {
+module aroIdentity 'modules/Identity/userassigned.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aroIdentity'
   params: {

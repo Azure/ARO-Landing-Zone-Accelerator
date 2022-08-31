@@ -13,7 +13,7 @@
       ]
     },
     "vnetHubName": {
-      "value": "hubVnetName"
+      "value": "hub-vnet"
     },
     "hubVNETaddPrefixes": {
       "value": [

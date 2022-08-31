@@ -10,12 +10,13 @@ param clusterName string
 param aadClientId string
 param rpObjectId string
 param aadObjectId string
+param clusterRouteTable string
 
 @secure()
 param aadClientSecret string
 
 @minValue(128)
-param workerVmDiskSize int = 128
+param workerVmDiskSize int
 
 @minValue(2)
 param workerCount int
@@ -57,6 +58,13 @@ resource clusterVnetName_Microsoft_Authorization_id_name_rpObjectId 'Microsoft.N
   }
 }
 
+resource clusterRouteTable_Microsoft_Authorization_id_name_rpObjectId 'Microsoft.Network/routeTables/providers/roleAssignments@2018-09-01-preview' = {
+  name: '${clusterRouteTable}/Microsoft.Authorization/${guid(resourceGroup().id, deployment().name, rpObjectId)}'
+  properties: {
+    roleDefinitionId: contribRole
+    principalId: rpObjectId
+  }
+}
 resource clusterName_resource 'Microsoft.RedHatOpenShift/OpenShiftClusters@2020-04-30' = {
   name: clusterName
   location: location
@@ -77,14 +85,14 @@ resource clusterName_resource 'Microsoft.RedHatOpenShift/OpenShiftClusters@2020-
     }
     masterProfile: {
       vmSize: masterVmSize
-      subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', clusterVnetName, 'master')
+      subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', clusterVnetName, 'master-aro')
     }
     workerProfiles: [
       {
         name: 'worker'
         vmSize: workerVmSize
         diskSizeGB: workerVmDiskSize
-        subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', clusterVnetName, 'worker')
+        subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', clusterVnetName, 'worker-aro')
         count: workerCount
       }
     ]

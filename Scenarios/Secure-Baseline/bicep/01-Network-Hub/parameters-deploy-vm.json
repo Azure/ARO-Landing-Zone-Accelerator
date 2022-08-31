@@ -3,10 +3,10 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "rgName" : {
-      "value": "hubRG"
+      "value": "hub-aro"
     },
     "vnetSubnetName" : {
-      "value": "hubVnetSubnet"
+      "value": "vmsubnet"
     },
     "vnetName" : {
       "value": "hub-vnet"
@@ -15,10 +15,10 @@
       "value": "Standard_B2ms"
     },
     "adminUsername" : {
-      "value": "VmUsername"
+      "value": "changeme"
     },
     "adminPassword" : {
-      "value": "enter_a_secure_password_here"
+      "value": "changeme"
     }
   }
 }

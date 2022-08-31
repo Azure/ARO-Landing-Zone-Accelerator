@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rgName": {
+      "value": "spoke-aro"
+    },
+    "VnetName": {
+      "value": "spoke-vnet"
+    },
+    "masterSubnetName": {
+      "value": "master-aro"
+    },
+    "workerSubnetName": {
+      "value": "worker-aro"
+    },
+    "rtAROSubnetName":{
+      "value": "ARO-RT"
+    }
+  }
+}

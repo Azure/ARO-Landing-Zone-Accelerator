@@ -3,10 +3,10 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "rgName": {
-      "value": "spokeRG"
+      "value": "spoke-aro"
     },
     "vnetSpokeName": {
-      "value": "spokeVnetName"
+      "value": "spoke-vnet"
     },
     "spokeVNETaddPrefixes": {
       "value": [
@@ -29,18 +29,18 @@
         {
           "name": "worker-aro",
           "properties": {
-            "addressPrefix": "10.1.2.0/23"
+            "addressPrefix": "10.1.2.0/23",
+            "serviceEndpoints": [
+              {
+              "service": "Microsoft.ContainerRegistry"
+            }
+          ]
           }
         },
         {
           "name": "PrivateEndpoint",
           "properties": {
-            "addressPrefix": "10.1.6.0/24",
-            "serviceEndpoints": [
-              {
-              "service": "Microsoft.ContainerRegistry"
-            }
-            ]
+            "addressPrefix": "10.1.6.0/24"
           }
         },
         {

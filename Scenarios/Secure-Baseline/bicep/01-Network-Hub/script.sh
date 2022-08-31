@@ -4,6 +4,8 @@
 #############################
 logpath=/var/log/deploymentscriptlog
 
+#TODO: update this script for RHEL usage
+
 #############################
 # Upgrading Linux Distribution
 #############################

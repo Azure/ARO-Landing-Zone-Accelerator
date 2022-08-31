@@ -6,16 +6,16 @@
         "value": "eastus"
       },
       "domain": {
-        "value": "arolza.io"
+        "value": "privatelink.eastus.arolza.io"
       },      
-      "rhps": {
-        "value": "insert redhat pull secret here"
-      },
       "clusterVnetName": {
-        "value": "spoke-aro"
+        "value": "spoke-vnet"
       },
       "masterVmSize": {
         "value": "Standard_D8s_v3"
+      },
+      "clusterRouteTable": {
+        "value": "ARO-RT"
       },
       "workerVmSize": {
         "value": "Standard_D4s_v3"
@@ -36,19 +36,19 @@
         "value": "cluster"
       },
       "apiServerVisibility": {
-        "value": "private"
+        "value": "Public"
       },
       "ingressVisibility": {
-        "value": "private"
+        "value": "Public"
       },
       "aadClientId": {
-        "value": "insert_value_here"
+        "value": "changeme"
       },
       "rpObjectId": {
-        "value": "insert_value_here"
+        "value": "changeme"
       },
       "aadClientSecret": {
-        "value": "insert_value_here"
+        "value": "changeme"
       },
       "tags": {
         "value": {
