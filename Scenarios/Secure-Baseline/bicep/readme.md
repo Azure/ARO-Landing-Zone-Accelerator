@@ -6,7 +6,6 @@ V0.1 Alpha released 08/31/2022
 
 Desired end state is below
 
-
 # Azure Devops Instructions
 ## Portal / integration configuration:
 
