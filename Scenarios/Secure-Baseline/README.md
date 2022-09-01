@@ -14,6 +14,7 @@ The deployment of this solution can be done individually through various means. 
 
 * [Terraform](./terraform/README.md) (Under Development but can still be used)
 * [Azure CLI](./Azure-CLI/README.md)
+* [Bicep](./bicep/README.md) (Under Development - very early stages.  Expect issues.)
 
 Below is the architecture of this scenario:
 ![Architectural diagram for the secure baseline scenario.](../../media/aro_landing_zone_Architecture.png)
@@ -32,3 +33,5 @@ Pick one of these options below
 :arrow_forward: [Azure CLI](./Azure-CLI/README.md)
 
 :arrow_forward: [Terraform](./terraform/README.md)
+
+:arrow_forward: [Bicep](./bicep/README.md)
