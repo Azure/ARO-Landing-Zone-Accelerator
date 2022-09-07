@@ -22,8 +22,19 @@
             "serviceEndpoints": [
               {
               "service": "Microsoft.ContainerRegistry"
-            }
-            ]
+              },
+              {
+              "service": "Microsoft.KeyVault"
+              },
+              {
+              "service": "Microsoft.Storage"
+              },
+              {
+              "service": "Microsoft.AzureActiveDirectory"
+              }
+            ],
+            "privateEndpointNetworkPolicies": "Enforced",
+            "privateLinkServiceNetworkPolicies": "Enforced"
           }
         },
         {
@@ -33,14 +44,27 @@
             "serviceEndpoints": [
               {
               "service": "Microsoft.ContainerRegistry"
+            },
+            {
+              "service": "Microsoft.KeyVault"
+            },
+            {
+              "service": "Microsoft.Storage"
+            },
+            {
+              "service": "Microsoft.AzureActiveDirectory"
             }
-          ]
+          ],
+          "privateEndpointNetworkPolicies": "Enforced",
+          "privateLinkServiceNetworkPolicies": "Enforced"
           }
         },
         {
           "name": "PrivateEndpoint",
           "properties": {
-            "addressPrefix": "10.1.6.0/24"
+            "addressPrefix": "10.1.6.0/24",
+            "privateEndpointNetworkPolicies": "Enforced",
+            "privateLinkServiceNetworkPolicies": "Enforced"
           }
         },
         {
