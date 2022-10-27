@@ -61,6 +61,8 @@ module "supporting" {
   hub_vnet_id                = module.vnet.hub_vnet_id
   spoke_vnet_id              = module.vnet.spoke_vnet_id
   private_endpoint_subnet_id = module.vnet.private_endpoint_subnet_id
+  spoke_rg_name = azurerm_resource_group.spoke.name
+  hub_rg_name = azurerm_resource_group.hub.name
 
   depends_on = [
     module.vnet
@@ -76,9 +78,12 @@ module "aro" {
   master_subnet_id = module.vnet.master_subnet_id
   worker_subnet_id = module.vnet.worker_subnet_id
 
-  aro_sp_object_id = var.aro_sp_object_id
+  aro_sp_client_id = var.aro_sp_client_id
   aro_sp_password = var.aro_sp_password
   aro_rp_object_id = var.aro_rp_object_id
+  spoke_rg_name = azurerm_resource_group.spoke.name
+  base_name = var.aro_base_name
+  domain = var.aro_domain
 
   depends_on = [
     module.vnet
@@ -92,6 +97,8 @@ module "frontdoor" {
   aro_worker_subnet_id = module.vnet.worker_subnet_id
   la_id = azurerm_log_analytics_workspace.la.id
   random = random_string.random.result
+  aro_resource_group_name = module.aro.cluster_resource_group_name
+  spoke_rg_name = azurerm_resource_group.spoke.name
   
   depends_on = [
     module.aro
@@ -104,4 +111,5 @@ module "containerinsights" {
   location = azurerm_log_analytics_workspace.la.location
   workspace_resource_id = azurerm_log_analytics_workspace.la.id
   workspace_name = azurerm_log_analytics_workspace.la.name
+  spoke_rg_name = azurerm_resource_group.hub.name
 }

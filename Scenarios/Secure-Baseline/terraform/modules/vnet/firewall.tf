@@ -501,6 +501,14 @@ resource "azurerm_monitor_diagnostic_setting" "fw_diag" {
       enabled = false
     }
   }
+  log {
+    category = "AZFWFatFlow"
+    enabled = false
+    retention_policy {
+      days = 0
+      enabled = false
+    }
+  }
 
   metric {
   category = "AllMetrics"

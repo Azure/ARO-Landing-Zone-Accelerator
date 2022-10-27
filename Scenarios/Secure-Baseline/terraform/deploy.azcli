@@ -19,6 +19,12 @@ echo "Enter the Name of the Service Principal for ARO to use:"
 read -r SPNNAME
 echo "Enter the Subscription ID where you want ARO deployed:"
 read -r SUBSCRIPTIONID
+echo "Enter the ARO cluster base name"
+read -r AROBASENAME
+echo "Enter the ARO Domain"
+read -r ARO_DOMAIN
+
+TENANT_ID=$(az account show -s ${SUBSCRIPTIONID} --query tenantId -o tsv)
 
 # Create the Service Principal
 # TODO: Add check to see if the SPN already exists
@@ -27,23 +33,23 @@ az ad sp create-for-rbac --name $SPNNAME --scopes /subscriptions/$SUBSCRIPTIONID
 # Set variables from the Service Principal
 SP_CLIENT_ID=$(jq -r '.appId' /tmp/sp.json)
 SP_CLIENT_SECRET=$(jq -r '.password' /tmp/sp.json)
-SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID | jq -r '.id')
 
 # Set variable for ARO Provider SP Object ID
-ARO_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].id" -o tsv)
+ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].objectId" -o tsv)
 
 ### Deploy Environment ###
 # Initialize Terraform
 terraform init
 
 # Terraform Apply
-terraform apply \
-  -auto-approve \
-  -var tenant_id="$SPNAME" \
+terraform plan \
+  -var tenant_id="$TENANT_ID" \
   -var subscription_id="$SUBSCRIPTIONID" \
-  -var aro_sp_object_id="$SP_OBJECT_ID" \
+  -var aro_sp_client_id="$SP_CLIENT_ID" \
   -var aro_sp_password="$SP_CLIENT_SECRET" \
-  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID"
+  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID" \
+  -var aro_base_name="$AROBASENAME" \
+  -var aro_domain="$ARODOMAIN"
 
 # Inform user that additional steps are required to complete the deployment. These must be completed from the JumpBox.
 echo "Additional steps are required to complete the deployment. These must be completed from the JumpBox. Please consult the readme file"
