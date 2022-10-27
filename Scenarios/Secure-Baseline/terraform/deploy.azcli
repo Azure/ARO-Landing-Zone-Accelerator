@@ -22,7 +22,7 @@ read -r SUBSCRIPTIONID
 echo "Enter the ARO cluster base name"
 read -r AROBASENAME
 echo "Enter the ARO Domain"
-read -r ARO_DOMAIN
+read -r ARODOMAIN
 
 TENANT_ID=$(az account show -s ${SUBSCRIPTIONID} --query tenantId -o tsv)
 
@@ -42,7 +42,8 @@ ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" 
 terraform init
 
 # Terraform Apply
-terraform plan \
+terraform apply \
+  --auto-approve \
   -var tenant_id="$TENANT_ID" \
   -var subscription_id="$SUBSCRIPTIONID" \
   -var aro_sp_client_id="$SP_CLIENT_ID" \
