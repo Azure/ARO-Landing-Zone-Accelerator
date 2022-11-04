@@ -11,6 +11,10 @@ variable "base_name" {
   default = "aro"
 }
 
+variable "domain" {
+  type = string
+}
+
 variable "spoke_rg_name" {
   type = string
   default = "spoke-aro"
@@ -32,7 +36,7 @@ variable "location" {
   type = string
 }
 
-variable "aro_sp_object_id" {
+variable "aro_sp_client_id" {
   type = string
 }
 

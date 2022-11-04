@@ -55,7 +55,7 @@ resource "random_string" "random" {
   }
 }
 
-variable "aro_sp_object_id" {
+variable "aro_sp_client_id" {
   type = string
 }
 
@@ -64,5 +64,13 @@ variable "aro_sp_password" {
 }
 
 variable "aro_rp_object_id" {
+  type = string
+}
+
+variable "aro_base_name" {
+  type = string
+}
+
+variable "aro_domain" {
   type = string
 }
