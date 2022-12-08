@@ -1,0 +1,9 @@
+# Create private ARO cluster
+az aro create \
+  --resource-group $SPOKERGNAME \
+  --name $AROCLUSTER \
+  --vnet $SPOKEVNET_NAME \
+  --master-subnet $MASTERAROSUBNET_NAME \
+  --worker-subnet $WORKERAROSUBNET_NAME \
+  --apiserver-visibility Private \
+  --ingress-visibility Private

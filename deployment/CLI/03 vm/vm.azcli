@@ -1,0 +1,71 @@
+# Bastion Host
+az network public-ip create \
+  --resource-group $HUBRGNAME \
+  --name $BASTION_NAME'-PIP' \
+  --sku Standard \
+  --location $LOCATION
+az network bastion create \
+  --name $BASTION_NAME \
+  --public-ip-address $BASTION_NAME'-PIP' \
+  --resource-group $HUBRGNAME \
+  --vnet-name $HUBVNET_NAME \
+  --location $LOCATION \
+  --scale-units 2
+
+# JumpBox Linux VM (Optional, used for troubleshooting. Best practice to remove public IP address and connect using Bastion Host)
+# az vm create \
+#   --name 'ToolsBox' \
+#   --resource-group $HUBRGNAME \
+#   --image UbuntuLTS \
+#   --admin-username 'azureuser' \
+#   --size 'Standard_A2' \
+#   --vnet-name $HUBVNET_NAME \
+#   --subnet $VMSUBNET_NAME \
+#   --generate-ssh-keys
+
+# # Install tools in the JumpBox VM
+# az vm run-command invoke \
+#   --resource-group $HUBRGNAME \
+#   --name 'ToolsBox' \
+#   --command-id RunShellScript \
+#   --scripts "curl -sL https://raw.githubusercontent.com/UmarMohamedUsman/aro-reference-architecture/main/deployment/script.sh | sudo bash"
+
+# JumpBox Windows VM (Optional, used for troubleshooting and deploying sample application)
+# No Public IP address assigned, connect using Bastion Host)
+#--image 2022-datacenter-azure-edition
+
+az vm create \
+  --name 'JumpBox' \
+  --resource-group $HUBRGNAME \
+  --image MicrosoftWindowsDesktop:windows-11:win11-21h2-pro:latest \
+  --admin-username 'azureuser' \
+  --size 'Standard_D4s_v3' \
+  --vnet-name $HUBVNET_NAME \
+  --subnet $VMSUBNET_NAME \
+  --public-ip-address ""
+
+az vm run-command invoke \
+  --resource-group $HUBRGNAME \
+  --name 'JumpBox' \
+  --command-id RunPowerShellScript \
+  --scripts @script.ps1
+
+#################################################################
+# Reference Only: Invoke PowerShell script from a remote file
+#################################################################
+az vm run-command invoke \
+  --resource-group $HUBRGNAME \
+  --name 'JumpBox' \
+  --command-id RunPowerShellScript \
+  --scripts "https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/deployment/script.ps1"
+
+#################################################################
+# Reference Only: PowerShell Steps using Custom Script Extension
+#################################################################
+
+$protectedSettings = @{
+  "fileUris"= @("https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/deployment/modules/03%20vm/start_script.ps1")
+  "commandToExecute"= "powershell -ExecutionPolicy Unrestricted -File start_script.ps1"
+}
+Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location $LOCATION -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ProtectedSettings $protectedSettings
+Set-AzVMExtension -ResourceGroupName hub-aro-rg -Location $LOCATION -VMName JumpBox -Name "customScript" -Publisher "Microsoft.Compute" -ExtensionType "CustomScriptExtension" -TypeHandlerVersion "1.10" -ForceRerun "1" -ProtectedSettings $protectedSettings
