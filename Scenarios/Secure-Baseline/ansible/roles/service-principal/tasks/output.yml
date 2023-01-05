@@ -1,0 +1,5 @@
+- set_fact:
+    output_sp_sp_object_id: "{{ _sp_oid }}"
+    output_sp_app_id: "{{ _azr_service_principal_application_id }}"
+    output_sp_aro_sp_password: "{{ sp_aro_sp_password }}"
+  no_log: true

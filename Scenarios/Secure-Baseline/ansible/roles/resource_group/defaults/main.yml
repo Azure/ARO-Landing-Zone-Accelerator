@@ -1,0 +1,10 @@
+---
+# defaults file for roles/resource_groups
+
+# default location for resource groups
+rg_location: eastus
+
+# default names for resource groups
+rg_hub_name: "hub-aro-rg"
+rg_spoke_name: "spoke-aro-rg"
+rg_aro_cluster_name: "aro-cluster-rg"

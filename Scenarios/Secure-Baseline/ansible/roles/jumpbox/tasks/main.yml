@@ -1,0 +1,32 @@
+---
+# tasks file for roles/jumphost-create
+- include_tasks: secrets.yml
+
+- set_fact:
+    _ssh_public_keys:
+      - path: "/home/{{ jumpbox_username }}/.ssh/authorized_keys"
+        key_data: "{{ lookup('file',jumpbox_ssh_key) }}"
+  when:
+    - (jumpbox_ssh_key is defined) and
+      (jumpbox_ssh_key != "")
+
+- name: Create jumpbox vm
+  azure_rm_virtualmachine:
+    resource_group: "{{ jumpbox_resource_group }}"
+    name: "{{ jumbox_name }}"
+    admin_username: "{{ jumpbox_username }}"
+    admin_password: "{{ jumpbox_password }}"
+    ssh_password_enabled: "{{ jumpbox_ssh_password_enabled }}"
+    ssh_public_keys: "{{ _ssh_public_keys | default(omit) }}"
+    subnet_name: "{{ jumpbox_subnet_name }}"
+    vm_size: Standard_DS2_v2
+    image:
+      offer: "RHEL"
+      publisher: "RedHat"
+      version: "latest"
+      sku: "8.2"
+    custom_data: "{{ lookup('file', 'user_data.sh') }}"
+  register: _jumphost
+
+- include_tasks: windows.yml
+

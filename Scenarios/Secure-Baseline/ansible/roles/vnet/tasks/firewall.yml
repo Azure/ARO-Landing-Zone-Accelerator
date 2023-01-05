@@ -1,0 +1,201 @@
+- name: Create public IP address for firewall
+  azure_rm_publicipaddress:
+      resource_group: "{{ vnet_hub_rg }}"
+      allocation_method: Static
+      name: "{{ vnet_fw_name }}-pip"
+      sku: Standard
+  register: _firewall_pip
+
+- name: Create Azure Firewall
+  azure_rm_azurefirewall:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: "{{ vnet_fw_name }}"
+    ip_configurations:
+      - subnet:
+          name: "AzureFirewallSubnet"
+          virtual_network_name: "{{ vnet_hub_name }}"
+        public_ip_address:
+          name: "{{ vnet_fw_name }}-pip"
+        name: "{{ vnet_fw_name }}-ipconfig"
+    network_rule_collections:
+      - priority: 200
+        action: allow
+        name: "Aro-required-ports"
+        rules:
+          - name: 'NTP'
+            source_addresses: ['*'] # {{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            destination_addresses: ['*']
+            destination_ports: ['123']
+            protocols: ['any']
+            # todo - push peer traffic via fw
+          - name: 'OCP'
+            source_addresses: ['*']
+            destination_addresses: ["{{ vnet_spoke_prefix }}"]
+            destination_ports: ['6443', '443']
+            protocols: ['TCP']
+    application_rule_collections:
+      - priority: 200
+        action: allow
+        name: "Minimum-reqired-FQDN"
+        rules:
+          - name: minimum_required_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns:
+              - "arosvc.{{ vnet_location }}.data.azurecr.io"
+              - "*.quay.io"
+              - "registry.redhat.io"
+              - "mirror.openshift.com"
+              - "api.openshift.com"
+              - "arosvc.azurecr.io"
+              - "management.azure.com"
+              - "login.microsoftonline.com"
+              - "gcs.prod.monitoring.core.windows.net"
+              - "*.blob.core.windows.net"
+              - "*.servicebus.windows.net"
+              - "*.table.core.windows.net"
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 201
+        action: allow
+        name: "Aro-required-urls"
+        rules:
+          - name: first_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns: ["quay.io","registry.redhat.io","sso.redhat.com","openshift.org"]
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 202
+        action: allow
+        name: "Telemetry-URLs"
+        rules:
+          - name: second_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns: ["cert-api.access.redhat.com","api.access.redhat.com","infogw.api.openshift.com","cloud.redhat.com"]
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 203
+        action: allow
+        name: "Cloud-APIs"
+        rules:
+          - name: third_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns: ["management.azure.com"]
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 204
+        action: allow
+        name: "OpenShift-URLs"
+        rules:
+          - name: fourth_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns: ["mirror.openshift.com","storage.googleapis.com","api.openshift.com","registry.access.redhat.com"]
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 205
+        action: allow
+        name: "Monitoring-URLs"
+        rules:
+          - name: fifth_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns: ["login.microsoftonline.com","gcs.prod.monitoring.core.windows.net","*.blob.core.windows.net","*.servicebus.windows.net","*.table.core.windows.net"]
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 206
+        action: allow
+        name: "Arc-URLs"
+        rules:
+          - name: sixth_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns:
+              - "{{ vnet_location }}.login.microsoft.com"
+              - "management.azure.com"
+              - "{{ vnet_location }}.dp.kubernetesconfiguration.azure.com"
+              - "login.microsoftonline.com"
+              - "login.windows.net"
+              - "mcr.microsoft.com"
+              - "*.data.mcr.microsoft.com"
+              - "gbl.his.arc.azure.com"
+              - "*.his.arc.azure.com"
+              - "*.servicebus.windows.net"
+              - "guestnotificationservice.azure.com"
+              - "*.guestnotificationservice.azure.com"
+              - "sts.windows.net"
+              - "k8connecthelm.azureedge.net"
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 207
+        action: allow
+        name: "Arc-ContainerInsights-URLs"
+        rules:
+          - name: seventh_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns: ["*.ods.opinsights.azure.com","*.oms.opinsights.azure.com","dc.services.visualstudio.com","*.monitoring.azure.com","login.microsoftonline.com"]
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 208
+        action: allow
+        name: "Docker-HUB-URLs"
+        rules:
+          - name: eighth_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns: ["registry.hub.docker.com","*.docker.io","production.cloudflare.docker.com","auth.docker.io","*.gcr.io"]
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+      - priority: 209
+        action: allow
+        name: "Miscellaneous-URLs"
+        rules:
+          - name: nineth_group_target_fqdns
+            source_addresses: ["{{ vnet_hub_prefix }}", "{{ vnet_spoke_prefix }}"]
+            target_fqdns: ["quayio-production-s3.s3.amazonaws.com"]
+            protocols:
+              - type: https
+                port: '443'
+              - type: http
+                port: '80'
+
+- name: Fetch info for firewall
+  azure_rm_azurefirewall_info:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: "{{ vnet_fw_name }}"
+  register: _firewall
+
+- fail:
+    msg: "Firewall {{ vnet_fw_name }} failed to provision correctly, delete it and rerun the playbook"
+  when: _firewall.firewalls.provisioning_state != "Succeeded"
+
+- set_fact:
+    _vnet_firewall_private_ip: "{{ _firewall.firewalls.ip_configurations[0].properties.privateIPAddress }}"
+
+- set_fact:
+    _vnet_dns_servers: ["{{ _firewall.firewalls.ip_configurations[0].properties.privateIPAddress }}"]
+  when: vnet_use_firewall_as_dns | bool
+# - debug:
+#     msg: "{{ _firewall | to_nice_yaml }}"

@@ -1,0 +1,71 @@
+---
+# tasks file for roles/frontdoor
+
+- name: Get facts for all load balancers in a specific resource group
+  azure.azcollection.azure_rm_loadbalancer_info:
+    resource_group: "{{ frontdoor_aro_resource_group }}"
+  register: _cluster_lb
+  no_log: true
+
+- set_fact:
+    _cluster_lb_name: "{{ _cluster_lb.loadbalancers[0].name }}"
+
+- name: Create the private link service
+  azure.azcollection.azure_rm_privatelinkservice:
+    name: "{{ frontdoor_pls_name }}"
+    resource_group: "{{ frontdoor_resource_group }}"
+    enable_proxy_protocol: True
+    load_balancer_frontend_ip_configurations:
+          - id: "{{ _cluster_lb.loadbalancers[0].properties.frontendIPConfigurations[0].id }}"
+    ip_configurations:
+      - name: primary
+        properties:
+          primary: True
+          private_ip_address_version: 'IPv4'
+          subnet:
+            id: "{{ frontdoor_subnet_id }}"
+
+- name: check Front Door CDN profile
+  shell: |
+    az afd profile show \
+      --profile-name "{{ frontdoor_afd_name }}" \
+      --resource-group "{{ frontdoor_resource_group }}" \
+      -o json
+  register: _fd_profile_check
+  failed_when: false
+  changed_when: false
+
+- name: Create a Front Door CDN profile
+  shell: |
+    az afd profile create \
+      --profile-name "{{ frontdoor_afd_name }}" \
+      --resource-group "{{ frontdoor_resource_group }}" \
+      --sku {{ frontdoor_afd_sku }} -o json
+  register: _fd_profile_create
+  when: _fd_profile_check.rc != 0
+
+- set_fact:
+    _fd_profile_info: "{{ _fd_profile_create.stdout | default(_fd_profile_check.stdout) | from_json }}"
+
+- name: check Azure Front Door CDN endpoint
+  shell: |
+    az afd endpoint show \
+      --resource-group "{{ frontdoor_resource_group }}" \
+      --endpoint-name "aro-ilb" \
+      --profile-name "{{ frontdoor_afd_name }}" \
+  register: _fd_endpoint_check
+  failed_when: false
+  changed_when: false
+
+- name: Create a Azure Front Door CDN endpoint
+  shell: |
+    az afd endpoint create \
+      --resource-group "{{ frontdoor_resource_group }}" \
+      --endpoint-name "aro-ilb" \
+      --profile-name "{{ frontdoor_afd_name }}" \
+      --enabled-state Enabled
+  register: _fd_endpoint_create
+
+- set_fact:
+    _fd_endpoint_info: "{{ _fd_endpoint_create.stdout | default(_fd_endpoint_check.stdout) | from_json }}"
+

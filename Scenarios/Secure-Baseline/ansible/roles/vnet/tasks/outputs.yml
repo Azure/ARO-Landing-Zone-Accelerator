@@ -1,0 +1,9 @@
+- set_fact:
+    output_vnet_hub_vnet_id: "{{ _vnet_hub.state.id }}"
+    output_vnet_bastion_subnet_id: "{{ _bastion_subnet.state.id }}"
+    output_vnet_vm_subnet_id: "{{ _vm_subnet.state.id }}"
+    output_vnet_vm_subnet_name: "{{ vnet_vm_subnet_name }}"
+    output_vnet_spoke_vnet_id: "{{ _vnet_spoke.state.id }}"
+    # output_vnet_private_endpoint_subnet_id: "{{ _private_endpoint_subnet.state.id }}"
+    output_vnet_control_subnet_id: "{{ _control_subnet.state.id }}"
+    output_vnet_worker_subnet_id: "{{ _worker_subnet.state.id }}"

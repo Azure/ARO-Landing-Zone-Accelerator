@@ -1,0 +1,67 @@
+---
+- name: Create spoke vnet
+  azure.azcollection.azure_rm_virtualnetwork:
+    resource_group: "{{ output_rg_spoke_name }}"
+    name: "{{ vnet_spoke_name }}"
+    address_prefixes_cidr: "{{ vnet_spoke_prefix }}"
+    dns_servers: "{{ _vnet_dns_servers | default(omit) }}"
+  register: _vnet_spoke
+
+# - name: Create an app gateway subnet
+#   azure_rm_subnet:
+#     resource_group: "{{ vnet_spoke_rg }}"
+#     virtual_network_name: "{{ vnet_spoke_name }}"
+#     address_prefix_cidr: "{{ vnet_app_gw_subnet_prefix }}"
+#     name: "{{ vnet_app_gw_subnet_name }}"
+#   register: _app_gw_subnet
+
+# - name: Create a private runner subnet
+#   azure_rm_subnet:
+#     resource_group: "{{ vnet_spoke_rg }}"
+#     virtual_network_name: "{{ vnet_spoke_name }}"
+#     address_prefix_cidr: "{{ vnet_private_runner_subnet_prefix }}"
+#     name: "{{ vnet_private_runner_subnet_name }}"
+#   register: _private_runner_subnet
+
+# - name: Create a private endpoint subnet
+#   azure_rm_subnet:
+#     resource_group: "{{ vnet_spoke_rg }}"
+#     virtual_network_name: "{{ vnet_spoke_name }}"
+#     address_prefix_cidr: "{{ vnet_private_endpoint_subnet_prefix }}"
+#     name: "{{ vnet_private_endpoint_subnet_name }}"
+#     private_link_service_network_policies: Enabled
+#   register: _private_endpoint_subnet
+
+- include_tasks: udr.yml
+  when: vnet_egress_lockdown | bool
+
+- name: Create an aro control plane subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_spoke_rg }}"
+    virtual_network_name: "{{ vnet_spoke_name }}"
+    address_prefix_cidr: "{{ vnet_control_aro_subnet_prefix }}"
+    name: "{{ vnet_control_aro_subnet_name }}"
+    service_endpoints:
+      - service: "Microsoft.ContainerRegistry"
+      - service: "Microsoft.Storage"
+    private_link_service_network_policies: Disabled
+    private_endpoint_network_policies: Disabled
+    route_table:
+      name: "{{ vnet_egress_lockdown | bool | ternary('aro-udr', omit) }}"
+      resource_group: "{{ vnet_egress_lockdown | bool | ternary(vnet_hub_rg, omit) }}"
+  register: _control_subnet
+
+- name: Create an aro worker subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_spoke_rg }}"
+    virtual_network_name: "{{ vnet_spoke_name }}"
+    address_prefix_cidr: "{{ vnet_worker_aro_subnet_prefix }}"
+    name: "{{ vnet_worker_aro_subnet_name }}"
+    service_endpoints:
+      - service: "Microsoft.ContainerRegistry"
+      - service: "Microsoft.Storage"
+    private_link_service_network_policies: Disabled
+    route_table:
+      name: "{{ vnet_egress_lockdown | bool | ternary('aro-udr', omit) }}"
+      resource_group: "{{ vnet_egress_lockdown | bool | ternary(vnet_hub_rg, omit) }}"
+  register: _worker_subnet

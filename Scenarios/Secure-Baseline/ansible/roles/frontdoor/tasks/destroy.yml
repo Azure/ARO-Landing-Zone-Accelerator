@@ -1,0 +1,51 @@
+- name: check for Azure Front Door CDN endpoint
+  shell: |
+    az afd endpoint show \
+      --resource-group "{{ frontdoor_resource_group }}" \
+      --endpoint-name "aro-ilb" \
+      --profile-name "{{ frontdoor_afd_name }}"
+  changed_when: false
+  failed_when: false
+  register: _afd_cdn_endpoint_info
+  no_log: true
+
+- name: destroy Azure Front Door CDN endpoint
+  shell: |
+    az afd endpoint delete --yes \
+      --resource-group "{{ frontdoor_resource_group }}" \
+      --endpoint-name "aro-ilb" \
+      --profile-name "{{ frontdoor_afd_name }}"
+  when: _afd_cdn_endpoint_info.rc == 0
+
+
+- name: check for Front Door CDN profile
+  shell: |
+    az afd profile show \
+      --profile-name "{{ frontdoor_afd_name }}" \
+      --resource-group "{{ frontdoor_resource_group }}" \
+      -o json
+  changed_when: false
+  failed_when: false
+  register: _afd_cdn_profile_info
+  no_log: true
+
+- name: destroy Front Door CDN profile
+  shell: |
+    az afd profile delete \
+      --profile-name "{{ frontdoor_afd_name }}" \
+      --resource-group "{{ frontdoor_resource_group }}" \
+      -o json
+  when: _afd_cdn_profile_info.rc == 0
+
+- name: check for private link service
+  azure.azcollection.azure_rm_privatelinkservice_info:
+    name: "{{ frontdoor_pls_name }}"
+    resource_group: "{{ frontdoor_resource_group }}"
+  register: _pl_service
+
+- name: destroy the private link service
+  azure.azcollection.azure_rm_privatelinkservice:
+    name: "{{ frontdoor_pls_name }}"
+    resource_group: "{{ frontdoor_resource_group }}"
+    state: absent
+  when: _pl_service.link_service | length > 0

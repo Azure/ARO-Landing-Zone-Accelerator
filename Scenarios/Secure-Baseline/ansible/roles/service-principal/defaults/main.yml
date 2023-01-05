@@ -1,0 +1,13 @@
+---
+# defaults file for roles/service-principal
+sp_aro_rg: aro-rg
+sp_aro_cluster_name: lz-openshift
+sp_aro_vnet_name: aro-vnet
+
+update_sp_password: no
+
+sp_subscription_id:
+sp_tenant_id:
+
+sp_keyvault_secret_name: aro-sp-password
+# sp_aro_sp_password:

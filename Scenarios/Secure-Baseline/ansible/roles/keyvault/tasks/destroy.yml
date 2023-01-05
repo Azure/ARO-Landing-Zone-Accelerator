@@ -1,0 +1,5 @@
+- name: Destroy instance of Key Vault
+  azure_rm_keyvault:
+    resource_group: "{{ keyvault_resource_group }}"
+    vault_name: "{{ keyvault_name }}"
+    state: absent

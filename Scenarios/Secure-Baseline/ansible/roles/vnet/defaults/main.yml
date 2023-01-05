@@ -1,0 +1,39 @@
+---
+# defaults file for roles/vnet
+
+vnet_resouce_group:
+
+# Hub Network
+vnet_hub_name: hub-aro-vnet
+vnet_hub_rg: hub-aro-rg
+vnet_location: eastus
+vnet_diag_name:
+vnet_hub_prefix: "10.0.0.0/16"
+
+# Spoke Network
+vnet_spoke_name: spoke-aro
+vnet_spoke_prefix: "10.1.0.0/16"
+vnet_control_aro_subnet_name: "master-aro-subnet"
+vnet_control_aro_subnet_prefix: "10.1.0.0/23"
+vnet_worker_aro_subnet_name: "worker-aro-subnet"
+vnet_worker_aro_subnet_prefix: "10.1.2.0/23"
+vnet_private_endpoint_subnet_name: "PrivateEndpoint-subnet"
+vnet_private_endpoint_subnet_prefix: "10.1.6.0/25"
+vnet_private_runner_subnet_name: "PrivateRunner-subnet"
+vnet_private_runner_subnet_prefix: "10.1.4.0/24"
+vnet_app_gw_subnet_name: AppGW-subnet
+vnet_app_gw_subnet_prefix: "10.1.5.0/27"
+
+# Azure Firewall
+vnet_egress_lockdown: yes
+vnet_use_firewall_as_dns: no
+vnet_fw_name: "azfw"
+vnet_fw_subnet_prefix: "10.0.0.0/26"
+
+# other
+vnet_bastion_subnet_prefix: "10.0.0.64/26"
+vnet_vm_subnet_name: "VM-Subnet"
+vnet_vm_subnet_prefix: "10.0.1.0/24"
+
+# Monitoring
+vnet_la_id:

@@ -1,0 +1,37 @@
+- name: get subscription
+  azure.azcollection.azure_rm_subscription_info:
+    all: True
+  register: _subscription
+
+- set_fact:
+    _azr_subscription_id: "{{ _subscription.subscriptions[0].subscription_id }}"
+- set_fact:
+    _azr_tenant_id: "{{ _subscription.subscriptions[0].tenant_id }}"
+- set_fact:
+    app_display_name: "http://aro-{{ sp_aro_cluster_name }}"
+
+
+- name: check for existing ad app
+  azure.azcollection.azure_rm_adapplication_info:
+    tenant: "{{ _azr_tenant_id }}"
+  register: _ad_applications
+  no_log: true
+
+- set_fact:
+    _ad_application: "{{ _ad_applications | json_query(jmesquery) }}"
+  vars:
+    jmesquery: "applications[?app_display_name == `{{ app_display_name }}`]"
+
+- block:
+    - name: destroy ad sp
+      azure.azcollection.azure_rm_adserviceprincipal:
+        tenant: "{{ _azr_tenant_id }}"
+        app_id: "{{ _ad_application[0].app_id }}"
+        state: absent
+
+    - name: destroy ad application
+      azure.azcollection.azure_rm_adapplication:
+        tenant: "{{ _azr_tenant_id }}"
+        app_id: "{{ _ad_application[0].app_id }}"
+        state: absent
+  when: _ad_application | length > 0

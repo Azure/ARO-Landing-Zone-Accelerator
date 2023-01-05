@@ -1,0 +1,3 @@
+virtualenv/
+./app-service-principal.json
+sp.pw

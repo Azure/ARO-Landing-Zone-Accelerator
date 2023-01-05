@@ -1,0 +1,36 @@
+---
+# tasks file for roles/keyvault
+- name: Create instance of Key Vault
+  azure_rm_keyvault:
+    resource_group: "{{ keyvault_resource_group }}"
+    vault_name: "{{ keyvault_name }}"
+    location: "{{ keyvault_location | default(omit) }}"
+    enabled_for_disk_encryption: true
+    enable_purge_protection: "{{ keyvault_enable_purge_protection }}"
+    enable_soft_delete: "{{ keyvault_enable_soft_delete }}"
+    soft_delete_retention_in_days: 7
+    vault_tenant: "{{ keyvault_tenant_id }}"
+    sku:
+      name: standard
+      family: A
+    access_policies:
+      - tenant_id: "{{ keyvault_tenant_id }}"
+        object_id: "{{ azure_user.id }}"
+        keys: [get]
+        secrets: [set,list,get,delete,purge,recover]
+        storage: [get]
+  register: _keyvault_info
+
+- set_fact:
+    output_keyvault_id: "{{ _keyvault_info.id }}"
+
+- name: Get Key Vault by name
+  azure_rm_keyvault_info:
+    resource_group: "{{ keyvault_resource_group }}"
+    name: "{{ keyvault_name }}"
+  register: _keyvault
+  no_log: true
+
+- name: Set key vault URI fact
+  set_fact:
+    keyvault_vault_uri: "{{ _keyvault['keyvaults'][0]['vault_uri'] }}"

@@ -1,0 +1,8 @@
+- name: "aro-landing-zone playbook"
+  hosts: all
+  # gather_facts: false
+  connection: local
+  vars:
+    diag_name: "{{ hub_name }}{{ lookup('community.general.random_string', length=6, special=false, numbers=false) }}"
+  roles:
+    - role: vnet

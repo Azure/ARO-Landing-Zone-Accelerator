@@ -1,0 +1,48 @@
+---
+# tasks file for roles/aro
+
+# - fail:
+#     msg:
+#       pull secret - {{ aro_pull_secret }}
+
+- name: Create aro cluster
+  # azure.azcollection.azure_rm_openshiftmanagedcluster:
+  azure_rm_openshiftmanagedcluster:
+    resource_group: "{{ aro_resource_group }}"
+    name: "{{ aro_cluster_name }}"
+    location: "{{ aro_location }}"
+    cluster_profile:
+      pull_secret: "{{ aro_pull_secret | default(omit) }}"
+      domain: "{{ aro_domain | default(omit) }}"
+    ingress_profiles:
+      - visibility: "{{ aro_public_ingress | ternary('Public', 'Private') }}"
+    api_server_profile:
+      visibility: "{{ aro_public_api | ternary('Public', 'Private') }}"
+    service_principal_profile:
+      client_id: "{{ aro_sp_client_id }}"
+      client_secret: "{{ aro_sp_client_secret }}"
+    network_profile:
+      pod_cidr: "{{ aro_pod_cidr }}"
+      service_cidr: "{{ aro_service_cidr }}"
+    worker_profiles:
+      - vm_size: "{{ aro_control_vm_size }}"
+        subnet_id: "{{ aro_worker_subnet_id }}"
+        disk_size: "{{ aro_worker_disk_size }}"
+        count: "{{ aro_worker_count }}"
+    master_profile:
+      vm_size: "{{ aro_control_vm_size }}"
+      subnet_id: "{{ aro_control_subnet_id }}"
+  register: _aro_cluster
+  failed_when:
+    - _aro_cluster.failed
+    - _aro_cluster.msg != "module doesn't support cluster update yet"
+
+# - include_tasks: wait-for-cluster.yml
+
+- name: fetch cluster info
+  azure.azcollection.azure_rm_openshiftmanagedcluster_info:
+    resource_group: "{{ aro_resource_group }}"
+    name: "{{ aro_cluster_name }}"
+  register: _aro_cluster_info
+
+- include_tasks: output.yml

@@ -1,0 +1,19 @@
+---
+# tasks file for roles/pre
+- name: get azure subscription info
+  azure.azcollection.azure_rm_subscription_info:
+    all: True
+  register: azure_subscription
+
+- set_fact:
+    azure_subscription_id: "{{ azure_subscription.subscriptions[0].subscription_id }}"
+- set_fact:
+    azure_tenant_id: "{{ azure_subscription.subscriptions[0].tenant_id }}"
+
+- name: get azure signed in user info
+  command: az ad signed-in-user show -o json
+  register: _ad_user
+  changed_when: false
+
+- set_fact:
+    azure_user: "{{ _ad_user.stdout | from_json }}"
