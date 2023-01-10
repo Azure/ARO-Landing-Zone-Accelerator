@@ -1,0 +1,71 @@
+- name: "destroy aro-landing-zone"
+  hosts: all
+  gather_facts: false
+  connection: local
+  vars:
+    ansible_python_interpreter: ./virtualenv/bin/python
+    diag_name: "{{ hub_name }}{{ lookup('community.general.random_string', length=6, special=false, numbers=false) }}"
+    cluster_name: "{{ cluster_name_override | default(prefix + '-aro-' + location) }}"
+    hub_name: "{{ hub_name_override | default(prefix + '-hub-aro') }}"
+    spoke_name: "{{ spoke_name_override | default(prefix + '-spoke-aro') }}"
+    rg_hub_name: "{{ hub_name }}-rg"
+    rg_spoke_name: "{{ spoke_name }}-rg"
+  tasks:
+    - import_role:
+        name: _pre
+    - import_role:
+        name: frontdoor
+        tasks_from: destroy.yml
+      vars:
+        frontdoor_resource_group: "{{ output_rg_spoke_name | default( spoke_name + '-rg') }}"
+    - import_role:
+        name: aro
+        tasks_from: destroy.yml
+      vars:
+        aro_resource_group:  "{{ output_rg_spole_name | default( spoke_name + '-rg') }}"
+        aro_cluster_name: "{{ cluster_name }}"
+        aro_location: "{{ location }}"
+    - import_role:
+        name: service-principal
+        tasks_from: destroy.yml
+      vars:
+        sp_aro_rg: "{{ rg_spoke_name }}"
+        sp_aro_cluster_name: "{{ cluster_name }}"
+    - import_role:
+        name: keyvault
+        tasks_from: destroy.yml
+      vars:
+        keyvault_name: "{{ hub_name }}-kv"
+        keyvault_resource_group: "{{ output_rg_hub_name | default( hub_name + '-rg')  }}"
+        keyvault_tenant_id: "{{ azure_tenant_id }}"
+        keyvault_subscription_id: "{{ azure_subscription_id }}"
+
+    - import_role:
+        name: bastion
+        tasks_from: destroy.yml
+      vars:
+        bastion_name: "{{ hub_name }}-bastion"
+        bastion_resource_group: "{{ rg_hub_name }}"
+    - import_role:
+        name: jumpbox
+        tasks_from: destroy.yml
+      vars:
+        jumbox_name: "{{ hub_name }}-jump"
+        jumpbox_resource_group: "{{ rg_hub_name  }}"
+    - import_role:
+        name: vnet
+        tasks_from: destroy.yml
+      vars:
+        vnet_location: "{{ location }}"
+        vnet_hub_rg: "{{ rg_hub_name }}"
+        vnet_spoke_rg: "{{ rg_spoke_name }}"
+        vnet_hub_name: "{{ hub_name }}-vnet"
+        vnet_spoke_name: "{{ spoke_name }}-vnet"
+        vnet_fw_name: "{{ spoke_name }}-fw"
+    - import_role:
+        name: resource_group
+        tasks_from: destroy.yml
+      vars:
+        rg_location: "{{ location }}"
+
+

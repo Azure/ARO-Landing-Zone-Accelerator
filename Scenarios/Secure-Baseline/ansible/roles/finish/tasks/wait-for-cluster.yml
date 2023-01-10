@@ -1,0 +1,19 @@
+---
+- debug:
+    msg: "Ensure cluster is fully provisioned."
+
+- name: check if ARO cluster is ready
+  azure.azcollection.azure_rm_openshiftmanagedcluster_info:
+    resource_group: "{{ aro_resource_group }}"
+    name: "{{ aro_cluster_name }}"
+  register: _aro_check
+  until: (_aro_check.clusters.properties.provisioningState in ["Succeeded","Failed"])
+  retries: 120
+  delay: 60
+
+- fail:
+    msg: "Cluster {{ aro_cluster_name }} failed to provision."
+  when: _aro_check.clusters.properties.provisioningState == "Failed"
+
+- set_fact:
+    _cluster_ready: True

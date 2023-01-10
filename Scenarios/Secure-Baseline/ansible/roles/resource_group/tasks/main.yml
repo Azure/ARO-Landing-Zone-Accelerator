@@ -1,0 +1,24 @@
+---
+# tasks file for roles/resource_groups
+
+- name: Create the hub resource group
+  azure_rm_resourcegroup:
+    name: "{{ rg_hub_name }}"
+    location: "{{ rg_location }}"
+  register: _rg_hub
+
+- name: Create the spoke resource group
+  azure_rm_resourcegroup:
+    name: "{{ rg_spoke_name }}"
+    location: "{{ rg_location }}"
+  register: _rg_spoke
+
+- include_tasks: outputs.yml
+
+# - debug:
+#     msg: |
+#       Hub:
+#         {{ _rg_hub | to_nice_yaml }}
+#       Spoke:
+#         {{ _rg_spoke | to_nice_yaml }}
+

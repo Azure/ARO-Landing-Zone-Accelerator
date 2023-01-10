@@ -1,0 +1,7 @@
+---
+# defaults file for roles/keyvault-secret
+keyvault_vault_name:
+# keyvault_vault_uri:
+keyvault_secret_name:
+keyvault_secret_value:
+keyvault_secret_constraints: "chars=ascii_lowercase,digits length=8"

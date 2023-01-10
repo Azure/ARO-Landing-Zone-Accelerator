@@ -1,0 +1,2 @@
+- set_fact:
+    _output_aro_cluster_rg_id: "{{ _aro_cluster_info.clusters.properties.clusterProfile.resourceGroupId }}"

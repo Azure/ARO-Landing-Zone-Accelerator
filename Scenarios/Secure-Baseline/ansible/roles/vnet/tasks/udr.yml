@@ -1,0 +1,13 @@
+- name: Create a route table
+  azure_rm_routetable:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: "aro-udr"
+
+- name: Create a default route
+  azure_rm_route:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: defaultRoute
+    address_prefix: 0.0.0.0/0
+    next_hop_type: virtual_appliance
+    route_table_name: "aro-udr"
+    next_hop_ip_address: "{{ _vnet_firewall_private_ip }}"

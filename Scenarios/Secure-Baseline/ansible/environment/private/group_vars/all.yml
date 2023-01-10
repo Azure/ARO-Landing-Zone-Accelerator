@@ -1,0 +1,18 @@
+---
+# defaults file for aro-landing-zone
+location: eastus
+prefix: lz
+
+## Override auto-generated resource names
+# cluster_name_override: my-cluster
+# hub_name_override: my-hub
+# spoke_name_override: my-spoke
+
+# Uncomment and set these if you don't want random passwords
+# aro_sp_password:
+# jumpbox_password:
+
+# Other interesting default overrides
+# jumpbox_ssh_password_enabled: false
+# jumpbox_ssh_key: "~/.ssh/id_rsa.pub"
+aro_pull_secret: "{{ lookup('ansible.builtin.file', '~/Downloads/pull-secret.txt') | b64encode }}"

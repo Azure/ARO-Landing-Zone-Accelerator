@@ -1,0 +1,15 @@
+---
+# tasks file for roles/vnet
+
+- debug:
+    msg: "deploy VNET"
+
+- include_tasks: hub.yml
+- include_tasks: firewall.yml
+  when: vnet_egress_lockdown | bool
+# We run this a second time to add the firewall DNS server to the hub network
+- include_tasks: hub.yml
+  when: vnet_use_firewall_as_dns | bool
+- include_tasks: spoke.yml
+- include_tasks: peering.yml
+- include_tasks: outputs.yml

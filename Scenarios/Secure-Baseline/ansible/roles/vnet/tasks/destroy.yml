@@ -1,0 +1,116 @@
+## Destroy Peering
+- name: Destroy virtual network peering for hub to spoke
+  azure_rm_virtualnetworkpeering:
+    resource_group: "{{ vnet_hub_rg }}"
+    virtual_network: "{{ vnet_hub_name }}"
+    name: "{{ vnet_hub_name }}To{{ vnet_spoke_name }}"
+    state: absent
+
+- name: Destroy virtual network peering for spoke to hub
+  azure_rm_virtualnetworkpeering:
+    resource_group: "{{ vnet_spoke_rg }}"
+    virtual_network: "{{ vnet_spoke_name }}"
+    name: "{{ vnet_spoke_name }}To{{ vnet_hub_name }}"
+    state: absent
+
+## Destroy subnets
+- name: Destroy the aro control plane subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_spoke_rg }}"
+    virtual_network_name: "{{ vnet_spoke_name }}"
+    name: "{{ vnet_control_aro_subnet_name }}"
+    state: absent
+
+- name: Destroy the aro worker subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_spoke_rg }}"
+    virtual_network_name: "{{ vnet_spoke_name }}"
+    address_prefix_cidr: "{{ vnet_worker_aro_subnet_prefix }}"
+    name: "{{ vnet_worker_aro_subnet_name }}"
+    state: absent
+
+- name: Destroy an app gateway subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_spoke_rg }}"
+    virtual_network_name: "{{ vnet_spoke_name }}"
+    address_prefix_cidr: "{{ vnet_app_gw_subnet_prefix }}"
+    name: "{{ vnet_app_gw_subnet_name }}"
+    state: absent
+
+- name: Destroy a private runner subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_spoke_rg }}"
+    virtual_network_name: "{{ vnet_spoke_name }}"
+    address_prefix_cidr: "{{ vnet_private_runner_subnet_prefix }}"
+    name: "{{ vnet_private_runner_subnet_name }}"
+    state: absent
+
+- name: Destroy a private endpoint subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_spoke_rg }}"
+    virtual_network_name: "{{ vnet_spoke_name }}"
+    address_prefix_cidr: "{{ vnet_private_endpoint_subnet_prefix }}"
+    name: "{{ vnet_private_endpoint_subnet_name }}"
+    state: absent
+
+## Destroy User Defined Routes
+- name: Destroy a default route
+  azure_rm_route:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: defaultRoute
+    route_table_name: "aro-udr"
+    state: absent
+
+- name: Destroy a route table
+  azure_rm_routetable:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: "aro-udr"
+    state: absent
+
+## Destroy firewall
+
+- name: Destroy Azure Firewall
+  azure_rm_azurefirewall:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: "{{ vnet_fw_name }}"
+    state: absent
+
+- name: Destroy public IP address for firewall
+  azure_rm_publicipaddress:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: "{{ vnet_fw_name }}-pip"
+    state: absent
+
+## Destroy more Subnets
+- name: Destroy a firewall subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_hub_rg }}"
+    virtual_network_name: "{{ vnet_hub_name }}"
+    name: "AzureFirewallSubnet"
+    state: absent
+
+- name: Destroy a bastion subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_hub_rg }}"
+    virtual_network_name: "{{ vnet_hub_name }}"
+    name: "AzureBastionSubnet"
+    state: absent
+
+- name: Destroy a vm subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_hub_rg }}"
+    virtual_network_name: "{{ vnet_hub_name }}"
+    name: "{{ vnet_vm_subnet_name }}"
+    state: absent
+
+- name: Destroy spoke vnet
+  azure.azcollection.azure_rm_virtualnetwork:
+    resource_group: "{{ vnet_spoke_rg }}"
+    name: "{{ vnet_spoke_name }}"
+    state: absent
+
+- name: Destroy hub vnet
+  azure.azcollection.azure_rm_virtualnetwork:
+    resource_group: "{{ vnet_hub_rg }}"
+    name: "{{ vnet_hub_name }}"
+    state: absent

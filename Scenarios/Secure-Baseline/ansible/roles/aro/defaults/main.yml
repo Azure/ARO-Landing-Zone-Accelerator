@@ -1,0 +1,23 @@
+---
+# defaults file for roles/aro
+
+aro_resource_group:  spoke-aro
+aro_cluster_name: openshift-cluster-aro
+aro_pull_secret: ""
+# aro_domain: ratingsapp.aro.com
+aro_vnet_id: aro_vnet
+aro_location: eastus
+aro_pod_cidr: 10.128.0.0/14
+aro_service_cidr: 172.30.0.0/16
+aro_sp_client_id:
+aro_sp_client_secret:
+
+aro_public_ingress: false
+aro_public_api: false
+
+aro_control_subnet_id: ""
+aro_control_vm_size: Standard_D8s_v3
+aro_worker_subnet_id: ""
+aro_worker_vm_size: Standard_D4s_v3
+aro_worker_disk_size: 128
+aro_worker_count: 3

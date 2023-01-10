@@ -1,0 +1,32 @@
+---
+- name: Create hub vnet
+  azure.azcollection.azure_rm_virtualnetwork:
+    resource_group: "{{ output_rg_hub_name }}"
+    name: "{{ vnet_hub_name }}"
+    address_prefixes_cidr: "{{ vnet_hub_prefix }}"
+    dns_servers: "{{ _vnet_dns_servers | default(omit) }}"
+  register: _vnet_hub
+
+- name: Create a firewall subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_hub_rg }}"
+    virtual_network_name: "{{ vnet_hub_name }}"
+    address_prefix_cidr: "{{ vnet_fw_subnet_prefix }}"
+    name: "AzureFirewallSubnet"
+  register: _firewall_subnet
+
+- name: Create a bastion subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_hub_rg }}"
+    virtual_network_name: "{{ vnet_hub_name }}"
+    address_prefix_cidr: "{{ vnet_bastion_subnet_prefix }}"
+    name: "AzureBastionSubnet"
+  register: _bastion_subnet
+
+- name: Create a vm subnet
+  azure_rm_subnet:
+    resource_group: "{{ vnet_hub_rg }}"
+    virtual_network_name: "{{ vnet_hub_name }}"
+    address_prefix_cidr: "{{ vnet_vm_subnet_prefix }}"
+    name: "{{ vnet_vm_subnet_name }}"
+  register: _vm_subnet
