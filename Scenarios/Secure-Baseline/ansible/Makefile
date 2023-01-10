@@ -16,14 +16,14 @@ virtualenv:
 	./virtualenv/bin/pip3 install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements-azure.txt
 # ./virtualenv/bin/ansible-galaxy collection install community.okd
 
-podman.image:
-	podman build -t quay.io/pczar/ansible-aro-lz .
+#podman.image:
+#	podman build -t quay.io/pczar/ansible-aro-lz .
 
-podman.image.push:
-	docker push quay.io/pczar/ansible-aro-lz
+#podman.image.push:
+#	docker push quay.io/pczar/ansible-aro-lz
 
-podman.image.pull:
-	docker pull quay.io/pczar/ansible-aro-lz
+#podman.image.pull:
+#	docker pull quay.io/pczar/ansible-aro-lz
 
 
 create:
@@ -37,15 +37,9 @@ destroy:
 
 delete: destroy
 
-podman.create:
-	podman run --rm \
-		-v $(HOME)/.azure:/home/ansible/.azure:ro \
-	  -ti quay.io/pczar/ansible-aro-lz \
-		$(ANSIBLE) -v create.yml
+#podman.create:
+#	podman run --rm \
+#		-v $(HOME)/.azure:/home/ansible/.azure:ro \
+#	  -ti quay.io/pczar/ansible-aro-lz \
+#		$(ANSIBLE) -v create.yml
 
-# docker.delete: image
-# 	docker run --rm \
-# 		-v $(HOME)/.ocm.json:/home/ansible/.ocm.json \
-# 		-v $(HOME)/.aws:/home/ansible/.aws \
-# 	  -ti quay.io/pczar/ansible-aro-lz \
-# 		$(ANSIBLE) -v delete-cluster.yaml
