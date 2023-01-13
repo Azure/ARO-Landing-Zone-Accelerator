@@ -19,7 +19,7 @@ Below is the architecture of this scenario:
 ![Architectural diagram for the secure baseline scenario.](../../media/aro_landing_zone_Architecture.png)
 
 The architecture is very similar to the [AKS secure baseline private cluster](https://github.com/Azure/AKS-Landing-Zone-Accelerator/tree/main/Scenarios/AKS-Secure-Baseline-PrivateCluster) architecture with minor tweaks to optimize it for ARO. The main differences are as follows:
-1. The use of Front door as opposed to application gateway to take advantage of more of the ARO features including its proprietary ingress controller
+1. The use of Front door as opposed to application gateway to take advantage of more of the ARO features such as its ingress controller
 1. The use for Azure ARC for Kubernetes in order to take advantage of native monitoring of the cluster
 1. The use of CosmosDB as opposed to using a database pod
 
