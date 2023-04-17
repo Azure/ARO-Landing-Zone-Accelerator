@@ -2,15 +2,17 @@
 
 variable "tenant_id" {
   type = string
+  default = ""
 }
 
 variable "subscription_id" {
   type = string
+  default = ""
 }
 
 variable "location" {
   type    = string
-  default = "eastus"
+  default = "eastasia"
 }
 
 variable "hub_name" {
@@ -69,8 +71,10 @@ variable "aro_rp_object_id" {
 
 variable "aro_base_name" {
   type = string
+  default = ""
 }
 
 variable "aro_domain" {
   type = string
+  default = ""
 }

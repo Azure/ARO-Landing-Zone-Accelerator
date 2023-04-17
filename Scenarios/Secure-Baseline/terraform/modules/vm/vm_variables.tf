@@ -19,14 +19,19 @@ variable "vm_subnet_id" {
   type = string
 }
 
-variable "jumbox_name" {
+variable "jumpbox_name" {
   type = string
   default = "jumpbox"
 }
 
+variable "jumpbox2_name" {
+  type = string
+  default = "Windowsbox"
+}
+
 variable "jumpbox_size" {
   type = string
-  default = "Standard_D4s_v3"
+  default = "Standard_D2s_v3"
 }
 
 variable "kv_id" {

@@ -1,6 +1,7 @@
-HUBRGNAME='hub-rg'
-SPOKERGNAME='spoke-rg'
-AROCLUSTER='ftaarocluster'
+# Variables
+HUBRGNAME='hub-aro' #name of hub resource group
+SPOKERGNAME='spoke-aro' # name of spoke resource group
+AROCLUSTER='ftaarocluster' # name of ARO cluster
 
 # 1. Delete ARO cluster
 az aro delete --resource-group $SPOKERGNAME --name $AROCLUSTER -y

@@ -1,0 +1,17 @@
+# NON-TLS - HTTP Only
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ratingsapp-ingress
+spec:
+  rules:
+    - host: <fqdn>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ratings-web
+                port:
+                  number: 80

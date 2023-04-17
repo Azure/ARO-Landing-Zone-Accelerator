@@ -392,118 +392,104 @@ resource "azurerm_monitor_diagnostic_setting" "fw_diag" {
   log_analytics_workspace_id = var.la_id
   log_analytics_destination_type = "AzureDiagnostics"
 
-  log {
+  enabled_log {
     category = "AzureFirewallApplicationRule"
-    enabled = true
     retention_policy {
       days = 0
       enabled = false
     }
   }
 
-  log {
+  enabled_log {
     category = "AzureFirewallNetworkRule"
-    enabled = true
     retention_policy {
       days = 0
       enabled = false
     }
   }
 
-  log {
+  enabled_log {
     category = "AzureFirewallDnsProxy"
-    enabled = true
     retention_policy {
       days = 0
       enabled = false
     }
   }
 
-  log {
+  enabled_log {
     category = "AZFWApplicationRule"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
   
-  log {
+  enabled_log {
     category = "AZFWApplicationRuleAggregation"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
-  log {
+  enabled_log {
     category = "AZFWDnsQuery"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
-  log {
+  enabled_log {
     category = "AZFWFqdnResolveFailure"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
 
-  log {
+  enabled_log {
     category = "AZFWIdpsSignature"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
-  log {
+  enabled_log {
     category = "AZFWNatRule"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
-  log {
+  enabled_log {
     category = "AZFWNatRuleAggregation"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
-  log {
+  enabled_log {
     category = "AZFWNetworkRule"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
-  log {
+  enabled_log {
     category = "AZFWNetworkRuleAggregation"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
-  log {
+  enabled_log {
     category = "AZFWThreatIntel"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
     }
   }
-  log {
+  enabled_log {
     category = "AZFWFatFlow"
-    enabled = false
     retention_policy {
       days = 0
       enabled = false
