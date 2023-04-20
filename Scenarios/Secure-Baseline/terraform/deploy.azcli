@@ -27,7 +27,6 @@ read -r ARODOMAIN
 TENANT_ID=$(az account show -s ${SUBSCRIPTIONID} --query tenantId -o tsv)
 
 # Create the Service Principal
-# TODO: Add check to see if the SPN already exists (proposed check below - alainvetier)
 
 if [ -e /tmp/sp.json ]; then
   SP_CLIENT_ID=$(jq -r '.appId' /tmp/sp.json)
