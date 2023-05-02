@@ -30,7 +30,7 @@ i would suggest also to add a note highlighting that windowsbox is meant for Azu
 
 There are a few tasks that need to be completed after the deployment. These scripts must be run from the Jumpbox that is created during the deployment. These scripts are in the files in the folders listed below.
 
-* [AAD Integration](./post_deployment/aad-RBAC/aad-RBAC)
+* [AAD Integration](./post_deployment/aad-RBAC)
 * [Container Insights Integration](./post_deployment/containerinsights)
 * [Application Deployment](./post_deployment/appdeployment)
 
