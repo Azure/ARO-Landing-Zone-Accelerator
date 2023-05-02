@@ -2,17 +2,15 @@
 
 variable "tenant_id" {
   type = string
-  default = ""
 }
 
 variable "subscription_id" {
   type = string
-  default = ""
 }
 
 variable "location" {
   type    = string
-  default = "eastasia"
+  default = "eastus"
 }
 
 variable "hub_name" {
@@ -23,6 +21,11 @@ variable "hub_name" {
 variable "spoke_name" {
   type    = string
   default = "spoke-aro"
+}
+
+variable "aro_spn_name" {
+  type    = string
+  default = "aro-lza-sp"
 }
 
 resource "random_password" "pw" {
@@ -57,24 +60,14 @@ resource "random_string" "random" {
   }
 }
 
-variable "aro_sp_client_id" {
-  type = string
-}
-
-variable "aro_sp_password" {
-  type = string
-}
-
 variable "aro_rp_object_id" {
   type = string
 }
 
 variable "aro_base_name" {
   type = string
-  default = ""
 }
 
 variable "aro_domain" {
   type = string
-  default = ""
 }

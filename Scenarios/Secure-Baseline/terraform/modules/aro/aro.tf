@@ -16,9 +16,9 @@ resource "azurerm_resource_group_template_deployment" "aro" {
   deployment_mode = "Incremental"
   parameters_content = jsonencode({
     "clientId" = {
-      value = var.aro_sp_client_id    }
+      value = var.sp_client_id   }
     "clientSecret" = {
-      value = var.aro_sp_password
+      value = var.sp_client_secret
     }
     "clusterName" = {
       value = "openshift-cluster-${var.base_name}"

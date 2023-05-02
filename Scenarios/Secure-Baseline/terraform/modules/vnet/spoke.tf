@@ -26,7 +26,7 @@ resource "azurerm_subnet" "master_aro" {
   virtual_network_name = azurerm_virtual_network.spoke.name
   address_prefixes = var.master_aro_subnet_prefix
   private_endpoint_network_policies_enabled = true
-  enforce_private_link_service_network_policies = true
+  private_link_service_network_policies_enabled = false
 
   service_endpoints = [ "Microsoft.ContainerRegistry", "Microsoft.Storage" ]
 }
@@ -47,5 +47,5 @@ resource "azurerm_subnet" "private_endpoint" {
   resource_group_name = var.spoke_rg_name
   virtual_network_name = azurerm_virtual_network.spoke.name
   address_prefixes = var.private_endpoint_subnet_prefix
-  enforce_private_link_service_network_policies = true
+  private_link_service_network_policies_enabled = true
 }
