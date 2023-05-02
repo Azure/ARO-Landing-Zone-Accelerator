@@ -69,6 +69,18 @@ module "supporting" {
   ]
 }
 
+module "serviceprincipal" {
+  source = "./modules/serviceprincipal"
+
+  aro_spn_name = var.aro_spn_name
+  spoke_rg_name = azurerm_resource_group.spoke.name
+  hub_rg_name = azurerm_resource_group.hub.name
+
+  depends_on = [
+    module.vnet
+  ]
+}
+
 module "aro" {
   source = "./modules/aro"
 
@@ -78,15 +90,15 @@ module "aro" {
   master_subnet_id = module.vnet.master_subnet_id
   worker_subnet_id = module.vnet.worker_subnet_id
 
-  aro_sp_client_id = var.aro_sp_client_id
-  aro_sp_password = var.aro_sp_password
+  sp_client_id = module.serviceprincipal.sp_client_id
+  sp_client_secret = module.serviceprincipal.sp_client_secret
   aro_rp_object_id = var.aro_rp_object_id
   spoke_rg_name = azurerm_resource_group.spoke.name
   base_name = var.aro_base_name
   domain = var.aro_domain
 
   depends_on = [
-    module.vnet
+    module.serviceprincipal
   ]
 }
 

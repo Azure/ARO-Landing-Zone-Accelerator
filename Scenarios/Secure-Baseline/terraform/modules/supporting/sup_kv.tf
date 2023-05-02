@@ -44,3 +44,11 @@ resource "azurerm_private_dns_zone_virtual_network_link" "kv" {
   virtual_network_id = var.spoke_vnet_id
   registration_enabled = false
 }
+
+resource "azurerm_private_dns_zone_virtual_network_link" "kv2" {
+  name = "KeyvaultDNSLinkHub"
+  resource_group_name = data.azurerm_resource_group.spoke.name
+  private_dns_zone_name = azurerm_private_dns_zone.kv.name
+  virtual_network_id = var.hub_vnet_id
+  registration_enabled = false
+}

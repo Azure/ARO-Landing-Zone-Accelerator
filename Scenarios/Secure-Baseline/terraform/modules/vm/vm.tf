@@ -1,3 +1,4 @@
+
 data "azurerm_key_vault_secret" "admin_username" {
   name = "vmadminusername"
   key_vault_id = var.kv_id
@@ -40,15 +41,72 @@ resource "azurerm_network_interface" "jumpbox" {
   }
 }
 
-resource "azurerm_windows_virtual_machine" "jumpbox" {
-  name = var.jumbox_name
+resource "azurerm_linux_virtual_machine" "jumpbox" {
+  name                  = var.jumpbox_name
+  resource_group_name   = var.resource_group_name
+  location              = var.location
+  size                  = var.jumpbox_size
+  admin_username        = data.azurerm_key_vault_secret.admin_username.value
+  admin_password        = data.azurerm_key_vault_secret.admin_password.value
+  network_interface_ids = [azurerm_network_interface.jumpbox.id]
+  disable_password_authentication = false
+
+  os_disk {
+    caching           = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      admin_username,
+      admin_password
+    ]
+  }  
+}
+
+resource "azurerm_virtual_machine_extension" "jumpbox" {
+  name = "jumpbox"
+  virtual_machine_id = azurerm_linux_virtual_machine.jumpbox.id
+  publisher = "Microsoft.Azure.Extensions"
+  type                 = "CustomScript"
+  type_handler_version = "2.0"
+
+  settings = <<SETTINGS
+  {
+    "fileUris": ["https://raw.githubusercontent.com/alainvetier/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/script.sh"],
+    "commandToExecute": "sh script.sh"
+  }
+  SETTINGS
+}
+
+resource "azurerm_network_interface" "Jumpbox2" {
+  name = "${var.bastion_name}-nic2"
+  location = var.location
+  resource_group_name = var.resource_group_name
+
+  ip_configuration {
+    name = "internal"
+    subnet_id = var.vm_subnet_id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_windows_virtual_machine" "Jumpbox2" {
+  name = var.jumpbox2_name
   resource_group_name = var.resource_group_name
   location = var.location
   size = var.jumpbox_size
   admin_username = data.azurerm_key_vault_secret.admin_username.value
-  admin_password = data.azurerm_key_vault_secret.admin_username.value
+  admin_password = data.azurerm_key_vault_secret.admin_password.value
   network_interface_ids = [
-    azurerm_network_interface.jumpbox.id
+    azurerm_network_interface.Jumpbox2.id
   ]
 
   os_disk {
@@ -59,7 +117,7 @@ resource "azurerm_windows_virtual_machine" "jumpbox" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2016-Datacenter"
+    sku       = "2022-Datacenter"
     version   = "latest"
   }
 
@@ -69,19 +127,6 @@ resource "azurerm_windows_virtual_machine" "jumpbox" {
       admin_password
     ]
   }
-}
-
-resource "azurerm_virtual_machine_extension" "jumpbox" {
-  name = "jumpbox"
-  virtual_machine_id = azurerm_windows_virtual_machine.jumpbox.id
-  publisher = "Microsoft.Compute"
-  type                 = "CustomScriptExtension"
-  type_handler_version = "1.9"
-
-  settings = <<SETTINGS
-  {
-    "fileUris": ["https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/terraform/modules/vm/start_script.ps1"],
-    "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File start_script.ps1"
-  }
-  SETTINGS
+  priority = "Spot"
+  eviction_policy = "Deallocate"
 }

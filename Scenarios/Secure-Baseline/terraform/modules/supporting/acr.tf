@@ -46,5 +46,13 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dns_link" {
   resource_group_name = var.spoke_rg_name
   private_dns_zone_name = azurerm_private_dns_zone.dns.name
   virtual_network_id = var.spoke_vnet_id
+  registration_enabled = false
 }
 
+resource "azurerm_private_dns_zone_virtual_network_link" "dns_link2" {
+  name = "AcrDNSLinkHub"
+  resource_group_name = var.spoke_rg_name
+  private_dns_zone_name = azurerm_private_dns_zone.dns.name
+  virtual_network_id = var.hub_vnet_id
+  registration_enabled = false
+}

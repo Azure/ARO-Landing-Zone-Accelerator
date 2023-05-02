@@ -52,6 +52,14 @@ resource "azurerm_private_dns_zone_virtual_network_link" "cosmos" {
   name = "CosmosDbDNSLink"
   resource_group_name = data.azurerm_resource_group.spoke.name
   private_dns_zone_name = azurerm_private_dns_zone.cosmos.name
+  virtual_network_id = var.spoke_vnet_id
+  registration_enabled = false
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "cosmos2" {
+  name = "CosmosDbDNSLinkHub"
+  resource_group_name = data.azurerm_resource_group.spoke.name
+  private_dns_zone_name = azurerm_private_dns_zone.cosmos.name
   virtual_network_id = var.hub_vnet_id
   registration_enabled = false
 }

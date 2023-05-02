@@ -350,6 +350,10 @@ MigrationBackup/
 .ionide/
 commands.sh
 
+# MacOS
+**/.DS_Store
+
+
 #**********************************************************************************************************************************
 
 # Local .terraform directories
@@ -388,6 +392,7 @@ override.tf.json
 # .tfstate files
 *.tfstate
 *.tfstate.*
+**/.terraform.lock.hcl
 
 # Crash log files
 crash.log

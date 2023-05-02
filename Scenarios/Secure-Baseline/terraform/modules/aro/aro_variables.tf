@@ -36,13 +36,12 @@ variable "location" {
   type = string
 }
 
-variable "aro_sp_client_id" {
+variable "sp_client_id"{
   type = string
 }
 
-variable "aro_sp_password" {
+variable "sp_client_secret" {
   type = string
-  sensitive = true
 }
 
 variable "aro_rp_object_id" {

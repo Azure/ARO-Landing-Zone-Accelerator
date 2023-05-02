@@ -21,13 +21,18 @@ This deployment uses a single Azure CLI script to do the following:
 * Initializes Terraform
 * Deploys the environment
 
+## Retrieve Jumpbox and ARO credentials
+add description or commands to retrieve kv secrets for username and password required to connect on jumpbox with bastion (same credentials for windows and linux)
+i would suggest also to add a note highlighting that windowsbox is meant for Azure and ARO portal access for tasks done using UI. For AZCLI commands either linux subsystem for windows is recommanded or use the linux jumpbox.
+
+
 ## Post Deployment Tasks
 
 There are a few tasks that need to be completed after the deployment. These scripts must be run from the Jumpbox that is created during the deployment. These scripts are in the files in the folders listed below.
 
-* [AAD Integration](../Azure-CLI/07-aad-RBAC)
-* [Container Insights Integration](../Azure-CLI/08-containerinsights)
-* [Application Deployment](../Azure-CLI/09-appdeployment)
+* [AAD Integration](./post_deployment/aad-RBAC)
+* [Container Insights Integration](./post_deployment/containerinsights)
+* [Application Deployment](./post_deployment/appdeployment)
 
 ## Cleanup
 In this step you will delete all the resources that were created during the previous steps.

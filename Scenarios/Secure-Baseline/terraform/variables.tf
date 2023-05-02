@@ -23,6 +23,11 @@ variable "spoke_name" {
   default = "spoke-aro"
 }
 
+variable "aro_spn_name" {
+  type    = string
+  default = "aro-lza-sp"
+}
+
 resource "random_password" "pw" {
   length      = 16
   special     = true
@@ -53,14 +58,6 @@ resource "random_string" "random" {
   keepers = {
     location = var.location
   }
-}
-
-variable "aro_sp_client_id" {
-  type = string
-}
-
-variable "aro_sp_password" {
-  type = string
 }
 
 variable "aro_rp_object_id" {

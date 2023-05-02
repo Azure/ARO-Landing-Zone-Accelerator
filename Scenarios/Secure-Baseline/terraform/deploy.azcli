@@ -1,12 +1,7 @@
-#!/bin/bash
+# log into azure with credentials you want to use for deploying the landing zone
+az login
 
-# Prerequisites Check
-if [ "$(which terraform)" == "" ]; then
-  echo "Terraform not found. Please install terraform before running this script."
-  exit 1
-fi
-
-# Check if the RedHat Openshift Provider Is Installed
+# Check if the RedHat Openshift Provider is registered, registering it otherwise
 RHO_PROVIDER=$(az provider show --namespace Microsoft.RedHatOpenShift --query "[registrationState]" --output tsv)
 if [ "$RHO_PROVIDER" != "Registered" ]; then
     echo "RedHat OpenShift Provider Is Not Installed"
@@ -14,43 +9,32 @@ if [ "$RHO_PROVIDER" != "Registered" ]; then
     echo "RedHat OpenShift Provider has been installed Installed"
 fi
 
-# Prompt user for an Service Principal Name and Subscription ID
-echo "Enter the Name of the Service Principal for ARO to use:"
-read -r SPNNAME
-echo "Enter the Subscription ID where you want ARO deployed:"
-read -r SUBSCRIPTIONID
-echo "Enter the ARO cluster base name"
-read -r AROBASENAME
-echo "Enter the ARO Domain"
-read -r ARODOMAIN
+# take note of the subscription id and tenant id in which you want to deploy the ARO LZ
+az account show
 
-TENANT_ID=$(az account show -s ${SUBSCRIPTIONID} --query tenantId -o tsv)
-
-# Create the Service Principal
-# TODO: Add check to see if the SPN already exists
-az ad sp create-for-rbac --name $SPNNAME --scopes /subscriptions/$SUBSCRIPTIONID --role Contributor --output json > /tmp/sp.json
-
-# Set variables from the Service Principal
-SP_CLIENT_ID=$(jq -r '.appId' /tmp/sp.json)
-SP_CLIENT_SECRET=$(jq -r '.password' /tmp/sp.json)
-
-# Set variable for ARO Provider SP Object ID
-ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].objectId" -o tsv)
+# identify the resource provider object id for ARO
+aro_rp_object_id=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].id" -o tsv)
+echo $aro_rp_object_id
 
 ### Deploy Environment ###
 # Initialize Terraform
 terraform init
 
-# Terraform Apply
+# validate configuration 
+terraform plan \
+  -var tenant_id=YOURTENANTID \
+  -var subscription_id=YOURSUBSCRIPTIONID \
+  -var aro_rp_object_id=YOURARO_RP_OBJECTID \
+  -var aro_base_name=YOURAROCLUSTERBASENAME \
+  -var aro_domain=YOURAROUNIQUEDNSNAME
+# optional : -var location=YOURREGION , default being eastus
+
+# Deploy
 terraform apply \
   --auto-approve \
-  -var tenant_id="$TENANT_ID" \
-  -var subscription_id="$SUBSCRIPTIONID" \
-  -var aro_sp_client_id="$SP_CLIENT_ID" \
-  -var aro_sp_password="$SP_CLIENT_SECRET" \
-  -var aro_rp_object_id="$ARO_RP_SP_OBJECT_ID" \
-  -var aro_base_name="$AROBASENAME" \
-  -var aro_domain="$ARODOMAIN"
-
-# Inform user that additional steps are required to complete the deployment. These must be completed from the JumpBox.
-echo "Additional steps are required to complete the deployment. These must be completed from the JumpBox. Please consult the readme file"
+  -var tenant_id=YOURTENANTID \
+  -var subscription_id=YOURSUBSCRIPTIONID \
+  -var aro_rp_object_id=YOURARO_RP_OBJECTID \
+  -var aro_base_name=YOURAROCLUSTERBASENAME \
+  -var aro_domain=YOURAROUNIQUEDNSNAME
+# optional : -var location=YOURREGION , default being eastus
