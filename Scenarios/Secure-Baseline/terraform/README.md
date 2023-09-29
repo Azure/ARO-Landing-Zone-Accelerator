@@ -150,7 +150,10 @@ In this example, state is to be stored in an Azure Storage Account. The storage 
 
 To deploy the landing zone, follow the steps below.
 
-> **Note**: for Powershell, replace `\` with ``` ` ```.
+> **Note**
+>
+> For Powershell, replace `\` with ``` ` ```.
+>
 
 1. Initialize Terraform
 
