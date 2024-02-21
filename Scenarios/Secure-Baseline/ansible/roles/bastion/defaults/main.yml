@@ -1,6 +1,0 @@
----
-# defaults file for roles/bastion
-bastion_name: bastion-hub
-bastion_resource_group: bastion-rg
-# bastion_subnet:
-bastion_subnet_id:
