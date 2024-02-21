@@ -1,3 +1,6 @@
+> [!CAUTION]
+> **THIS IMPLEMENTATION IS EXPERIMENTAL AND MIGHT NOT WORK. USE the Terraform option instead.**
+
 # ARO Landing Zone
 
 This Ansible deployment bundle contains everything needed to stand up an Azure Red Hat OpenShift cluster in an Azure Landing Zone.
@@ -41,19 +44,3 @@ You can run OC commands to log into the cluster from either. You can also use `s
 ```bash
 make destroy
 ```
-
-## License
-
-Copyright 2022 Red Hat, Microsoft
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
