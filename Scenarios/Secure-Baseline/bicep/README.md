@@ -1,14 +1,13 @@
-V0.1 Alpha released 08/31/2022
+# ARO Secure Baseline - Bicep
+
+> [!CAUTION]
+> **THIS IMPLEMENTATION IS EXPERIMENTAL**
 
 
-# This deployment method currently expects the usage of Azure DevOps
-# or deployment.sh script.
+> This deployment method currently expects the usage of Azure DevOps or deployment.sh script.
 
-Desired end state is below
-
-
-# Azure Devops Instructions
-## Portal / integration configuration:
+## Azure Devops Instructions
+### Portal / integration configuration:
 
 Begin by configuring an azure devops org and project at devops.azure.com
 Add service connections to your company's azure account. Do not select a resource group!
@@ -16,7 +15,7 @@ Add service connections to your company's azure account. Do not select a resourc
 add service connection to your company's github portal
 connect the azure pipelines github app to the repo you wish to use for this deployment
 
-## Pipeline creation
+### Pipeline creation
 
 This step is a bit tricky.  Azure Devops wants to create a pipeline in the main branch
 of the repo and in the root folder of the repo.  Since this particular exercise uses 
@@ -34,29 +33,27 @@ requirements.
   bicep branch, and in the bicep folder.
 - don't forget to change the trigger branch in pipeline definition.
  
-## Pipeline / script steps:
+### Pipeline / script steps:
 
 1.  Create the Hub network and all hub resources
-- Hub resource group
-- Hub vnet and all subnets
-- route table and routes
-- azure bastion service
+    - Hub resource group
+    - Hub vnet and all subnets
+    - route table and routes
+    - azure bastion service
 2.  Create the Bastion Host VM
-- Currently set to RHEL 9.
+    - Currently set to RHEL 9.
 3.  Update the hub route table to allow bastion VM internet access
 4.  Create the spoke network and all spoke resources
-- Spoke resource group
-- Spoke Vnet and subnets
-- Private endpoints
-- Private DNS zones
-- spoke route table and routes
+    - Spoke resource group
+    - Spoke Vnet and subnets
+    - Private endpoints
+    - Private DNS zones
+    - spoke route table and routes
 5. Update the spoke routing table with the master and worker spoke subnets
-5.  Create the supporting services for the ARO cluster
-- azure container registry
-- azure storage account
-- azure keyvault
-6.  Create the ARO cluster.
+6.  Create the supporting services for the ARO cluster
+    - azure container registry
+    - azure storage account
+    - azure keyvault
+7.  Create the ARO cluster.
 
-This is still under development.  Many things will require adjustment / tailoring to the 
-customer's environment with manual intervention.  Ver. 0.2alpha will bring much more 
-variable usage and automation / automatic app onboaring to this implementation.
+This is still under development.  Many things will require adjustment / tailoring to the with manual intervention.

@@ -12,8 +12,8 @@ For this scenario, we have various IaC technology as well as the Azure CLI optio
 
 The deployment of this solution can be done individually through various means. Walking through the Azure CLI option will ensure that your ARO environment is not only configured but you control every aspect of the deployment. Alternatively, you can deploy the server environment using other methods. The options available are deployed below:
 
-* [Terraform](./terraform/README.md) (Under Development but can still be used)
-* [Azure CLI](./Azure-CLI/README.md)
+* [Terraform](./terraform/README.md) (Under Development)
+* [Bicep](./bicep/README.md) (Experimental)
 
 Below is the architecture of this scenario:
 ![Architectural diagram for the secure baseline scenario.](../../media/aro_landing_zone_Architecture.png)
