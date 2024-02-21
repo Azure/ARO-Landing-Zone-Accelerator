@@ -1,7 +1,7 @@
 # ARO Secure Baseline - Bicep
 
 > [!CAUTION]
-> **THIS IMPLEMENTATION IS EXPERIMENTAL**
+> **THIS IMPLEMENTATION IS EXPERIMENTAL AND MIGHT NOT WORK. USE the Terraform option instead.**
 
 
 > This deployment method currently expects the usage of Azure DevOps or deployment.sh script.

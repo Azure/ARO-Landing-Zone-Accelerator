@@ -1,5 +1,0 @@
-- set_fact:
-    output_rg_hub_name: "{{ rg_hub_name }}"
-    output_rg_spoke_name: "{{ rg_spoke_name }}"
-    output_rg_hub_info: "{{ _rg_hub.state }}"
-    output_rg_spoke_info: "{{ _rg_hub.state }}"
