@@ -112,10 +112,10 @@ In this example, state is to be stored in an Azure Storage Account. The storage 
         - `PowerShell`:
 
             ```powershell
-            $REGION=<REGION>
-            $STORAGEACCOUNTNAME=<UNIQUENAME>
-            $CONTAINERNAME=arolzaterraform
-            $TFSTATE_RG=rg-aro-lza-terraform
+            $REGION="<REGION>"
+            $STORAGEACCOUNTNAME="<UNIQUENAME>"
+            $CONTAINERNAME="arolzaterraform"
+            $TFSTATE_RG="rg-aro-lza-terraform"
             ```
         Where `<REGION>` is the region where you want to deploy the storage account and `<UNIQUENAME>` is a unique name for the storage account.
 
@@ -134,7 +134,7 @@ In this example, state is to be stored in an Azure Storage Account. The storage 
     1. Create the storage container within the storage account
 
         ```bash
-        az storage container create --name $CONTAINERNAME --storage-account $STORAGEACCOUNTNAME --resource-group $TFSTATE_RG
+        az storage container create --name $CONTAINERNAME --account-name $STORAGEACCOUNTNAME --resource-group $TFSTATE_RG
         ```
 
 1. Review carrefully the implementation of the LZA and all the parameters before deploying the solution.
@@ -178,9 +178,9 @@ To deploy the landing zone, follow the steps below.
         ```powershell
         $TENANT_ID = az account show --query tenantId -o tsv
         $SUBSCRIPTION_ID = az account show --query id -o tsv
-        $LOCATION=<YOUR_REGION>
-        $ARO_BASE_NAME=<YOUR_ARO_CLUSTER_BASENAME>
-        $ARO_DOMAIN=<YOU_ARO_UNIQUE_DNS_NAME>
+        $LOCATION="<YOUR_REGION>"
+        $ARO_BASE_NAME="<YOUR_ARO_CLUSTER_BASENAME>"
+        $ARO_DOMAIN="<YOU_ARO_UNIQUE_DNS_NAME>"
         ```
 
     Where `<YOUR_REGION>` is the region where you wamt to deploy the landing zone, `<YOUR_ARO_CLUSTER_BASENAME>` is the base name for the ARO cluster and `<YOU_ARO_UNIQUE_DNS_NAME>` is the unique DNS name for the ARO cluster.
@@ -223,7 +223,7 @@ To deploy the landing zone, follow the steps below.
 1. Deploy the landing zone
 
     ```bash
-    terraform plan \
+    terraform apply \
       --auto-approve \
       -var tenant_id= $TENANT_ID \
       -var subscription_id=$SUBSCRIPTION_ID \
