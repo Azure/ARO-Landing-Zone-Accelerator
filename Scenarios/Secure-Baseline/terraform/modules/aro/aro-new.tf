@@ -55,3 +55,6 @@ resource "azurerm_redhat_openshift_cluster" "aro_cluster" {
   ]
        
 }
+output "console_url" {
+  value = azurerm_redhat_openshift_cluster.aro_cluster.console_url
+}
