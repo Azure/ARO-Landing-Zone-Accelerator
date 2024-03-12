@@ -48,6 +48,10 @@ resource "azurerm_redhat_openshift_cluster" "aro_cluster" {
   service_principal {
     client_id     = var.sp_client_id
     client_secret = var.sp_client_secret
-  }  
+  }
+
+ depends_on = [
+    azurerm_role_assignment.resource_provider_assignment
+  ]
        
 }
