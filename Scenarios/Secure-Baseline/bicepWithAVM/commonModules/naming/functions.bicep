@@ -62,15 +62,3 @@ func getResourceName(resourceType resourceTypeType, workloadName string, env str
 @export()
 @description('Returns a resource name that is a concatenation of the provided strings separated by a hyphen.')
 func getResourceNameFromParentResourceName(resourceType resourceTypeType, parentResourceName string, postfix string?, hash string?) string => hash == null ? '${getAbbreviation(resourceType)}-${parentResourceName}${getStringValueWithHyphen(postfix)}' : '${getAbbreviation(resourceType)}-${replace(parentResourceName, '-${hash!}', '')}${getStringValueWithHyphen(postfix)}-${hash!}'
-
-@export()
-@description('Returns a key vault name that is a concatenation of the workload name, the environment in lower case, the hash if provided, the postfix if provided with a hyphen prefix, and the key vault abbreviation with a hyphen prefix.')
-func getKeyVaultName(workloadName string, env string, region string, postfix string?, hash string?, arrayForUniqueString string[]?) string => '${getAbbreviation('keyVault')}-${toLower(workloadName)}-${toLower(env)}${getStringValueOfMaxSize(postfix, 3)}-${getHashOrUniqueString(hash, arrayForUniqueString, 5)}'
-
-@export()
-@description('Returns an ARO cluster name that is a concatenation of the prefix, the workload name, the environment in lower case, the hash if provided, the postfix if provided, and the ARO abbreviation. If the name exceeds the maximum size (30), truncates the prefix and the workload name.')
-func getAroClusterName(prefix string, workloadName string, env string, postfix string?, hash string?) string => '${take('${getAbbreviation('azureRedHatOpenShift')}-${toLower(workloadName)}', getResourceRemainingSize(30, 4, getSizeOfString(hash, true), getSizeOfString(postfix, false), 4))}-${toLower(env)}${getStringValueWithHyphen(postfix)}-${getAbbreviation('azureRedHatOpenShift')}${getStringValueWithHyphen(hash)}'
-
-@export()
-@description('Returns an ARO cluster domain that is a concatenation of the prefix, the workload name, the environment in lower case, and the hash if provided or the unique string. If the name exceeds the maximum size (30), truncates the prefix and the workload name. If the hash is not provided, generates a unique string based on the provided `arrayForUniqueString`.')
-func getAroClusterDomain(prefix string, workloadName string, env string, hash string?, arrayForUniqueString string[]?) string => '${take('${toLower(prefix)}-${toLower(workloadName)}', 20)}-${toLower(env)}-${getHashOrUniqueString(hash, arrayForUniqueString, 5)}'
