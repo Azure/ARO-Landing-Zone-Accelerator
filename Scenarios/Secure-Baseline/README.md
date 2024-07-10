@@ -4,7 +4,7 @@ A deployment of ARO-hosted workloads typically requires a separation of duties a
 
 There are various ways to secure your ARO cluster. From a network security perspective, these can be classified into securing the control plane and securing the workload.
 
-By the end of this, you would have deployed a secure ARO cluster, compliant with ARO landing zone accelerator guidance and best practices. We will also be deploying a workload known as the Ratings app that is also featured in the [Azure Kubernetes Services Workshop](https://docs.microsoft.com/en-us/learn/modules/aks-workshop/). Check out the workshop for some intermediate level training on AKS.
+By the end of this, you would have deployed a secure ARO cluster, compliant with ARO landing zone accelerator guidance and best practices. We will also be deploying a workload known as the Ratings app that is also featured in the [Azure Kubernetes Services Workshop](https://docs.microsoft.com/en-us/learn/modules/aks-workshop/).
 
 For this scenario, we have various IaC technology as well as the Azure CLI option that you can choose from depending on your preference. At this time only the Terraform version is available in IaC.
 
@@ -14,6 +14,7 @@ The deployment of this solution can be done individually through various means. 
 
 * [Terraform](./terraform/README.md) 
 * [Bicep](./bicep/README.md) (Experimental, still in development)
+* [Bicep with Azure Verified Modules (AVM)](./bicepWithAVM/README.md)
 
 Below is the architecture of this scenario:
 ![Architectural diagram for the secure baseline scenario.](../../media/aro_landing_zone_Architecture.png)
