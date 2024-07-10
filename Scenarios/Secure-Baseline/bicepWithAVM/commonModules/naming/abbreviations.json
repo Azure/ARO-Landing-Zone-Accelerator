@@ -1,0 +1,22 @@
+{
+    "resourceGroup": "rg",
+    "virtualNetwork": "vnet",
+    "subnet": "sn",
+    "networkSecurityGroup": "nsg",
+    "routeTable": "rt",
+    "applicationGateway": "ag",
+    "privateEndpoint": "pe",
+    "networkInterface": "nic",
+    "keyVault": "kv",
+    "diskEncryptionSet": "des",
+    "keyVaultKey": "key",
+    "userManagedIdentity": "umi",
+    "azureRedHatOpenShift": "aro",
+    "virtualMachine": "vm",
+    "firewall": "afw",
+    "firewallPolicy": "afwp",
+    "firewallPolicyRuleGroup": "afwprg",
+    "bastion": "bas",
+    "publicIp": "pip",
+    "logAnalyticsWorkspace": "log"
+  }
