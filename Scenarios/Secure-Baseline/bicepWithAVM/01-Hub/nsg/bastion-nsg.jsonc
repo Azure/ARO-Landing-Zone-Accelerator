@@ -1,0 +1,106 @@
+{
+    // based on: https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+    "securityRules": [
+      /* --------------------------------- Inbound -------------------------------- */
+      {
+        "name": "AllowHttpsInbound",
+        "properties": {
+          "description": "Allow https incoming connections to Bastion.",
+          "protocol": "Tcp",
+          "sourceAddressPrefix": "Internet",
+          "sourcePortRange": "*",
+          "destinationAddressPrefix": "*",
+          "destinationPortRange": "443",
+          "access": "Allow",
+          "priority": 120,
+          "direction": "Inbound"
+        }
+      },
+      {
+        "name": "AllowGatewayManagerInbound",
+        "properties": {
+          "description": "Allow Gateway Manager inbound connection (control plane connectivity).",
+          "protocol": "Tcp",
+          "sourceAddressPrefix": "GatewayManager",
+          "sourcePortRange": "*",
+          "destinationAddressPrefix": "*",
+          "destinationPortRange": "443",
+          "access": "Allow",
+          "priority": 130,
+          "direction": "Inbound"
+        }
+      },
+      {
+        "name": "AllowAzureLoadBalancerInbound",
+        "properties": {
+          "description": "Allow Azure Load Balancer inbound (health probe).",
+          "protocol": "Tcp",
+          "sourceAddressPrefix": "AzureLoadBalancer",
+          "sourcePortRange": "*",
+          "destinationAddressPrefix": "*",
+          "destinationPortRange": "443",
+          "access": "Allow",
+          "priority": 140,
+          "direction": "Inbound"
+        }
+      },
+      {
+        "name": "AllowBastionHostCommunication",
+        "properties": {
+          "description": "Allow data plane communication between underlying components of Azure Bastion.",
+          "protocol": "*",
+          "sourceAddressPrefix": "VirtualNetwork",
+          "sourcePortRange": "*",
+          "destinationAddressPrefix": "VirtualNetwork",
+          "destinationPortRanges": ["8080", "5701"],
+          "access": "Allow",
+          "priority": 150,
+          "direction": "Inbound"
+        }
+      },
+      /* -------------------------------- Outbound -------------------------------- */
+      {
+        "name": "AllowSshRdpOutbound",
+        "properties": {
+          "description": "Allow Bastion to reach target VMs.",
+          "protocol": "*",
+          "sourceAddressPrefix": "*",
+          "sourcePortRange": "*",
+          "destinationAddressPrefix": "VirtualNetwork",
+          "destinationPortRanges": ["22", "3389"],
+          "access": "Allow",
+          "priority": 100,
+          "direction": "Outbound"
+        }
+      },
+      {
+        "name": "AllowAzureCloudOutbound",
+        "properties": {
+          "description": "Allow bastion to connect to various public endpoints within Azure.",
+          "protocol": "Tcp",
+          "sourceAddressPrefix": "*",
+          "sourcePortRange": "*",
+          "destinationAddressPrefix": "AzureCloud",
+          "destinationPortRange": "443",
+          "access": "Allow",
+          "priority": 110,
+          "direction": "Outbound"
+        }
+      },
+      {
+        "name": "AllowBastionCommunication",
+        "properties": {
+          "description": "Allow bastion to connect to various public endpoints within Azure.",
+          "protocol": "*",
+          "sourceAddressPrefix": "VirtualNetwork",
+          "sourcePortRange": "*",
+          "destinationAddressPrefix": "VirtualNetwork",
+          "destinationPortRanges": ["8080", "5701"],
+          "access": "Allow",
+          "priority": 120,
+          "direction": "Outbound"
+        }
+      }
+    ]
+  }
+  
