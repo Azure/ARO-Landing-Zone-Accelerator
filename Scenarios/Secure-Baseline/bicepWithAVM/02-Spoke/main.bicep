@@ -11,7 +11,7 @@ import {
 } from '../commonModules/naming/functions.bicep'
 
 import { 
-  subnetConfigType 
+  subnetType 
 } from '../commonModules/network/types.bicep'
 
 /* -------------------------------------------------------------------------- */
@@ -123,7 +123,7 @@ param jumpboxNetworkSecurityGroupName string = getResourceNameFromParentResource
 /* ------------------------------ Other Subnets ----------------------------- */
 
 @description('The configuration for other subnets. Defaults to an empty array.')
-param otherSubnetsConfig subnetConfigType
+param otherSubnets subnetType[]?
 
 /* ------------------------------- Route Table ------------------------------ */
 
@@ -190,13 +190,12 @@ var predefinedSubnets = [
   }
 ]
 
+var _otherSubnets = [for subnet in otherSubnets: {
+  name: replaceSubnetNamePlaceholders(subnet.name, workloadName, env)
+  addressPrefix: subnet.addressPrefix
+}]
 
-  var otherSubnets = [for subnet in otherSubnetsConfig.subnets: {
-    name: replaceSubnetNamePlaceholders(subnet.name, workloadName, env)
-    addressPrefix: subnet.addressPrefix
-  }]
-
-var subnets = concat(predefinedSubnets, otherSubnets)
+var subnets = concat(predefinedSubnets, _otherSubnets)
 
 /* ------------------------------- Monitoring ------------------------------- */
 
