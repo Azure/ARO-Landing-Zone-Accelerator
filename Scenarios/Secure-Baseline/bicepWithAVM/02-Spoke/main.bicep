@@ -118,7 +118,14 @@ param jumpboxNetworkSecurityGroupName string = getResourceNameFromParentResource
 /* ------------------------------ Other Subnets ----------------------------- */
 
 // TODO add the other subnets and their type
-// TODO add route table
+
+/* ------------------------------- Route Table ------------------------------ */
+
+@description('The name of the route table for the two ARO subnets. Defaults to the naming convention `<abbreviation-route-table>-aro-<lower-case-env>-<location-short>[-<hash>]`.')
+param aroRouteTableName string = getResourceName('routeTable', 'aro', env, location, null, hash)
+
+@description('The private IP address of the firewall to route ARO egress traffic to it (Optional). If not provided, the route table will not be created and not associated with the worker nodes and master nodes subnets.')
+param firewallPrivateIpAddress string?
 
 /* ------------------------------- Monitoring ------------------------------- */
 
@@ -128,6 +135,8 @@ param logAnalyticsWorkspaceId string
 /* -------------------------------------------------------------------------- */
 /*                                  VARIABLES                                 */
 /* -------------------------------------------------------------------------- */
+
+var deployAroRouteTable = firewallPrivateIpAddress != null
 
 /* --------------------------------- Peering -------------------------------- */
 
@@ -155,11 +164,13 @@ var subnets = [
     name: masterNodesSubnetName
     addressPrefix: masterNodesSubnetAddressPrefix
     privateLinkServiceNetworkPolicies: 'Disabled'
+    routeTableResourceId: deployAroRouteTable ? aroRouteTable.outputs.resourceId : ''
   }
   {
     name: workerNodesSubnetName
     addressPrefix: workerNodesSubnetAddressPrefix
     privateLinkServiceNetworkPolicies: 'Disabled'
+    routeTableResourceId: deployAroRouteTable ? aroRouteTable.outputs.resourceId : ''
   }
   {
     name: privateEndpointsSubnetName
@@ -233,5 +244,28 @@ module jumpboxNetworkSecurityGroup 'br/public:avm/res/network/network-security-g
     tags: tags
     enableTelemetry: enableAvmTelemetry
     diagnosticSettings: diagnosticsSettings
+  }
+}
+
+/* ------------------------------- Route Table ------------------------------ */
+
+module aroRouteTable 'br/public:avm/res/network/route-table:0.2.3' = if (deployAroRouteTable) {
+  name: take('${deployment().name}-aro-route-table', 64)
+  scope: resourceGroup
+  params: {
+    name: aroRouteTableName
+    location: location
+    tags: tags
+    enableTelemetry: enableAvmTelemetry
+    routes: [
+      {
+        name: 'aro-to-internet'
+        properties: {
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: firewallPrivateIpAddress!
+          addressPrefix: '0.0.0.0/0'
+        }
+      }
+    ]
   }
 }
