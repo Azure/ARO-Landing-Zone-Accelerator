@@ -122,7 +122,7 @@ param jumpboxNetworkSecurityGroupName string = getResourceNameFromParentResource
 /* ------------------------------- Route Table ------------------------------ */
 
 @description('The name of the route table for the two ARO subnets. Defaults to the naming convention `<abbreviation-route-table>-aro-<lower-case-env>-<location-short>[-<hash>]`.')
-param aroRouteTableName string = getResourceName('routeTable', 'aro', env, location, null, hash)
+param aroRouteTableName string = getResourceName('routeTable', workloadName, env, location, null, hash)
 
 @description('The private IP address of the firewall to route ARO egress traffic to it (Optional). If not provided, the route table will not be created and not associated with the worker nodes and master nodes subnets.')
 param firewallPrivateIpAddress string?
