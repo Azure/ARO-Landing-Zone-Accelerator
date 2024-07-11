@@ -35,3 +35,7 @@ func getResourceName(resourceType resourceTypeType, workloadName string, env str
 @export()
 @description('Returns a resource name that is a concatenation of the provided strings separated by a hyphen.')
 func getResourceNameFromParentResourceName(resourceType resourceTypeType, parentResourceName string, postfix string?, hash string?) string => hash == null ? '${getAbbreviation(resourceType)}-${parentResourceName}${getStringLeadingWithHyphen(postfix)}' : '${getAbbreviation(resourceType)}-${replace(parentResourceName, '-${hash!}', '')}${getStringLeadingWithHyphen(postfix)}-${hash!}'
+
+@export()
+@description('Replaces the placeholders in the provided name with the provided values.')
+func replaceSubnetNamePlaceholders(name string, workloadName string, env string) string => replace(replace(name, '{workloadName}', workloadName), '{env}', toLower(env))
