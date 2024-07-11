@@ -79,17 +79,20 @@ param firewallSubnetAddressPrefix string = '10.0.1.0/26'
 @description('The address prefix for the firewall management subnet. Defaults to `10.0.2.0/26`.')
 param firewallManagementSubnetAddressPrefix string = '10.0.2.0/26'
 
+@description('The name of the public IP for the firewall. Defaults to the naming convention `<abbreviation-public-ip>-<firewall-name>[-<hash>]`.')
+param firewallPublicIpName string = getResourceNameFromParentResourceName('publicIp', firewallName, null, hash)
+
+@description('The name of the public IP for the firewall management. Defaults to the naming convention `<abbreviation-public-ip>-<firewall-name>-mgmt[-<hash>]`.')
+param firewallManagementPublicIpName string = getResourceNameFromParentResourceName('publicIp', firewallName, 'mgmt', hash)
+
 @description('The address prefix for the bastion subnet. Defaults to `10.0.3.0/27`.')
 param bastionSubnetAddressPrefix string = '10.0.3.0/27'
 
 @description('The name of the bastion subnet network security group. Defaults to the naming convention `<abbreviation-nsg>-AzureBastionSubnet[-<hash>]`.')
 param bastionSubnetNetworkSecurityGroupName string = getResourceNameFromParentResourceName('networkSecurityGroup', 'AzureBastionSubnet', null, hash)
 
-@description('The name of the public IP for the firewall. Defaults to the naming convention `<abbreviation-public-ip>-<firewall-name>[-<hash>]`.')
-param firewallPublicIpName string = getResourceNameFromParentResourceName('publicIp', firewallName, null, hash)
-
-@description('The name of the public IP for the firewall management. Defaults to the naming convention `<abbreviation-public-ip>-<firewall-name>-mgmt[-<hash>]`.')
-param firewallManagementPublicIpName string = getResourceNameFromParentResourceName('publicIp', firewallName, 'mgmt', hash)
+@description('The name of the bastion public IP. Defaults to the naming convention `<abbreviation-public-ip>-<bastion-name>[-<hash>]`.')
+param bastionPublicIpName string = getResourceNameFromParentResourceName('publicIp', bastionName, null, hash)
 
 @description('Link the key vault private DNS zone to the hub vnet. Defaults to false. This is required if a DNS resolver is deployed in the hub.')
 param linkKeyvaultDnsZoneToHubVnet bool = false
@@ -329,8 +332,11 @@ module bastion 'br/public:avm/res/network/bastion-host:0.2.2' = {
     location: location
     tags: tags
     enableTelemetry: enableAvmTelemetry
-    diagnosticSettings: diagnosticsSettings
     virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+    publicIPAddressObject: {
+      name: bastionPublicIpName
+    }
+    diagnosticSettings: diagnosticsSettings
   }
 }
 
