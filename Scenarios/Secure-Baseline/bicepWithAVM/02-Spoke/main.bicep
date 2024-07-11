@@ -47,21 +47,21 @@ param tags object = hash == null ? {
   hash: hash
 }
 
-@description('Enable Azure Verified Modules (AVM) telemetry. Defaults to false.')
+@description('Enable Azure Verified Modules (AVM) telemetry. Defaults to true.')
 param enableAvmTelemetry bool = true
 
-@description('The name of the resource group for the spoke.')
-param resourceGroupName string = getResourceName('rg', workloadName, env, hash)
+@description('The name of the resource group for the spoke. Defaults to the naming convention `<abbreviation-resource-group>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
+param resourceGroupName string = getResourceName('resourceGroup', workloadName, env, location, null, hash)
 
 /* ----------------------------- Virtual Network ---------------------------- */
 
 @description('The resource id of the hub virtual network. This is required to peer the spoke virtual network with the hub virtual network.')
 param hubVirtualNetworkId string
 
-@description('The name of the spoke virtual network. Defaults to the naming convention `<abbreviation-virtual-network>-<workloadName>-<toLower(environment)>[-<hash>]`.')
+@description('The name of the spoke virtual network. Defaults to the naming convention `<abbreviation-virtual-network>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(64)
-param virtualNetworkName string = getResourceName('vnet', workloadName, env, hash)
+param virtualNetworkName string = getResourceName('virtualNetwork', workloadName, env, location, null, hash)
 
 @description('The CIDR for the spoke virtual network. Defaults to 10.1.0.0/16.')
 param virtualNetworkAddressPrefix string = '10.1.0.0/16'
@@ -71,49 +71,49 @@ param dnsServers array?
 
 /* --------------------------- Master Nodes Subnet -------------------------- */
 
-@description('The name of the master nodes subnet. Defaults to the naming convention `<abbreviation-subnet>-aro-master-<workloadName>-<toLower(environment)>[-<hash>]`.')
+@description('The name of the master nodes subnet. Defaults to the naming convention `<abbreviation-subnet>-aro-master-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(80)
-param masterNodesSubnetName string = getResourceName('snet', 'aro-master-${workloadName}', env, hash)
+param masterNodesSubnetName string = getResourceName('subnet', 'aro-master-${workloadName}', env, location, null, hash)
 
 @description('The CIDR for the master nodes subnet. Defaults to 10.1.0.0/23.')
 param masterNodesSubnetAddressPrefix string = '10.1.0.0/23'
 
 /* --------------------------- Worker Nodes Subnet -------------------------- */
 
-@description('The name of the worker nodes subnet. Defaults to the naming convention `<abbreviation-subnet>-aro-worker-<workloadName>-<toLower(environment)>[-<hash>]`.')
+@description('The name of the worker nodes subnet. Defaults to the naming convention `<abbreviation-subnet>-aro-worker-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(80)
-param workerNodesSubnetName string = getResourceName('snet', 'aro-worker-${workloadName}', env, hash)
+param workerNodesSubnetName string = getResourceName('subnet', 'aro-worker-${workloadName}', env, location, null, hash)
 
 @description('The CIDR for the worker nodes subnet. Defaults to 10.1.2.0/23.')
 param workerNodesSubnetAddressPrefix string = '10.1.2.0/23'
 
 /* ------------------------ Private Endpoints Subnet ------------------------ */
 
-@description('The name of the private endpoints subnet. Defaults to the naming convention `<abbreviation-subnet>-pep-<workloadName>-<toLower(environment)>[-<hash>]`.')
+@description('The name of the private endpoints subnet. Defaults to the naming convention `<abbreviation-subnet>-pep-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(80)
-param privateEndpointsSubnetName string = getResourceName('snet', 'pep-${workloadName}', env, hash)
+param privateEndpointsSubnetName string = getResourceName('subnet', 'pep-${workloadName}', env, location, null, hash)
 
 @description('The CIDR for the private endpoints subnet. Defaults to 10.1.4.0/24.')
 param privateEndpointsSubnetAddressPrefix string = '10.1.4.0/24'
 
 @description('The name of the network security group for the private endpoints subnet. Defaults to the naming convention `<abbreviation-nsg>-<privateEndpointsSubnetName>`.')
-param privateEndpointsNetworkSecurityGroupName string = getResourceNameFromParentResourceName('nsg', privateEndpointsSubnetName)
+param privateEndpointsNetworkSecurityGroupName string = getResourceNameFromParentResourceName('networkSecurityGroup', privateEndpointsSubnetName, null, hash)
 
 /* ----------------------------- Jumpbox Subnet ----------------------------- */
 
-@description('The name of the jumpbox subnet. Defaults to the naming convention `<abbreviation-subnet>-jumpbox-<workloadName>-<toLower(environment)>[-<hash>]`.')
+@description('The name of the jumpbox subnet. Defaults to the naming convention `<abbreviation-subnet>-jumpbox-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(80)
-param jumpboxSubnetName string = getResourceName('snet', 'jumpbox-${workloadName}', env, hash)
+param jumpboxSubnetName string = getResourceName('subnet', 'jumpbox-${workloadName}', env, location, null, hash)
 
 @description('The CIDR for the jumpbox subnet. Defaults to 10.1.5.0/24')
 param jumpboxSubnetAddressPrefix string = '10.1.5.0/24'
 
 @description('The name of the network security group for the jumpbox subnet. Defaults to the naming convention `<abbreviation-nsg>-<jumpboxSubnetName>`.')
-param jumpboxNetworkSecurityGroupName string = getResourceNameFromParentResourceName('nsg', jumpboxSubnetName)
+param jumpboxNetworkSecurityGroupName string = getResourceNameFromParentResourceName('networkSecurityGroup', jumpboxSubnetName, null, hash)
 
 /* ------------------------------ Other Subnets ----------------------------- */
 
