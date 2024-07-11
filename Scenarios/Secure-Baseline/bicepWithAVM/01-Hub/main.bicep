@@ -48,15 +48,15 @@ param tags object = hash == null ? {
 }
 
 @description('Enable Azure Verified Modules (AVM) telemetry. Defaults to false.')
-param enableAvmTelemetry bool = true
+param enableAvmTelemetry bool = false
 
-@description('The name of the resource group for the hub.')
-param resourceGroupName string = getResourceName('rg', workloadName, env, hash)
+@description('The name of the resource group for the hub. Defaults to the naming convention `rg-{workload}-{env}-{location}[-{hash}]`.')
+param resourceGroupName string = getResourceName('resourceGroup', workloadName, env, location, null, hash)
 
 /* --------------------------------- Network -------------------------------- */
 
-@description('The name of the virtual network for the hub.')
-param virtualNetworkName string = getResourceName('vnet', workloadName, env, hash)
+@description('The name of the virtual network for the hub. Defaults to the naming convention `vnet-{workload}-{env}-{location}[-{hash}]`.')
+param virtualNetworkName string = getResourceName('virtualNetwork', workloadName, env, location, null, hash)
 
 @description('The CIDR for the virtual network. Defaults to `10.0.0.0/16`.')
 param virtualNetworkAddressPrefix string = '10.0.0.0/16'
@@ -67,11 +67,11 @@ param dnsServers array?
 @description('The default subnet address prefix. Defaults to `10.0.0.0/24`.')
 param defaultSubnetAddressPrefix string = '10.0.0.0/24'
 
-@description('The name of the default subnet.')
+@description('The name of the default subnet. Defaults to `default`.')
 param defaultSubnetName string = 'default'
 
-@description('The name of the default subnet network security group.')
-param defaultSubnetNetworkSecurityGroupName string = getResourceNameFromParentResourceName('nsg', defaultSubnetName)
+@description('The name of the default subnet network security group. Defaults to the naming convention `nsg-{subnetName}[-{hash}]`.')
+param defaultSubnetNetworkSecurityGroupName string = getResourceNameFromParentResourceName('networkSecurityGroup', defaultSubnetName, null, hash)
 
 @description('The address prefix for the firewall subnet. Defaults to `10.0.1.0/26`.')
 param firewallSubnetAddressPrefix string = '10.0.1.0/26'
@@ -82,14 +82,14 @@ param firewallManagementSubnetAddressPrefix string = '10.0.2.0/26'
 @description('The address prefix for the bastion subnet. Defaults to `10.0.3.0/27`.')
 param bastionSubnetAddressPrefix string = '10.0.3.0/27'
 
-@description('The name of the bastion subnet network security group.')
-param bastionSubnetNetworkSecurityGroupName string = getResourceNameFromParentResourceName('nsg', 'AzureBastionSubnet')
+@description('The name of the bastion subnet network security group. Defaults to the naming convention `nsg-{BastionSubnetName}[-{hash}]`.')
+param bastionSubnetNetworkSecurityGroupName string = getResourceNameFromParentResourceName('networkSecurityGroup', 'AzureBastionSubnet', null, hash)
 
-@description('The name of the public IP for the firewall.')
-param firewallPublicIpName string = getResourceNameFromParentResourceName('pip', firewallName)
+@description('The name of the public IP for the firewall. Defaults to the naming convention `pip-{firewallName}[-{hash}]`.')
+param firewallPublicIpName string = getResourceNameFromParentResourceName('publicIp', firewallName, null, hash)
 
-@description('The name of the public IP for the firewall management.')
-param firewallManagementPublicIpName string = getResourceNameFromParentResourceName('pip', '${firewallName}-mgmt')
+@description('The name of the public IP for the firewall management. Defaults to the naming convention `pip-{firewallName}-mgmt[-{hash}]`.')
+param firewallManagementPublicIpName string = getResourceNameFromParentResourceName('publicIp', firewallName, 'mgmt', hash)
 
 @description('Link the key vault private DNS zone to the hub vnet. Defaults to false. This is required if a DNS resolver is deployed in the hub.')
 param linkKeyvaultDnsZoneToHubVnet bool = false
@@ -100,25 +100,26 @@ param linkAcrDnsZoneToHubVnet bool = false
 /* -------------------------------- Firewall -------------------------------- */
 
 @description('The name of the firewall.')
-param firewallName string = getResourceName('afw', workloadName, env, hash)
+param firewallName string = getResourceName('firewall', workloadName, env, location, null, hash)
 
 @description('The availability zones for the firewall. Defaults to an array with all availability zones (1, 2 and 3).')
 param firewallAvailabilityZone array = [ 1, 2, 3 ]
 
 @description('The name of the firewall policy.')
-param firewallPolicyName string = getResourceName('afwp', workloadName, env, hash)
+param firewallPolicyName string = getResourceName('firewallPolicy', workloadName, env, location, null, hash)
 
 @description('The name of the firewall policy rule group.')
-param firewallPolicyRuleGroupName string = getResourceName('afwprg', workloadName, env, hash)
+param firewallPolicyRuleGroupName string = getResourceName('firewallPolicyRuleGroup', workloadName, env, location, null, hash)
 
 /* --------------------------------- Bastion -------------------------------- */
 
-@description('The name of the bastion.')
-param bastionName string = getResourceName('bas', workloadName, env, hash)
+@description('The name of the bastion. Defaults to the naming convention `bas-{workload}-{env}-{location}[-{hash}]`.')
+param bastionName string = getResourceName('bastion', workloadName, env, location, null, hash)
 
 /* ------------------------------- Monitoring ------------------------------- */
 
-param logAnalyticsWorkspaceName string = getResourceName('log', workloadName, env, hash)
+@description('The name of the log analytics workspace. Defaults to the naming convention `log-{workload}-{env}-{location}[-{hash}]`.')
+param logAnalyticsWorkspaceName string = getResourceName('logAnalyticsWorkspace', workloadName, env, location, null, hash)
 
 
 /* -------------------------------------------------------------------------- */
