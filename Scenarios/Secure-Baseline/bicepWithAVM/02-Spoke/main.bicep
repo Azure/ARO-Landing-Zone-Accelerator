@@ -122,8 +122,8 @@ param jumpboxNetworkSecurityGroupName string = getResourceNameFromParentResource
 
 /* ------------------------------ Other Subnets ----------------------------- */
 
-@description('The configuration for other subnets. Defaults to an empty array.')
-param otherSubnets subnetType[] = []
+@description('The configuration for other subnets (Optional).')
+param otherSubnets subnetType[]?
 
 /* ------------------------------- Route Table ------------------------------ */
 
@@ -190,12 +190,7 @@ var predefinedSubnets = [
   }
 ]
 
-var _otherSubnets = [for subnet in otherSubnets!: {
-  name: replaceSubnetNamePlaceholders(subnet.name, workloadName, env)
-  addressPrefix: subnet.addressPrefix
-}]
-
-var subnets = concat(predefinedSubnets, _otherSubnets)
+var subnets = concat(predefinedSubnets, otherSubnets == null ? [] : otherSubnets!)
 
 /* ------------------------------- Monitoring ------------------------------- */
 
