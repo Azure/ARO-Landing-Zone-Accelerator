@@ -2,4 +2,4 @@ using 'main.bicep'
 
 param hubVirtualNetworkResourceId =  '<hubVirtualNetworkResourceId>'
 
-param logAnalyticsResourceId =  '<logAnalyticsResourceId>'
+param logAnalyticsWorkspaceResourceId =  '<logAnalyticsWorkspaceResourceId>'

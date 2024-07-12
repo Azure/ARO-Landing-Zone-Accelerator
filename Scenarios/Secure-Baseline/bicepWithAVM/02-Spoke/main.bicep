@@ -136,7 +136,7 @@ param firewallPrivateIpAddress string?
 /* ------------------------------- Monitoring ------------------------------- */
 
 @description('The Log Analytics Resource id. This is required to enable monitoring.')
-param logAnalyticsResourceId string
+param logAnalyticsWorkspaceResourceId string
 
 /* -------------------------------------------------------------------------- */
 /*                                  VARIABLES                                 */
@@ -197,7 +197,7 @@ var subnets = concat(predefinedSubnets, otherSubnets == null ? [] : otherSubnets
 var diagnosticsSettings = [
   {
     logAnalyticsDestinationType: 'AzureDiagnostics'
-    workspaceResourceId: logAnalyticsResourceId
+    workspaceResourceId: logAnalyticsWorkspaceResourceId
   }
 ]
 

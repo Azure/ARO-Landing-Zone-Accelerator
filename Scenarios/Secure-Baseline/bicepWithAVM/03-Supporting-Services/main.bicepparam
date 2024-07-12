@@ -4,4 +4,4 @@ param privateEndpointSubnetResourceId =  '<privateEndpointSubnetResourceId>'
 
 param keyVaultPrivateDnsZoneResourceId =  '<keyVaultPrivateDnsZoneResourceId>'
 
-param logAnalyticsResourceId =  '<logAnalyticsResourceId>'
+param logAnalyticsWorkspaceResourceId =  '<logAnalyticsWorkspaceResourceId>'

@@ -96,7 +96,7 @@ param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName
 /* ------------------------------- Monitoring ------------------------------- */
 
 @description('The Log Analytics workspace id. This is required to enable monitoring.')
-param logAnalyticsResourceId string
+param logAnalyticsWorkspaceResourceId string
 
 /* -------------------------------------------------------------------------- */
 /*                                  VARIABLES                                 */
@@ -115,7 +115,7 @@ var keyVaultPrivateEndpoint = {
 var diagnosticsSettings = [
   {
     logAnalyticsDestinationType: 'AzureDiagnostics'
-    workspaceResourceId: logAnalyticsResourceId
+    workspaceResourceId: logAnalyticsWorkspaceResourceId
   }
 ]
 
