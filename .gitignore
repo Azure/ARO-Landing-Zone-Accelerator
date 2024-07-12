@@ -423,3 +423,5 @@ override.tf.json
 terraform.rc
 deployment/terraform/DONOTCHECKIN
 deployment/terraform/.terraform.lock.hcl
+
+**/*.local.*
