@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 /*                                   IMPORTS                                  */
 /* -------------------------------------------------------------------------- */
 
-import { skuType as keyVaultSkuType } from './modules/key-vault/types.bicep'
+import { skuType as keyVaultSkuType, keyType,  keyVaultSecretType} from './modules/key-vault/types.bicep'
 
 import {
   getResourceName
@@ -86,9 +86,32 @@ param enableVaultForTemplateDeployment bool = false
 @description('Property to specify whether Azure Disk Encryption is permitted to retrieve secrets from the key vault. Defaults to true.')
 param enableVaultForDiskEncryption bool = true
 
-// TODO add the keys and secret parameters
-param keys array = []
-param secrets array = []
+@description('Array of keys to be created in the Key Vault')
+param keys keyType[] = [
+  {
+    name: 'etcdEncryptionKey'
+    kty: 'RSA'
+    keySize: 2048
+    attributesEnabled: true
+  }
+]
+
+
+@description('Array of secrets to be created in the Key Vault')
+param secrets keyVaultSecretType[] = [
+  {
+    name: 'aroServicePrincipalId'
+    value: 'default-value-replace-me'
+  }
+  {
+    name: 'aroServicePrincipalSecret'
+    value: 'default-value-replace-me'
+  }
+  {
+    name: 'pullSecret'
+    value: 'default-value-replace-me'
+  }
+]
 
 @description('The name of the private endpoint for the key vault. Defaults to the naming convention `<abbreviation-private-endpoint>-<key-vault-name>`.')
 param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
@@ -148,8 +171,21 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
       ipRules: []
       virtualNetworkRules: []
     }
-    keys: keys
-    secrets: secrets
+    keys: [for key in keys: {
+      name: key.name
+      kty: key.kty
+      keySize: key.keySize
+      curveName: key.curveName
+      attributes: {
+        enabled: key.attributesEnabled
+        exp: key.attributesExp
+        nbf: key.attributesNbf
+      }
+    }]
+    secrets: [for secret in secrets: {
+      name: secret.name
+      value: secret.value
+    }]
     diagnosticSettings: diagnosticsSettings
   }
 }
