@@ -1,7 +1,7 @@
 using 'main.bicep'
 
-param privateEndpointSubnetId =  '<privateEndpointSubnetId>'
+param privateEndpointSubnetResourceId =  '<privateEndpointSubnetResourceId>'
 
-param keyVaultPrivateDnsZoneId =  '<keyVaultPrivateDnsZoneId>'
+param keyVaultPrivateDnsZoneResourceId =  '<keyVaultPrivateDnsZoneResourceId>'
 
-param logAnalyticsWorkspaceId =  '<logAnalyticsWorkspaceId>'
+param logAnalyticsResourceId =  '<logAnalyticsResourceId>'

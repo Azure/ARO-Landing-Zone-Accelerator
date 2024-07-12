@@ -61,7 +61,7 @@ param resourceGroupName string = getResourceName('resourceGroup', workloadName, 
 /* ----------------------------- Virtual Network ---------------------------- */
 
 @description('The resource id of the hub virtual network. This is required to peer the spoke virtual network with the hub virtual network.')
-param hubVirtualNetworkId string
+param hubVirtualNetworkResourceId string
 
 @description('The name of the spoke virtual network. Defaults to the naming convention `<abbreviation-virtual-network>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
@@ -135,8 +135,8 @@ param firewallPrivateIpAddress string?
 
 /* ------------------------------- Monitoring ------------------------------- */
 
-@description('The Log Analytics workspace id. This is required to enable monitoring.')
-param logAnalyticsWorkspaceId string
+@description('The Log Analytics Resource id. This is required to enable monitoring.')
+param logAnalyticsResourceId string
 
 /* -------------------------------------------------------------------------- */
 /*                                  VARIABLES                                 */
@@ -146,7 +146,7 @@ var deployAroRouteTable = firewallPrivateIpAddress != null
 
 /* --------------------------------- Peering -------------------------------- */
 
-var hubVirtualNetworkName = last(split(hubVirtualNetworkId, '/'))
+var hubVirtualNetworkName = last(split(hubVirtualNetworkResourceId, '/'))
 
 var remotePeeringName = '${hubVirtualNetworkName}-to-${virtualNetworkName}-peering'
 
@@ -155,7 +155,7 @@ var peerings = [
     name: '${virtualNetworkName}-to-${hubVirtualNetworkName}-peering'
     remotePeeringEnabled: true
     remotePeeringName: remotePeeringName
-    remoteVirtualNetworkId: hubVirtualNetworkId
+    remoteVirtualNetworkId: hubVirtualNetworkResourceId
   }
 ]
 
@@ -197,7 +197,7 @@ var subnets = concat(predefinedSubnets, otherSubnets == null ? [] : otherSubnets
 var diagnosticsSettings = [
   {
     logAnalyticsDestinationType: 'AzureDiagnostics'
-    workspaceResourceId: logAnalyticsWorkspaceId
+    workspaceResourceId: logAnalyticsResourceId
   }
 ]
 

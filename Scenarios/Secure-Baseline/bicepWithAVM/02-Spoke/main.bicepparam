@@ -1,5 +1,5 @@
 using 'main.bicep'
 
-param hubVirtualNetworkId =  '<hubVirtualNetworkId>'
+param hubVirtualNetworkResourceId =  '<hubVirtualNetworkResourceId>'
 
-param logAnalyticsWorkspaceId =  '<logAnalyticsWorkspaceId>'
+param logAnalyticsResourceId =  '<logAnalyticsResourceId>'
