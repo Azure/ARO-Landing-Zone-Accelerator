@@ -1,8 +1,71 @@
 {
   "securityRules": [
     /* --------------------------------- Inbound -------------------------------- */
-    
+    {
+      "name": "Allow-VNet-Inbound",
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "access": "Allow",
+        "priority": 100,
+        "direction": "Inbound"
+      }
+    },
+    {
+      "name": "Deny-Internet-Inbound",
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "Internet",
+        "destinationAddressPrefix": "*",
+        "access": "Deny",
+        "priority": 4096,
+        "direction": "Inbound"
+      }
+    },
     /* -------------------------------- Outbound -------------------------------- */
-    
+    {
+      "name": "Allow-VNet-Outbound",
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "access": "Allow",
+        "priority": 100,
+        "direction": "Outbound"
+      }
+    },
+    {
+      "name": "Allow-Azure-Outbound",
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "*",
+        "destinationAddressPrefix": "AzureCloud",
+        "access": "Allow",
+        "priority": 110,
+        "direction": "Outbound"
+      }
+    },
+    {
+      "name": "Deny-Internet-Outbound",
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "*",
+        "destinationAddressPrefix": "Internet",
+        "access": "Deny",
+        "priority": 4096,
+        "direction": "Outbound"
+      }
+    }
   ]
 }

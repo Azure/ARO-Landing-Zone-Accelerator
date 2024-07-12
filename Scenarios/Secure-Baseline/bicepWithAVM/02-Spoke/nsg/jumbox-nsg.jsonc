@@ -1,8 +1,45 @@
 {
   "securityRules": [
     /* --------------------------------- Inbound -------------------------------- */
-    
+    {
+      "name": "Allow-SSH-Inbound",
+      "properties": {
+        "protocol": "Tcp",
+        "sourcePortRange": "*",
+        "destinationPortRange": "22",
+        "sourceAddressPrefix": "Internet",
+        "destinationAddressPrefix": "*",
+        "access": "Allow",
+        "priority": 100,
+        "direction": "Inbound"
+      }
+    },
+    {
+      "name": "Allow-RDP-Inbound",
+      "properties": {
+        "protocol": "Tcp",
+        "sourcePortRange": "*",
+        "destinationPortRange": "3389",
+        "sourceAddressPrefix": "Internet",
+        "destinationAddressPrefix": "*",
+        "access": "Allow",
+        "priority": 110,
+        "direction": "Inbound"
+      }
+    },
     /* -------------------------------- Outbound -------------------------------- */
-    
+    {
+      "name": "Allow-All-Outbound",
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "*",
+        "destinationAddressPrefix": "Internet",
+        "access": "Allow",
+        "priority": 100,
+        "direction": "Outbound"
+      }
+    }
   ]
 }
