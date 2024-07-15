@@ -30,8 +30,13 @@ type nicConfigurationType = {
 @export()
 @description('The OS disk type. Contains the create option, delete option, and managed disk.')
 type osDiskType = {
+  @description('The create option for the OS disk. Can be "Attach", "Empty", "FromImage", or null.')
   createOption: 'Attach' | 'Empty' | 'FromImage' | null
+
+  @description('The delete option for the OS disk. Can be "Delete", "Detach", or null.')
   deleteOption: 'Delete' | 'Detach' | null
+
+  @description('The managed disk configuration for the OS disk.')
   managedDisk: managedDiskType
 }
 
