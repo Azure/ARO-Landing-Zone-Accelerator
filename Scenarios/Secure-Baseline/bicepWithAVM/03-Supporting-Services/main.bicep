@@ -56,10 +56,10 @@ param enableAvmTelemetry bool = true
 /* ------------------------------- Networking ------------------------------- */
 
 @description('The resource id of the subnet where the private endpoint will be created.')
-param privateEndpointSubnetId string
+param privateEndpointSubnetResourceId string
 
 @description('The resource id of the private DNS zone for the key vault.')
-param keyVaultPrivateDnsZoneId string
+param keyVaultPrivateDnsZoneResourceId string
 
 /* -------------------------------- Key Vault ------------------------------- */
 
@@ -96,7 +96,7 @@ param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName
 /* ------------------------------- Monitoring ------------------------------- */
 
 @description('The Log Analytics workspace id. This is required to enable monitoring.')
-param logAnalyticsWorkspaceId string
+param logAnalyticsWorkspaceResourceId string
 
 /* -------------------------------------------------------------------------- */
 /*                                  VARIABLES                                 */
@@ -106,8 +106,8 @@ param logAnalyticsWorkspaceId string
 
 var keyVaultPrivateEndpoint = {
   name: keyVaultPrivateEndpointName
-  subnetResourceId: privateEndpointSubnetId
-  privateDnsZoneResourceIds: [keyVaultPrivateDnsZoneId]
+  subnetResourceId: privateEndpointSubnetResourceId
+  privateDnsZoneResourceIds: [keyVaultPrivateDnsZoneResourceId]
 }
 
 /* ------------------------------- Monitoring ------------------------------- */
@@ -115,7 +115,7 @@ var keyVaultPrivateEndpoint = {
 var diagnosticsSettings = [
   {
     logAnalyticsDestinationType: 'AzureDiagnostics'
-    workspaceResourceId: logAnalyticsWorkspaceId
+    workspaceResourceId: logAnalyticsWorkspaceResourceId
   }
 ]
 
