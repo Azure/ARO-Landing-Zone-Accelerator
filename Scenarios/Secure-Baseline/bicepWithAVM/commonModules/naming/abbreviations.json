@@ -20,4 +20,5 @@
     "publicIp": "pip",
     "logAnalyticsWorkspace": "log",
     "containerRegistry": "cr"
+    "virtualNetworkLink": "vnlink"
   }

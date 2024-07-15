@@ -135,7 +135,7 @@ param firewallPrivateIpAddress string?
 
 /* ------------------------------- Monitoring ------------------------------- */
 
-@description('The Log Analytics Resource id. This is required to enable monitoring.')
+@description('The Log Analytics workspace resource id. This is required to enable monitoring.')
 param logAnalyticsWorkspaceResourceId string
 
 /* -------------------------------------------------------------------------- */
