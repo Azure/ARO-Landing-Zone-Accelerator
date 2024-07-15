@@ -5,6 +5,8 @@ targetScope = 'resourceGroup'
 /* -------------------------------------------------------------------------- */
 
 import { skuType as keyVaultSkuType } from './modules/key-vault/types.bicep'
+import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/vm/types.bicep'
+
 
 import {
   getResourceName
@@ -104,6 +106,33 @@ param vmSize string = 'Standard_B2ms'
 @description('The username of the local administrator account for the virtual machines.')
 param adminUsername string = 'localAdminUser'
 
+@description('The password for the local administrator account for the virtual machines.')
+@secure()
+param adminPassword string
+
+@description('The NIC configurations for the virtual machines.')
+param nicConfigurations nicConfigurationType[] = [
+  {
+    deleteOptions: 'Delete'
+    ipConfigurations: [
+      {
+        name: 'ipconfig01'
+        subnetResourceId: jumpBoxSubnetResourceId
+      }
+    ]
+    nicSuffix: '-nic-01'
+  }
+]
+
+@description('The OS disk configuration for the virtual machines.')
+param osDiskConfiguration osDiskType = {
+  createOption: 'FromImage'
+  deleteOption: 'Delete'
+  managedDisk: {
+    storageAccountType: 'Standard_LRS'
+  }
+}
+
 // Windows VM specific parameters
 @description('Flag to determine if the Windows VM should be deployed.')
 param deployWindowsJumpbox bool = true
@@ -111,9 +140,13 @@ param deployWindowsJumpbox bool = true
 @description('The name of the Windows virtual machine.')
 param windowsVMName string = 'cvmwinguest'
 
-@description('The password for the Windows VM local administrator account.')
-@secure()
-param windowsAdminPassword string
+@description('The image reference for the Windows VM.')
+param imageReferenceWindows imageReferenceType = {
+  offer: 'WindowsServer'
+  publisher: 'MicrosoftWindowsServer'
+  sku: '2022-datacenter-azure-edition'
+  version: 'latest'
+}
 
 // Linux VM specific parameters
 @description('Flag to determine if the Linux VM should be deployed.')
@@ -122,8 +155,13 @@ param deployLinuxJumpbox bool = true
 @description('The name of the Linux virtual machine.')
 param linuxVMName string = 'cvmlinmin'
 
-@description('The public SSH key for the Linux VM.')
-param linuxSshPublicKey string
+@description('The image reference for the Linux VM.')
+param imageReferenceLinux imageReferenceType = {
+  offer: '0001-com-ubuntu-server-jammy'
+  publisher: 'Canonical'
+  sku: '22_04-lts-gen2'
+  version: 'latest'
+}
 
 /* ------------------------------- Monitoring ------------------------------- */
 
@@ -186,38 +224,17 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
   }
 }
 
+/* ------------------------------- Virtual Machine ------------------------------- */
 // Windows VM Module
 module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployWindowsJumpbox) {
   name: take('${deployment().name}-windows-vm', 64)
   params: {
     name: windowsVMName
     adminUsername: adminUsername
-    adminPassword: windowsAdminPassword
-    imageReference: {
-      offer: 'WindowsServer'
-      publisher: 'MicrosoftWindowsServer'
-      sku: '2022-datacenter-azure-edition'
-      version: 'latest'
-    }
-    nicConfigurations: [
-      {
-        deleteOption: 'Delete'
-        ipConfigurations: [
-          {
-            name: 'ipconfig01'
-            subnetResourceId: jumpBoxSubnetResourceId
-          }
-        ]
-        nicSuffix: '-nic-01'
-      }
-    ]
-    osDisk: {
-      createOption: 'FromImage'
-      deleteOption: 'Delete'
-      managedDisk: {
-        storageAccountType: 'Standard_LRS'
-      }
-    }
+    adminPassword: adminPassword
+    imageReference: imageReferenceWindows
+    nicConfigurations: nicConfigurations
+    osDisk: osDiskConfiguration
     osType: 'Windows'
     vmSize: vmSize
     location: location
@@ -232,41 +249,14 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
   params: {
     name: linuxVMName
     adminUsername: adminUsername
-    imageReference: {
-      offer: '0001-com-ubuntu-server-jammy'
-      publisher: 'Canonical'
-      sku: '22_04-lts-gen2'
-      version: 'latest'
-    }
-    nicConfigurations: [
-      {
-        deleteOptions: 'Delete'
-        ipConfigurations: [
-          {
-            name: 'ipconfig01'
-            subnetResourceId: jumpBoxSubnetResourceId
-          }
-        ]
-        nicSuffix: '-nic-01'
-      }
-    ]
-    osDisk: {
-      createOption: 'FromImage'
-      deleteOption: 'Delete'
-      managedDisk: {
-        storageAccountType: 'Standard_LRS'
-      }
-    }
+    adminPassword: adminPassword
+    imageReference: imageReferenceLinux
+    nicConfigurations: nicConfigurations
+    osDisk: osDiskConfiguration
     osType: 'Linux'
     vmSize: vmSize
     location: location
     zone: 0
-    disablePasswordAuthentication: true
-    publicKeys: [
-      {
-        keyData: linuxSshPublicKey
-        path: '/home/${adminUsername}/.ssh/authorized_keys'
-      }
-    ]
+    enableTelemetry: enableAvmTelemetry
   }
 }
