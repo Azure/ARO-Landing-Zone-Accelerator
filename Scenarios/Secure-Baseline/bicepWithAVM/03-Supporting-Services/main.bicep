@@ -93,6 +93,35 @@ param secrets array = []
 @description('The name of the private endpoint for the key vault. Defaults to the naming convention `<abbreviation-private-endpoint>-<key-vault-name>`.')
 param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
 
+/* ------------------------------- Virtual Machine ------------------------------- */
+// Common parameters for both VMs
+@description('The size of the virtual machines.')
+param vmSize string = 'Standard_B2ms'
+
+@description('The username of the local administrator account for the virtual machines.')
+param adminUsername string = 'localAdminUser'
+
+// Windows VM specific parameters
+@description('Flag to determine if the Windows VM should be deployed.')
+param deployWindowsVM bool = true
+
+@description('The name of the Windows virtual machine.')
+param windowsVMName string = 'cvmwinguest'
+
+@description('The password for the Windows VM local administrator account.')
+@secure()
+param windowsAdminPassword string
+
+// Linux VM specific parameters
+@description('Flag to determine if the Linux VM should be deployed.')
+param deployLinuxVM bool = true
+
+@description('The name of the Linux virtual machine.')
+param linuxVMName string = 'cvmlinmin'
+
+@description('The public SSH key for the Linux VM.')
+param linuxSshPublicKey string
+
 /* ------------------------------- Monitoring ------------------------------- */
 
 @description('The Log Analytics workspace id. This is required to enable monitoring.')
@@ -151,5 +180,87 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
     keys: keys
     secrets: secrets
     diagnosticSettings: diagnosticsSettings
+  }
+}
+
+// Windows VM Module
+module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployWindowsVM) {
+  name: take('${deployment().name}-windows-vm', 64)
+  params: {
+    name: windowsVMName
+    adminUsername: adminUsername
+    adminPassword: windowsAdminPassword
+    imageReference: {
+      offer: 'WindowsServer'
+      publisher: 'MicrosoftWindowsServer'
+      sku: '2022-datacenter-azure-edition'
+      version: 'latest'
+    }
+    nicConfigurations: [
+      {
+        ipConfigurations: [
+          {
+            name: 'ipconfig01'
+            subnetResourceId: privateEndpointSubnetResourceId
+          }
+        ]
+        nicSuffix: '-nic-01'
+      }
+    ]
+    osDisk: {
+      caching: 'ReadWrite'
+      diskSizeGB: 128
+      managedDisk: {
+        storageAccountType: 'Premium_LRS'
+      }
+    }
+    osType: 'Windows'
+    vmSize: vmSize
+    location: location
+    zone: 0
+  }
+}
+
+// Linux VM Module
+module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLinuxVM) {
+  name: take('${deployment().name}-linux-vm', 64)
+  params: {
+    name: linuxVMName
+    adminUsername: adminUsername
+    imageReference: {
+      offer: '0001-com-ubuntu-server-jammy'
+      publisher: 'Canonical'
+      sku: '22_04-lts-gen2'
+      version: 'latest'
+    }
+    nicConfigurations: [
+      {
+        ipConfigurations: [
+          {
+            name: 'ipconfig01'
+            subnetResourceId: privateEndpointSubnetResourceId
+          }
+        ]
+        nicSuffix: '-nic-01'
+      }
+    ]
+    osDisk: {
+      caching: 'ReadWrite'
+      diskSizeGB: 128
+      managedDisk: {
+        storageAccountType: 'Premium_LRS'
+      }
+    }
+    osType: 'Linux'
+    vmSize: vmSize
+    location: location
+    zone: 0
+    disablePasswordAuthentication: true
+    publicKeys: [
+      {
+        keyData: linuxSshPublicKey
+        path: '/home/${adminUsername}/.ssh/authorized_keys'
+      }
+    ]
   }
 }
