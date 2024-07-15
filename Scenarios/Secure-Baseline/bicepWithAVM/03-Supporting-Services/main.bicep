@@ -5,7 +5,8 @@ targetScope = 'resourceGroup'
 /* -------------------------------------------------------------------------- */
 
 import { skuType as keyVaultSkuType } from './modules/key-vault/types.bicep'
-import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/vm/types.bicep'
+import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/virtual-machine/types.bicep'
+import { containerRegistrySkuType } from './modules/container-registry/types.bicep'
 
 
 import {
@@ -163,6 +164,13 @@ param imageReferenceLinux imageReferenceType = {
   version: 'latest'
 }
 
+/* -------------------------------- Container Registry ------------------------------------------ */
+@description('The name of the container registry. Defaults to the naming convention `<abbreviation-container-registry>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
+param containerRegistryName string = getResourceName('containerRegistry', workloadName, env, location, null, hash)
+
+@description('The SKU of the container registry. Defaults to Standard.')
+param containerRegistrySku containerRegistrySkuType = 'Standard'
+
 /* ------------------------------- Monitoring ------------------------------- */
 
 @description('The Log Analytics workspace id. This is required to enable monitoring.')
@@ -258,5 +266,15 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
     location: location
     zone: 0
     enableTelemetry: enableAvmTelemetry
+  }
+}
+
+/* -------------------------------- Container Registry ------------------------------------------ */
+module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
+  name: 'registryDeployment'
+  params: {
+    name: containerRegistryName
+    acrSku: containerRegistrySku
+    location: location
   }
 }
