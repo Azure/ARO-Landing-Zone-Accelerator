@@ -95,7 +95,7 @@ param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName
 
 /* ------------------------------- Monitoring ------------------------------- */
 
-@description('The Log Analytics workspace id. This is required to enable monitoring.')
+@description('The Log Analytics workspace resource id. This is required to enable monitoring.')
 param logAnalyticsWorkspaceResourceId string
 
 /* -------------------------------------------------------------------------- */
