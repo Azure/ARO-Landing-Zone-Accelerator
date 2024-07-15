@@ -155,7 +155,7 @@ var subnets = [
   }
 ]
 
-var keyVaultPrivateDnsZoneName = 'private${environment().suffixes.keyvaultDns}'
+var keyVaultPrivateDnsZoneName = 'privatelink.vaultcore.azure.net'
 
 var keyVaultPrivateDnsZoneVnetLinks = linkKeyvaultDnsZoneToHubVnet ? [
   {

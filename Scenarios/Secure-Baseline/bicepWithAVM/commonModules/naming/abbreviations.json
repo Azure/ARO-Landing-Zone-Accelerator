@@ -18,5 +18,6 @@
     "firewallPolicyRuleGroup": "wafrg",
     "bastion": "bas",
     "publicIp": "pip",
-    "logAnalyticsWorkspace": "log"
+    "logAnalyticsWorkspace": "log",
+    "virtualNetworkLink": "vnlink"
   }
