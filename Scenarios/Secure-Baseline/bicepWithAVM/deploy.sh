@@ -121,7 +121,7 @@ az deployment sub create \
         location=$LOCATION \
         hubVirtualNetworkResourceId=$HUB_VNET_ID \
         logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
-        firewallPrivateIp=$FIREWALL_PRIVATE_IP
+        firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP
 
 # Get the outputs from the spoke network deployment
 SPOKE_VNET_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkResourceId.value" -o tsv)
