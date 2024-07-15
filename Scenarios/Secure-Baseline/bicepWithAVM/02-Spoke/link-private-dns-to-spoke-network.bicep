@@ -15,8 +15,8 @@ import { getResourceNameFromParentResourceName } from '../commonModules/naming/f
 @maxLength(15)
 param workloadName string = 'aro-lza'
 
-@description('The location of the resources. Defaults to the deployment location.')
-param location string = resourceGroup().location
+@description('The location of the private link. Defaults to global')
+param location string = 'global'
 
 @description('The type of environment. Defaults to DEV.')
 @allowed([
