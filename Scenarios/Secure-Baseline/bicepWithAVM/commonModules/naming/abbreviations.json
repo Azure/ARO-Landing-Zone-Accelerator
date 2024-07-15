@@ -19,6 +19,6 @@
     "bastion": "bas",
     "publicIp": "pip",
     "logAnalyticsWorkspace": "log",
-    "containerRegistry": "cr"
+    "containerRegistry": "cr",
     "virtualNetworkLink": "vnlink"
   }
