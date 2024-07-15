@@ -106,7 +106,7 @@ param adminUsername string = 'localAdminUser'
 
 // Windows VM specific parameters
 @description('Flag to determine if the Windows VM should be deployed.')
-param deployWindowsVM bool = true
+param deployWindowsJumpbox bool = true
 
 @description('The name of the Windows virtual machine.')
 param windowsVMName string = 'cvmwinguest'
@@ -117,7 +117,7 @@ param windowsAdminPassword string
 
 // Linux VM specific parameters
 @description('Flag to determine if the Linux VM should be deployed.')
-param deployLinuxVM bool = true
+param deployLinuxJumpbox bool = true
 
 @description('The name of the Linux virtual machine.')
 param linuxVMName string = 'cvmlinmin'
@@ -187,7 +187,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
 }
 
 // Windows VM Module
-module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployWindowsVM) {
+module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployWindowsJumpbox) {
   name: take('${deployment().name}-windows-vm', 64)
   params: {
     name: windowsVMName
@@ -227,7 +227,7 @@ module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployW
 }
 
 // Linux VM Module
-module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLinuxVM) {
+module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLinuxJumpbox) {
   name: take('${deployment().name}-linux-vm', 64)
   params: {
     name: linuxVMName
