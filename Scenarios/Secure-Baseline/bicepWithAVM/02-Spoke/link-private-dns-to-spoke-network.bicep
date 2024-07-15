@@ -6,10 +6,14 @@ targetScope = 'resourceGroup'
 
 import { getResourceNameFromParentResourceName } from '../commonModules/naming/functions.bicep'
 
+/* -------------------------------------------------------------------------- */
+/*                                 PARAMETERS                                 */
+/* -------------------------------------------------------------------------- */
+
 @description('The name of the workload. Defaults to hub.')
 @minLength(3)
 @maxLength(15)
-param workloadName string = 'hub'
+param workloadName string = 'aro-lza'
 
 @description('The location of the resources. Defaults to the deployment location.')
 param location string = resourceGroup().location
