@@ -58,6 +58,9 @@ param enableAvmTelemetry bool = true
 @description('The resource id of the subnet where the private endpoint will be created.')
 param privateEndpointSubnetResourceId string
 
+@description('The resource id of the subnet where the jump box will be created.')
+param jumpBoxSubnetResourceId string
+
 @description('The resource id of the private DNS zone for the key vault.')
 param keyVaultPrivateDnsZoneResourceId string
 
@@ -198,26 +201,28 @@ module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployW
     }
     nicConfigurations: [
       {
+        deleteOption: 'Delete'
         ipConfigurations: [
           {
             name: 'ipconfig01'
-            subnetResourceId: privateEndpointSubnetResourceId
+            subnetResourceId: jumpBoxSubnetResourceId
           }
         ]
         nicSuffix: '-nic-01'
       }
     ]
     osDisk: {
-      caching: 'ReadWrite'
-      diskSizeGB: 128
+      createOption: 'FromImage'
+      deleteOption: 'Delete'
       managedDisk: {
-        storageAccountType: 'Premium_LRS'
+        storageAccountType: 'Standard_LRS'
       }
     }
     osType: 'Windows'
     vmSize: vmSize
     location: location
     zone: 0
+    enableTelemetry: enableAvmTelemetry
   }
 }
 
@@ -235,20 +240,21 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
     }
     nicConfigurations: [
       {
+        deleteOptions: 'Delete'
         ipConfigurations: [
           {
             name: 'ipconfig01'
-            subnetResourceId: privateEndpointSubnetResourceId
+            subnetResourceId: jumpBoxSubnetResourceId
           }
         ]
         nicSuffix: '-nic-01'
       }
     ]
     osDisk: {
-      caching: 'ReadWrite'
-      diskSizeGB: 128
+      createOption: 'FromImage'
+      deleteOption: 'Delete'
       managedDisk: {
-        storageAccountType: 'Premium_LRS'
+        storageAccountType: 'Standard_LRS'
       }
     }
     osType: 'Linux'
