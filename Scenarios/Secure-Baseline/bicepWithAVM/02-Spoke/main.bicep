@@ -7,7 +7,6 @@ targetScope = 'subscription'
 import {
   getResourceName
   getResourceNameFromParentResourceName
-  replaceSubnetNamePlaceholders
 } from '../commonModules/naming/functions.bicep'
 
 import { 

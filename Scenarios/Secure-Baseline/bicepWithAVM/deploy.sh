@@ -158,8 +158,8 @@ display_progress "Deploying the supporting services in the spoke"
 display_message info "Deployment name: $_spoke_services_deployment_name"
 az deployment group create \
     --name $_spoke_services_deployment_name \
-    --resource-group $HUB_RG_NAME \
-    --template-file "./02-Spoke/services.bicep" \
+    --resource-group $SPOKE_RG_NAME \
+    --template-file "./03-Supporting-Services/main.bicep" \
     --parameters \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
