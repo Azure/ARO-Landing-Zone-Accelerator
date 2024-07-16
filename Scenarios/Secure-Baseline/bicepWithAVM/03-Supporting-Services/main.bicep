@@ -8,7 +8,6 @@ import { skuType as keyVaultSkuType } from './modules/key-vault/types.bicep'
 import { skuType as containerRegistrySkuType } from './modules/container-registry/types.bicep'
 import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/virtual-machine/types.bicep'
 
-
 import {
   getResourceName
   getUniqueGlobalName
@@ -293,6 +292,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
 }
 
 /* ------------------------------- Virtual Machine ------------------------------- */
+
 // Windows VM Module
 module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployWindowsJumpbox) {
   name: take('${deployment().name}-windows-vm', 64)
@@ -334,6 +334,7 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
 }
 
 /* -------------------------------- Container Registry ------------------------------------------ */
+
 module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
   name: 'registryDeployment'
   params: {
