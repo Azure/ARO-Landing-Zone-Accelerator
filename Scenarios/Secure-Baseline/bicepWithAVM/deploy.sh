@@ -128,6 +128,8 @@ az deployment sub create \
 # Get the outputs from the spoke network deployment
 SPOKE_RG_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.resourceGroupName.value" -o tsv)
 SPOKE_VNET_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkResourceId.value" -o tsv)
+MASTER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.masterSubnetResourceId.value" -o tsv)
+WORKER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.workerSubnetResourceId.value" -o tsv)
 PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.privateEndpointsSubnetResourceId.value" -o tsv)
 JUMPBOX_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.jumpboxSubnetResourceId.value" -o tsv)
 display_progress "Spoke network resources deployed successfully"
@@ -179,3 +181,41 @@ az deployment group create \
 
 display_progress "Supporting services in the spoke deployed successfully"
 display_blank_line
+
+# Deploy Service Principal
+display_progress "Creating a service principal for the workload"
+SP=$(az ad sp create-for-rbac --name "sp-$WORKLOAD_NAME-$_environment_lower_case-$_short_location")
+SP_CLIENT_ID=$(echo $SP | jq -r '.appId')
+SP_CLIENT_SECRET=$(echo $SP | jq -r '.password')
+SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID --query "id" -o tsv)
+display_message info "  SP_CLIENT_ID: $SP_CLIENT_ID"
+display_message info "  SP_OBJECT_ID: $SP_OBJECT_ID"
+display_progress "Service principal created successfully"
+display_blank_line
+
+display_progress "Getting Azure Red Hat OpenShift RP SP Object ID"
+ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query [0].id -o tsv)
+display_message info "  ARO_RP_SP_OBJECT_ID: $ARO_RP_SP_OBJECT_ID"
+display_progress "Azure Red Hat OpenShift RP SP Object ID retrieved successfully"
+display_blank_line
+
+# Deploy ARO Cluster
+display_progress "Deploying Azure Red Hat OpenShift cluster"
+_aro_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-aro"
+display_message info "Deployment name: $_aro_deployment_name"
+az deployment group create \
+    --name $_aro_deployment_name \
+    --resource-group $SPOKE_RG_NAME \
+    --template-file "./04-ARO/main.bicep" \
+    --parameters ./04-ARO/main.bicepparam \
+    --parameters \
+        workloadName=$SPOKE_WORKLOAD_NAME \
+        env=$ENVIRONMENT \
+        location=$LOCATION \
+        spokeVirtualNetworkName=$SPOKE_VNET_ID \
+        masterNodesSubnetResourceId=$MASTER_SUBNET_RESOURCE_ID \
+        workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID \
+        servicePrincipalClientId=$SP_CLIENT_ID \
+        servicePrincipalClientSecret=$SP_CLIENT_SECRET \
+        servicePrincipalObjectId=$SP_OBJECT_ID \
+        aroResourceProviderServicePrincipalObjectId=$ARO_RP_SP_OBJECT_ID

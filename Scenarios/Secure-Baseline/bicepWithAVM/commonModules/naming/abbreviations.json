@@ -20,5 +20,6 @@
     "publicIp": "pip",
     "logAnalyticsWorkspace": "log",
     "containerRegistry": "cr",
-    "virtualNetworkLink": "vnlink"
+    "virtualNetworkLink": "vnlink",
+    "aroCluster": "aro"
   }

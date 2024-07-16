@@ -287,6 +287,12 @@ output resourceGroupName string = resourceGroup.name
 @description('The resource id of the virtual network.')
 output virtualNetworkResourceId string = virtualNetwork.outputs.resourceId
 
+@description('The resource id of the master nodes subnet.')
+output masterNodesSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[0]
+
+@description('The resource id of the worker nodes subnet.')
+output workerNodesSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[1]
+
 @description('The resource id of the private endpoints subnet.')
 output privateEndpointsSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[2]
 
