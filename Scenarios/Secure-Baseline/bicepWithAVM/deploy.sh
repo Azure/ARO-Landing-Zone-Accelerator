@@ -86,6 +86,7 @@ az deployment sub create \
     --name $_hub_deployment_name \
     --location $LOCATION \
     --template-file "./01-Hub/main.bicep" \
+    --parameters ./01-Hub/main.bicepparam \
     --parameters \
         workloadName=$HUB_WORKLOAD_NAME \
         env=$ENVIRONMENT \
@@ -115,6 +116,7 @@ az deployment sub create \
     --name $_spoke_network_deployment_name \
     --location $LOCATION \
     --template-file "./02-Spoke/main.bicep" \
+    --parameters ./02-Spoke/main.bicepparam \
     --parameters \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
@@ -124,8 +126,10 @@ az deployment sub create \
         firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP
 
 # Get the outputs from the spoke network deployment
+SPOKE_RG_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.resourceGroupName.value" -o tsv)
 SPOKE_VNET_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkResourceId.value" -o tsv)
 PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.privateEndpointsSubnetResourceId.value" -o tsv)
+JUMPBOX_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.jumpboxSubnetResourceId.value" -o tsv)
 display_progress "Spoke network resources deployed successfully"
 display_blank_line
 
@@ -134,7 +138,7 @@ display_progress "Linking spoke virtual network to private DNS zones"
 az deployment group create \
     --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-keyvault-private-dns-to-spoke-network" \
     --resource-group $HUB_RG_NAME \
-    --template-file "./02-Spoke/link-private-dns-to-spoke-network.bicep" \
+    --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
     --parameters \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
@@ -143,7 +147,7 @@ az deployment group create \
 az deployment group create \
     --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-acr-private-dns-to-spoke-network" \
     --resource-group $HUB_RG_NAME \
-    --template-file "./02-Spoke/link-private-dns-to-spoke-network.bicep" \
+    --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
     --parameters \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
@@ -160,12 +164,18 @@ az deployment group create \
     --name $_spoke_services_deployment_name \
     --resource-group $SPOKE_RG_NAME \
     --template-file "./03-Supporting-Services/main.bicep" \
+    --parameters ./03-Supporting-Services/main.bicepparam \
     --parameters \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
         privateEndpointSubnetResourceId=$PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID \
+        jumpBoxSubnetResourceId=$JUMPBOX_SUBNET_RESOURCE_ID \
         keyVaultPrivateDnsZoneResourceId=$KEY_VAULT_PRIVATE_DNS_ZONE_RESOURCE_ID \
-        logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID
+        logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
+        containerRegistryDnsZoneResourceId=$ACR_PRIVATE_DNS_ZONE_RESOURCE_ID \
+        windowsAdminPassword="P@ssw0rd1234" \
+        linuxAdminPassword="P@ssw0rd1234"
+
 display_progress "Supporting services in the spoke deployed successfully"
 display_blank_line

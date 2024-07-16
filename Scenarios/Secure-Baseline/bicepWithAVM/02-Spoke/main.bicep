@@ -281,8 +281,14 @@ module aroRouteTable 'br/public:avm/res/network/route-table:0.2.3' = if (deployA
 /*                                   OUTPUTS                                  */
 /* -------------------------------------------------------------------------- */
 
+@description('The name of the resource group.')
+output resourceGroupName string = resourceGroup.name
+
 @description('The resource id of the virtual network.')
 output virtualNetworkResourceId string = virtualNetwork.outputs.resourceId
 
 @description('The resource id of the private endpoints subnet.')
 output privateEndpointsSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[2]
+
+@description('The resource id of the jumpbox subnet.')
+output jumpboxSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[3]

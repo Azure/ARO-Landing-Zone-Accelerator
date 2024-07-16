@@ -105,9 +105,9 @@ param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName
 
 /* -------------------------------- Container Registry ------------------------------------------ */
 
+@description('The name of the container registry. Defaults to the naming convention `<abbreviation-container-registry>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(5)
 @maxLength(50)
-@description('The name of the container registry. Defaults to the naming convention `<abbreviation-container-registry>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 param containerRegistryName string = getUniqueGlobalName('containerRegistry', workloadName, env, location, null, hash, [resourceGroup().id], 5, 50, false)
 
 @description('The SKU of the container registry. Defaults to Premium.')
@@ -118,8 +118,8 @@ param containerRegistryPrivateEndpointName string = getResourceNameFromParentRes
 
 /* ------------------------------- Windows Virtual Machine ------------------------------- */
 
-@description('Flag to determine if the Windows VM should be deployed. Defaults to false.')
-param deployWindowsJumpbox bool = false
+@description('Flag to determine if the Windows VM should be deployed. Defaults to true.')
+param deployWindowsJumpbox bool = true
 
 @description('The name of the Windows virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-win-mgmt[-<hash>]`.')
 param windowsVMName string = getResourceName('virtualMachine', workloadName, env, location, 'win-mgmt', hash)
@@ -136,7 +136,7 @@ param imageReferenceWindows imageReferenceType = {
 }
 
 @description('The size of the Windows virtual machine. Defaults to Standard_B2ms.')
-param windowsVMSize string = 'Standard_B2ms'
+param windowsVMSize string = 'B2als_v2'
 
 @description('The username of the local administrator account for the Windows virtual machine. Defaults to WinAroAdminUsername.')
 param windowsAdminUsername string = 'WinAroAdminUsername'
@@ -166,12 +166,13 @@ param windowsOsDiskConfiguration osDiskType = {
   managedDisk: {
     storageAccountType: 'Standard_LRS'
   }
+  diskSizeGB: 128
 }
 
 /* ------------------------------- Linux Virtual Machine ------------------------------- */
 
-@description('Flag to determine if the Linux VM should be deployed. Defaults to false.')
-param deployLinuxJumpbox bool = false
+@description('Flag to determine if the Linux VM should be deployed. Defaults to true.')
+param deployLinuxJumpbox bool = true
 
 @minLength(1)
 @maxLength(64)
@@ -190,7 +191,7 @@ param imageReferenceLinux imageReferenceType = {
 }
 
 @description('The size of the Linux virtual machine. Defaults to Standard_B2ms.')
-param linuxVMSize string = 'Standard_B2ms'
+param linuxVMSize string = 'B2als_v2'
 
 @description('The username of the local administrator account for the Linux virtual machine. Defaults to LnxAroAdminUsername.')
 param linuxAdminUsername string = 'LnxAroAdminUsername'
@@ -220,6 +221,7 @@ param linuxOsDiskConfiguration osDiskType = {
   managedDisk: {
     storageAccountType: 'Standard_LRS'
   }
+  diskSizeGB: 128
 }
 
 /* ------------------------------- Monitoring ------------------------------- */
