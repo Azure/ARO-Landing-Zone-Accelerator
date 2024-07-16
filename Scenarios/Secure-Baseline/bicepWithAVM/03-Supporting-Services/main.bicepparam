@@ -1,6 +1,8 @@
 using 'main.bicep'
 
-param adminPassword = '<adminPassword>'
+param windowsAdminPassword = '<windowsAdminPassword>'
+
+param linuxAdminPassword = '<linuxAdminPassword>'
 
 param privateEndpointSubnetResourceId =  '<privateEndpointSubnetResourceId>'
 

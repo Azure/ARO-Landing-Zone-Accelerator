@@ -71,10 +71,10 @@ param containerRegistryDnsZoneResourceId string
 
 /* -------------------------------- Key Vault ------------------------------- */
 
-@description('The name of the key vault. Defaults to the naming convention `<abbreviation-key-vault>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
+@description('The name of the key vault. Defaults to the naming convention `<abbreviation-key-vault><workloadName><lower-case-env><location-short>[<hash>]`.')
 @minLength(3)
 @maxLength(24)
-param keyVaultName string = getUniqueGlobalName('keyVault', workloadName, env, location, null, hash, [resourceGroup().id], 5)
+param keyVaultName string = getUniqueGlobalName('keyVault', workloadName, env, location, null, hash, [resourceGroup().id], 5, 24, false)
 
 @description('The SKU of the key vault. Defaults to premium.')
 param keyVaultSku keyVaultSkuType = 'premium'
@@ -103,21 +103,50 @@ param secrets array = []
 @description('The name of the private endpoint for the key vault. Defaults to the naming convention `<abbreviation-private-endpoint>-<key-vault-name>`.')
 param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
 
-/* ------------------------------- Virtual Machine ------------------------------- */
+/* -------------------------------- Container Registry ------------------------------------------ */
 
-// Common parameters for both VMs
-@description('The size of the virtual machines.')
-param vmSize string = 'Standard_B2ms'
+@minLength(5)
+@maxLength(50)
+@description('The name of the container registry. Defaults to the naming convention `<abbreviation-container-registry>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
+param containerRegistryName string = getUniqueGlobalName('containerRegistry', workloadName, env, location, null, hash, [resourceGroup().id], 5, 50, false)
 
-@description('The username of the local administrator account for the virtual machines.')
-param adminUsername string = 'localAdminUser'
+@description('The SKU of the container registry. Defaults to Premium.')
+param containerRegistrySku containerRegistrySkuType = 'Premium'
 
-@description('The password for the local administrator account for the virtual machines.')
+@description('The name of the private endpoint for the container registry. Defaults to the naming convention `<abbreviation-private-endpoint>-<container-registry-name>`.')
+param containerRegistryPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', containerRegistryName, null, hash)
+
+/* ------------------------------- Windows Virtual Machine ------------------------------- */
+
+@description('Flag to determine if the Windows VM should be deployed. Defaults to false.')
+param deployWindowsJumpbox bool = false
+
+@description('The name of the Windows virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-win-mgmt[-<hash>]`.')
+param windowsVMName string = getResourceName('virtualMachine', workloadName, env, location, 'win-mgmt', hash)
+
+@description('The name of the Windows virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-win-mgmt`.')
+param windowsVMComputerName string = '${take(workloadName, 7)}-win-mgmt'
+
+@description('The image reference for the Windows VM.')
+param imageReferenceWindows imageReferenceType = {
+  offer: 'WindowsServer'
+  publisher: 'MicrosoftWindowsServer'
+  sku: '2022-datacenter-azure-edition'
+  version: 'latest'
+}
+
+@description('The size of the Windows virtual machine. Defaults to Standard_B2ms.')
+param windowsVMSize string = 'Standard_B2ms'
+
+@description('The username of the local administrator account for the Windows virtual machine. Defaults to WinAroAdminUsername.')
+param windowsAdminUsername string = 'WinAroAdminUsername'
+
+@description('The password for the local administrator account for the Windows virtual machine.')
 @secure()
-param adminPassword string
+param windowsAdminPassword string
 
-@description('The NIC configurations for the virtual machines.')
-param nicConfigurations nicConfigurationType[] = [
+@description('The NIC configurations for the Windows virtual machine. Defaults to a single NIC configuration with the name `ipconfig01` and the subnet resource id of the jump box subnet.')
+param windowsNicConfigurations nicConfigurationType[] = [
   {
     deleteOptions: 'Delete'
     ipConfigurations: [
@@ -130,8 +159,8 @@ param nicConfigurations nicConfigurationType[] = [
   }
 ]
 
-@description('The OS disk configuration for the virtual machines.')
-param osDiskConfiguration osDiskType = {
+@description('The OS disk configuration for the Windows virtual machine. Defaults to a managed disk with a storage account type of Standard_LRS.')
+param windowsOsDiskConfiguration osDiskType = {
   createOption: 'FromImage'
   deleteOption: 'Delete'
   managedDisk: {
@@ -139,27 +168,18 @@ param osDiskConfiguration osDiskType = {
   }
 }
 
-// Windows VM specific parameters
-@description('Flag to determine if the Windows VM should be deployed.')
-param deployWindowsJumpbox bool = true
+/* ------------------------------- Linux Virtual Machine ------------------------------- */
 
-@description('The name of the Windows virtual machine.')
-param windowsVMName string = 'cvmwinguest'
+@description('Flag to determine if the Linux VM should be deployed. Defaults to false.')
+param deployLinuxJumpbox bool = false
 
-@description('The image reference for the Windows VM.')
-param imageReferenceWindows imageReferenceType = {
-  offer: 'WindowsServer'
-  publisher: 'MicrosoftWindowsServer'
-  sku: '2022-datacenter-azure-edition'
-  version: 'latest'
-}
+@minLength(1)
+@maxLength(64)
+@description('The name of the Linux virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-lnx-mgmt[-<hash>]`.')
+param linuxVMName string = getResourceName('virtualMachine', workloadName, env, location, 'lnx-mgmt', hash)
 
-// Linux VM specific parameters
-@description('Flag to determine if the Linux VM should be deployed.')
-param deployLinuxJumpbox bool = true
-
-@description('The name of the Linux virtual machine.')
-param linuxVMName string = 'cvmlinmin'
+@description('The name of the Linux virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-lnx-mgmt`.')
+param linuxVMComputerName string = '${take(workloadName, 7)}-lnx-mgmt'
 
 @description('The image reference for the Linux VM.')
 param imageReferenceLinux imageReferenceType = {
@@ -169,16 +189,38 @@ param imageReferenceLinux imageReferenceType = {
   version: 'latest'
 }
 
-/* -------------------------------- Container Registry ------------------------------------------ */
+@description('The size of the Linux virtual machine. Defaults to Standard_B2ms.')
+param linuxVMSize string = 'Standard_B2ms'
 
-@description('The name of the container registry. Defaults to the naming convention `<abbreviation-container-registry>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
-param containerRegistryName string = getUniqueGlobalName('containerRegistry', workloadName, env, location, null, hash, [resourceGroup().id], 5)
+@description('The username of the local administrator account for the Linux virtual machine. Defaults to LnxAroAdminUsername.')
+param linuxAdminUsername string = 'LnxAroAdminUsername'
 
-@description('The SKU of the container registry. Defaults to Standard.')
-param containerRegistrySku containerRegistrySkuType = 'Standard'
+@description('The password for the local administrator account for the Linux virtual machine.')
+@secure()
+param linuxAdminPassword string
 
-@description('The name of the private endpoint for the container registry. Defaults to the naming convention `<abbreviation-private-endpoint>-<container-registry-name>`.')
-param containerRegistryPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', containerRegistryName, null, hash)
+@description('The NIC configurations for the Linux virtual machine. Defaults to a single NIC configuration with the name `ipconfig01` and the subnet resource id of the jump box subnet.')
+param linuxNicConfigurations nicConfigurationType[] = [
+  {
+    deleteOptions: 'Delete'
+    ipConfigurations: [
+      {
+        name: 'ipconfig01'
+        subnetResourceId: jumpBoxSubnetResourceId
+      }
+    ]
+    nicSuffix: '-nic-01'
+  }
+]
+
+@description('The OS disk configuration for the Linux virtual machine. Defaults to a managed disk with a storage account type of Standard_LRS.')
+param linuxOsDiskConfiguration osDiskType = {
+  createOption: 'FromImage'
+  deleteOption: 'Delete'
+  managedDisk: {
+    storageAccountType: 'Standard_LRS'
+  }
+}
 
 /* ------------------------------- Monitoring ------------------------------- */
 
@@ -256,16 +298,18 @@ module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployW
   name: take('${deployment().name}-windows-vm', 64)
   params: {
     name: windowsVMName
-    adminUsername: adminUsername
-    adminPassword: adminPassword
-    imageReference: imageReferenceWindows
-    nicConfigurations: nicConfigurations
-    osDisk: osDiskConfiguration
-    osType: 'Windows'
-    vmSize: vmSize
     location: location
-    zone: 0
+    tags: tags
     enableTelemetry: enableAvmTelemetry
+    vmSize: windowsVMSize
+    osType: 'Windows'
+    computerName: windowsVMComputerName
+    imageReference: imageReferenceWindows
+    zone: 0
+    adminUsername: windowsAdminUsername
+    adminPassword: windowsAdminPassword
+    nicConfigurations: windowsNicConfigurations
+    osDisk: windowsOsDiskConfiguration
   }
 }
 
@@ -274,16 +318,18 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
   name: take('${deployment().name}-linux-vm', 64)
   params: {
     name: linuxVMName
-    adminUsername: adminUsername
-    adminPassword: adminPassword
-    imageReference: imageReferenceLinux
-    nicConfigurations: nicConfigurations
-    osDisk: osDiskConfiguration
-    osType: 'Linux'
-    vmSize: vmSize
     location: location
-    zone: 0
+    tags: tags
     enableTelemetry: enableAvmTelemetry
+    vmSize: linuxVMSize
+    osType: 'Linux'
+    computerName: linuxVMComputerName
+    imageReference: imageReferenceLinux
+    zone: 0
+    adminUsername: linuxAdminUsername
+    adminPassword: linuxAdminPassword
+    nicConfigurations: linuxNicConfigurations
+    osDisk: linuxOsDiskConfiguration
   }
 }
 
@@ -293,8 +339,10 @@ module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
   name: 'registryDeployment'
   params: {
     name: containerRegistryName
-    acrSku: containerRegistrySku
     location: location
+    tags: tags
+    enableTelemetry: enableAvmTelemetry
+    acrSku: containerRegistrySku
     publicNetworkAccess: 'Disabled'
     privateEndpoints: [containerRegistryEndpoint]
   }
