@@ -8,7 +8,6 @@ import { skuType as keyVaultSkuType } from './modules/key-vault/types.bicep'
 import { skuType as containerRegistrySkuType } from './modules/container-registry/types.bicep'
 import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/virtual-machine/types.bicep'
 
-
 import {
   getResourceName
   getUniqueGlobalName
@@ -105,6 +104,7 @@ param secrets array = []
 param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
 
 /* ------------------------------- Virtual Machine ------------------------------- */
+
 // Common parameters for both VMs
 @description('The size of the virtual machines.')
 param vmSize string = 'Standard_B2ms'
@@ -170,6 +170,7 @@ param imageReferenceLinux imageReferenceType = {
 }
 
 /* -------------------------------- Container Registry ------------------------------------------ */
+
 @description('The name of the container registry. Defaults to the naming convention `<abbreviation-container-registry>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 param containerRegistryName string = getUniqueGlobalName('containerRegistry', workloadName, env, location, null, hash, [resourceGroup().id], 5)
 
@@ -249,6 +250,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
 }
 
 /* ------------------------------- Virtual Machine ------------------------------- */
+
 // Windows VM Module
 module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployWindowsJumpbox) {
   name: take('${deployment().name}-windows-vm', 64)
@@ -286,6 +288,7 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
 }
 
 /* -------------------------------- Container Registry ------------------------------------------ */
+
 module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
   name: 'registryDeployment'
   params: {
