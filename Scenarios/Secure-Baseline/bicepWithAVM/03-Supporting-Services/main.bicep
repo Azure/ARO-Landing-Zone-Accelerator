@@ -5,8 +5,8 @@ targetScope = 'resourceGroup'
 /* -------------------------------------------------------------------------- */
 
 import { skuType as keyVaultSkuType } from './modules/key-vault/types.bicep'
+import { skuType as containerRegistrySkuType } from './modules/container-registry/types.bicep'
 import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/virtual-machine/types.bicep'
-import { containerRegistrySkuType } from './modules/container-registry/types.bicep'
 
 
 import {
@@ -66,6 +66,9 @@ param jumpBoxSubnetResourceId string
 
 @description('The resource id of the private DNS zone for the key vault.')
 param keyVaultPrivateDnsZoneResourceId string
+
+@description('The resource id of the private DNS zone for the container registry.')
+param containerRegistryDnsZoneResourceId string
 
 /* -------------------------------- Key Vault ------------------------------- */
 
@@ -171,6 +174,9 @@ param containerRegistryName string = getResourceName('containerRegistry', worklo
 @description('The SKU of the container registry. Defaults to Standard.')
 param containerRegistrySku containerRegistrySkuType = 'Standard'
 
+@description('The name of the private endpoint for the container registry. Defaults to the naming convention `<abbreviation-private-endpoint>-<container-registry-name>`.')
+param containerRegistryPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', containerRegistryName, null, hash)
+
 /* ------------------------------- Monitoring ------------------------------- */
 
 @description('The Log Analytics workspace resource id. This is required to enable monitoring.')
@@ -186,6 +192,14 @@ var keyVaultPrivateEndpoint = {
   name: keyVaultPrivateEndpointName
   subnetResourceId: privateEndpointSubnetResourceId
   privateDnsZoneResourceIds: [keyVaultPrivateDnsZoneResourceId]
+}
+
+/* -------------------------------- Container Registry ------------------------------- */
+
+var containerRegistryEndpoint = {
+  name: containerRegistryPrivateEndpointName
+  subnetResourceId: privateEndpointSubnetResourceId
+  privateDnsZoneResourceIds: [containerRegistryDnsZoneResourceId]
 }
 
 /* ------------------------------- Monitoring ------------------------------- */
@@ -276,5 +290,7 @@ module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
     name: containerRegistryName
     acrSku: containerRegistrySku
     location: location
+    publicNetworkAccess: 'Disabled'
+    privateEndpoints: [containerRegistryEndpoint]
   }
 }
