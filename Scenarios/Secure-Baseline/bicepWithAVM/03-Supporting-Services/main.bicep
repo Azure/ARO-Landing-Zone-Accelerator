@@ -11,7 +11,7 @@ import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/
 
 import {
   getResourceName
-  getKeyVaultName
+  getUniqueGlobalName
   getResourceNameFromParentResourceName
 } from '../commonModules/naming/functions.bicep'
 
@@ -75,7 +75,7 @@ param containerRegistryDnsZoneResourceId string
 @description('The name of the key vault. Defaults to the naming convention `<abbreviation-key-vault>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(3)
 @maxLength(24)
-param keyVaultName string = getKeyVaultName(workloadName, env, location, null, hash, [resourceGroup().id], 5)
+param keyVaultName string = getUniqueGlobalName('keyVault', workloadName, env, location, null, hash, [resourceGroup().id], 5)
 
 @description('The SKU of the key vault. Defaults to premium.')
 param keyVaultSku keyVaultSkuType = 'premium'
@@ -171,7 +171,7 @@ param imageReferenceLinux imageReferenceType = {
 
 /* -------------------------------- Container Registry ------------------------------------------ */
 @description('The name of the container registry. Defaults to the naming convention `<abbreviation-container-registry>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
-param containerRegistryName string = getResourceName('containerRegistry', workloadName, env, location, null, hash)
+param containerRegistryName string = getUniqueGlobalName('containerRegistry', workloadName, env, location, null, hash, [resourceGroup().id], 5)
 
 @description('The SKU of the container registry. Defaults to Standard.')
 param containerRegistrySku containerRegistrySkuType = 'Standard'

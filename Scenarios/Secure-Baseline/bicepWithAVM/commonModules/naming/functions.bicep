@@ -45,12 +45,12 @@ func getHashOrUniqueString(hash string?, arrayForUniqueString string[]?, uniqueS
 func getAbbreviation(resourceType resourceTypeType) string => getAbbreviations()[resourceType] ?? 'unknown'
 
 @export()
-@description('Returns a resource name that follows the convention: <rresource-type-abbreviation>-<workload-name>-<lower-case-env>-<location-short>[<postfix>][<hash>].')
+@description('Returns a resource name that follows the convention: <resource-type-abbreviation>-<workload-name>-<lower-case-env>-<location-short>[<postfix>][<hash>].')
 func getResourceName(resourceType resourceTypeType, workloadName string, env string, location locationType, postfix string?, hash string?) string => '${getAbbreviation(resourceType)}-${toLower(workloadName)}-${toLower(env)}-${getShortLocation(location)}${getStringLeadingWithHyphen(postfix)}${getStringLeadingWithHyphen(hash)}'
 
 @export()
-@description('Returns a key vault name that follows the convention: <abbreviation-key-vault><workload-name-limited-to-remaing-length><lower-case-env><location-short>[<postfix>][<hash-or-unique-string>].')
-func getKeyVaultName(workloadName string, env string, location locationType, postfix string?, hash string?, arrayForUniqueString string[]?, uniqueStringLength int) string => '${getAbbreviation('keyVault')}${take(toLower(workloadName), getRemainingLengthOfResource(24, getAbbreviation('keyVault'), workloadName, env, location, postfix, hash, uniqueStringLength))}${toLower(env)}${getShortLocation(location)}${toLower(postfix ?? '')}${getHashOrUniqueString(hash, arrayForUniqueString, uniqueStringLength)}'
+@description('Returns a key vault name that follows the convention: <resource-type-abbreviation><workload-name-limited-to-remaing-length><lower-case-env><location-short>[<postfix>][<hash-or-unique-string>].')
+func getUniqueGlobalName(resourceType resourceTypeType, workloadName string, env string, location locationType, postfix string?, hash string?, arrayForUniqueString string[]?, uniqueStringLength int) string => '${getAbbreviation(resourceType)}${take(toLower(workloadName), getRemainingLengthOfResource(24, getAbbreviation('keyVault'), workloadName, env, location, postfix, hash, uniqueStringLength))}${toLower(env)}${getShortLocation(location)}${toLower(postfix ?? '')}${getHashOrUniqueString(hash, arrayForUniqueString, uniqueStringLength)}'
 
 @export()
 @description('Returns a resource name that is a concatenation of the provided strings separated by a hyphen. If the hash is provided, it is always added to the end of the resource name.')
