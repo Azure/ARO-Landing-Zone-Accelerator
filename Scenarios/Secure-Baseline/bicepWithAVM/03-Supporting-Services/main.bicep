@@ -11,8 +11,8 @@ import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/
 
 import {
   getResourceName
+  getKeyVaultName
   getResourceNameFromParentResourceName
-  replaceSubnetNamePlaceholders
 } from '../commonModules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
@@ -73,7 +73,9 @@ param containerRegistryDnsZoneResourceId string
 /* -------------------------------- Key Vault ------------------------------- */
 
 @description('The name of the key vault. Defaults to the naming convention `<abbreviation-key-vault>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
-param keyVaultName string = getResourceName('keyVault', workloadName, env, location, null, hash)
+@minLength(3)
+@maxLength(24)
+param keyVaultName string = getKeyVaultName(workloadName, env, location, null, hash, [resourceGroup().id], 5)
 
 @description('The SKU of the key vault. Defaults to premium.')
 param keyVaultSku keyVaultSkuType = 'premium'

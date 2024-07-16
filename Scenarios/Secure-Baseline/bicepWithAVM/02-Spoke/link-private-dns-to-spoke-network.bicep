@@ -6,13 +6,17 @@ targetScope = 'resourceGroup'
 
 import { getResourceNameFromParentResourceName } from '../commonModules/naming/functions.bicep'
 
+/* -------------------------------------------------------------------------- */
+/*                                 PARAMETERS                                 */
+/* -------------------------------------------------------------------------- */
+
 @description('The name of the workload. Defaults to hub.')
 @minLength(3)
 @maxLength(15)
-param workloadName string = 'hub'
+param workloadName string = 'aro-lza'
 
-@description('The location of the resources. Defaults to the deployment location.')
-param location string = resourceGroup().location
+@description('The location of the private link. Defaults to global')
+param location string = 'global'
 
 @description('The type of environment. Defaults to DEV.')
 @allowed([
@@ -41,7 +45,7 @@ param tags object = hash == null ? {
 }
 
 @description('The name of the virtual network link.')
-param virtualNetworkLinkName string = getResourceNameFromParentResourceName('virtualNetworkLink', last(split('/', virtualNetworkResourceId)), null, hash)
+param virtualNetworkLinkName string = getResourceNameFromParentResourceName('virtualNetworkLink', last(split(virtualNetworkResourceId, '/')), null, hash)
 
 @description('The name of the private DNS zone.')
 param privateDnsZoneName string

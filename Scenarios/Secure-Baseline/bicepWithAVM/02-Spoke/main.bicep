@@ -7,7 +7,6 @@ targetScope = 'subscription'
 import {
   getResourceName
   getResourceNameFromParentResourceName
-  replaceSubnetNamePlaceholders
 } from '../commonModules/naming/functions.bicep'
 
 import { 
@@ -282,5 +281,8 @@ module aroRouteTable 'br/public:avm/res/network/route-table:0.2.3' = if (deployA
 /*                                   OUTPUTS                                  */
 /* -------------------------------------------------------------------------- */
 
+@description('The resource id of the virtual network.')
+output virtualNetworkResourceId string = virtualNetwork.outputs.resourceId
+
 @description('The resource id of the private endpoints subnet.')
-output privateEndpointsSubnetId string = virtualNetwork.outputs.subnetResourceIds[2]
+output privateEndpointsSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[2]

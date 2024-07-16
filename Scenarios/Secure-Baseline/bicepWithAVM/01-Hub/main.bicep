@@ -357,17 +357,26 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
 /*                                   OUTPUTS                                  */
 /* -------------------------------------------------------------------------- */
 
+@description('The name of the resource group.')
+output resourceGroupName string = resourceGroup.name
+
 @description('The resource id of the hub virtual network.')
-output hubVirtualNetworkId string = virtualNetwork.outputs.resourceId
+output virtualNetworkResourceId string = virtualNetwork.outputs.resourceId
 
 @description('The resource id of the log analytics workspace.')
-output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.outputs.resourceId
+output logAnalyticsWorkspaceResourceId string = logAnalyticsWorkspace.outputs.resourceId
 
 @description('The resource id of the key vault private DNS zone.')
-output keyVaultPrivateDnsZoneId string = keyVaultPrivateDnsZone.outputs.resourceId
+output keyVaultPrivateDnsZoneResourceId string = keyVaultPrivateDnsZone.outputs.resourceId
+
+@description('The name of the key vault private DNS zone.')
+output keyVaultPrivateDnsZoneName string = keyVaultPrivateDnsZone.outputs.name
 
 @description('The resource id of the ACR private DNS zone.')
-output acrPrivateDnsZoneId string = containerRegistryPrivateDnsZone.outputs.resourceId
+output acrPrivateDnsZoneResourceId string = containerRegistryPrivateDnsZone.outputs.resourceId
+
+@description('The name of the ACR private DNS zone.')
+output acrPrivateDnsZoneName string = containerRegistryPrivateDnsZone.outputs.name
 
 @description('The private IP address of the firewall.')
 output firewallPrivateIp string = firewall.outputs.privateIp
