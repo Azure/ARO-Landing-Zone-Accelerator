@@ -125,7 +125,7 @@ param deployWindowsJumpbox bool = true
 param windowsVMName string = getResourceName('virtualMachine', workloadName, env, location, 'win-mgmt', hash)
 
 @description('The name of the Windows virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-win-mgmt`.')
-param windowsVMComputerName string = '${take(workloadName, 7)}-win-mgmt'
+param windowsVMComputerName string = '${take(workloadName, 7)}-win-jbx'
 
 @description('The image reference for the Windows VM.')
 param imageReferenceWindows imageReferenceType = {
@@ -136,10 +136,10 @@ param imageReferenceWindows imageReferenceType = {
 }
 
 @description('The size of the Windows virtual machine. Defaults to Standard_B2ms.')
-param windowsVMSize string = 'B2als_v2'
+param windowsVMSize string = 'Standard_B2ms'
 
-@description('The username of the local administrator account for the Windows virtual machine. Defaults to WinAroAdminUsername.')
-param windowsAdminUsername string = 'WinAroAdminUsername'
+@description('The username of the local administrator account for the Windows virtual machine. Defaults to arolzauser.')
+param windowsAdminUsername string = 'arolzauser'
 
 @description('The password for the local administrator account for the Windows virtual machine.')
 @secure()
@@ -156,6 +156,7 @@ param windowsNicConfigurations nicConfigurationType[] = [
       }
     ]
     nicSuffix: '-nic-01'
+    enableAcceleratedNetworking: false
   }
 ]
 
@@ -180,7 +181,7 @@ param deployLinuxJumpbox bool = true
 param linuxVMName string = getResourceName('virtualMachine', workloadName, env, location, 'lnx-mgmt', hash)
 
 @description('The name of the Linux virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-lnx-mgmt`.')
-param linuxVMComputerName string = '${take(workloadName, 7)}-lnx-mgmt'
+param linuxVMComputerName string = '${take(workloadName, 7)}-lnx-jbx'
 
 @description('The image reference for the Linux VM.')
 param imageReferenceLinux imageReferenceType = {
@@ -191,10 +192,10 @@ param imageReferenceLinux imageReferenceType = {
 }
 
 @description('The size of the Linux virtual machine. Defaults to Standard_B2ms.')
-param linuxVMSize string = 'B2als_v2'
+param linuxVMSize string = 'Standard_B2ms'
 
-@description('The username of the local administrator account for the Linux virtual machine. Defaults to LnxAroAdminUsername.')
-param linuxAdminUsername string = 'LnxAroAdminUsername'
+@description('The username of the local administrator account for the Linux virtual machine. Defaults to arolzauser.')
+param linuxAdminUsername string = 'arolzauser'
 
 @description('The password for the local administrator account for the Linux virtual machine.')
 @secure()
@@ -211,6 +212,7 @@ param linuxNicConfigurations nicConfigurationType[] = [
       }
     ]
     nicSuffix: '-nic-01'
+    enableAcceleratedNetworking: false
   }
 ]
 

@@ -18,14 +18,17 @@ type imageReferenceType = {
 @description('The NIC configuration type. Contains the delete options, IP configurations, and NIC suffix.')
 type nicConfigurationType = {
   @description('The delete options for the NIC. Can be "Delete", "Detach", or "None".')
-    deleteOptions: 'Delete' | 'Detach' | 'None'
-    
-    @description('The list of IP configurations for the NIC.')
-    ipConfigurations: ipConfigurationType[]
+  deleteOptions: 'Delete' | 'Detach' | 'None'
+  
+  @description('The list of IP configurations for the NIC.')
+  ipConfigurations: ipConfigurationType[]
 
-    @description('The suffix to append to the NIC name.')
-    nicSuffix: string
-  }
+  @description('The suffix to append to the NIC name.')
+  nicSuffix: string
+
+  @description('The enableAcceleratedNetworking property for the NIC.')
+  enableAcceleratedNetworking: bool
+}
 
 @export()
 @description('The OS disk type. Contains the create option, delete option, and managed disk.')
