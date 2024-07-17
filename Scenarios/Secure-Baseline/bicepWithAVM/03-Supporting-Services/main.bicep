@@ -349,5 +349,7 @@ module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
     acrSku: containerRegistrySku
     publicNetworkAccess: 'Disabled'
     privateEndpoints: [containerRegistryEndpoint]
+    acrAdminUserEnabled: true
+    anonymousPullEnabled: false
   }
 }
