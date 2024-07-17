@@ -141,11 +141,6 @@ param diskEncriptionSetResourceId string?
 /*                                  VARIABLES                                 */
 /* -------------------------------------------------------------------------- */
 
-// Azure built-in roles: https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
-var contributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
-var userAccessAdministratorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')
-var readerRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
-
 // The outbound type of the ARO cluster
 var useUdr = !(empty(firewallPrivateIpAddress) || empty(routeTableName))
 var outboundType = useUdr ? 'Loadbalancer' : 'UserDefinedRouting'
@@ -211,104 +206,16 @@ resource aroCluster 'Microsoft.RedHatOpenShift/openShiftClusters@2023-11-22' = {
   }
 }
 
-/* --------------------------- ARO Resource Group --------------------------- */
+/* ---------------------------- Roles Assignment ---------------------------- */
 
-
-resource assignContributorRoleToSPForApplicationResourceGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId)
-  scope: resourceGroup()
-  properties: {
+module roleAssignments 'role-assignments.bicep' = {
+  name: 'roleAssignments'
+  params: {
     principalId: servicePrincipalObjectId
-    roleDefinitionId: contributorRoleResourceId
-    principalType: 'ServicePrincipal'
+    aroResourceProviderPrincipalId: aroResourceProviderServicePrincipalObjectId
+    resourceGroupId: resourceGroup().id
+    vnetName: spokeVirtualNetworkName
+    routeTableName: routeTableName
+    diskEncryptionSetName: useDiskEncryptionSet ? last(split(diskEncriptionSetResourceId ?? '', '/')) : ''
   }
 }
-
-resource assignUserAccessAdministratorRoleToSPForApplicationResourceGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(servicePrincipalObjectId, resourceGroup().id, userAccessAdministratorRoleResourceId)
-  scope: resourceGroup()
-  properties: {
-    principalId: servicePrincipalObjectId
-    roleDefinitionId: userAccessAdministratorRoleResourceId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-/* ------------------------- Sporke Virtual Network ------------------------- */
-
-resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
-  name: spokeVirtualNetworkName
-}
-
-resource assignContributorRoleToSPForVirtualNetwork 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, spokeVirtualNetwork.name)
-  scope: spokeVirtualNetwork
-  properties: {
-    principalId: servicePrincipalObjectId
-    roleDefinitionId: contributorRoleResourceId
-    principalType: 'ServicePrincipal'
-  }
-}
-resource assignContributorRoleToAROResourceProviderSPForVirtualNetwork 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, spokeVirtualNetwork.name)
-  scope: spokeVirtualNetwork
-  properties: {
-    principalId: aroResourceProviderServicePrincipalObjectId
-    roleDefinitionId: contributorRoleResourceId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-/* ------------------------------- Route Table ------------------------------ */
-
-// If route table is deployed, both the RP SP and the SP needs to be contributor for the route table
-// resource routeTable 'Microsoft.Network/routeTables@2023-09-01' existing = if (useUdr) {
-//   name: routeTableName ?? ''
-// }
-
-// resource assignContributorRoleToSPForRouteTable 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useUdr) {
-//   name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, routeTable.name)
-//   scope: routeTable
-//   properties: {
-//     principalId: servicePrincipalObjectId
-//     roleDefinitionId: contributorRoleResourceId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
-
-// resource assignContributorRoleToAROResourceProviderSPForRouteTable 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useUdr) {
-//   name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, routeTable.name)
-//   scope: routeTable
-//   properties: {
-//     principalId: aroResourceProviderServicePrincipalObjectId
-//     roleDefinitionId: contributorRoleResourceId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
-
-/* --------------------------- Disk Encryption Set -------------------------- */
-
-// If disk encryption set is deployed, both the RP SP and the SP needs to be reader for the DES
-// resource diskEncryptionSet 'Microsoft.Compute/diskEncryptionSets@2022-07-02' existing = if (useDiskEncryptionSet) {
-//   name: last(split(diskEncriptionSetResourceId ?? '', '/'))
-// }
-
-// resource assignReaderRoleToSPForDiskEncryptionSet 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useDiskEncryptionSet) {
-//   name: guid(servicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSet.name)
-//   scope: diskEncryptionSet
-//   properties: {
-//     principalId: servicePrincipalObjectId
-//     roleDefinitionId: readerRoleResourceId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
-
-// resource assignReaderRoleToAROResourceProviderSPForDiskEncryptionSet 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useDiskEncryptionSet) {
-//   name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSet.name)
-//   scope: diskEncryptionSet
-//   properties: {
-//     principalId: aroResourceProviderServicePrincipalObjectId
-//     roleDefinitionId: readerRoleResourceId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
