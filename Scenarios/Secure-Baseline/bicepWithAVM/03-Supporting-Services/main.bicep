@@ -9,9 +9,9 @@ import { skuType as containerRegistrySkuType } from './modules/container-registr
 import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/virtual-machine/types.bicep'
 
 import {
-  getResourceName
-  getUniqueGlobalName
-  getResourceNameFromParentResourceName
+  generateResourceName
+  generateUniqueGlobalName
+  generateResourceNameFromParentResourceName
 } from '../commonModules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
@@ -74,7 +74,7 @@ param containerRegistryDnsZoneResourceId string
 @description('The name of the key vault. Defaults to the naming convention `<abbreviation-key-vault><workloadName><lower-case-env><location-short>[<hash>]`.')
 @minLength(3)
 @maxLength(24)
-param keyVaultName string = getUniqueGlobalName('keyVault', workloadName, env, location, null, hash, [resourceGroup().id], 5, 24, false)
+param keyVaultName string = generateUniqueGlobalName('keyVault', workloadName, env, location, null, hash, [resourceGroup().id], 5, 24, false)
 
 @description('The SKU of the key vault. Defaults to premium.')
 param keyVaultSku keyVaultSkuType = 'premium'
@@ -101,20 +101,20 @@ param keys array = []
 param secrets array = []
 
 @description('The name of the private endpoint for the key vault. Defaults to the naming convention `<abbreviation-private-endpoint>-<key-vault-name>`.')
-param keyVaultPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
+param keyVaultPrivateEndpointName string = generateResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
 
 /* -------------------------------- Container Registry ------------------------------------------ */
 
 @description('The name of the container registry. Defaults to the naming convention `<abbreviation-container-registry>-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(5)
 @maxLength(50)
-param containerRegistryName string = getUniqueGlobalName('containerRegistry', workloadName, env, location, null, hash, [resourceGroup().id], 5, 50, false)
+param containerRegistryName string = generateUniqueGlobalName('containerRegistry', workloadName, env, location, null, hash, [resourceGroup().id], 5, 50, false)
 
 @description('The SKU of the container registry. Defaults to Premium.')
 param containerRegistrySku containerRegistrySkuType = 'Premium'
 
 @description('The name of the private endpoint for the container registry. Defaults to the naming convention `<abbreviation-private-endpoint>-<container-registry-name>`.')
-param containerRegistryPrivateEndpointName string = getResourceNameFromParentResourceName('privateEndpoint', containerRegistryName, null, hash)
+param containerRegistryPrivateEndpointName string = generateResourceNameFromParentResourceName('privateEndpoint', containerRegistryName, null, hash)
 
 /* ------------------------------- Windows Virtual Machine ------------------------------- */
 
@@ -122,7 +122,7 @@ param containerRegistryPrivateEndpointName string = getResourceNameFromParentRes
 param deployWindowsJumpbox bool = true
 
 @description('The name of the Windows virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-win-mgmt[-<hash>]`.')
-param windowsVMName string = getResourceName('virtualMachine', workloadName, env, location, 'win-mgmt', hash)
+param windowsVMName string = generateResourceName('virtualMachine', workloadName, env, location, 'win-mgmt', hash)
 
 @description('The name of the Windows virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-win-mgmt`.')
 param windowsVMComputerName string = '${take(workloadName, 7)}-win-jbx'
@@ -178,7 +178,7 @@ param deployLinuxJumpbox bool = true
 @minLength(1)
 @maxLength(64)
 @description('The name of the Linux virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-lnx-mgmt[-<hash>]`.')
-param linuxVMName string = getResourceName('virtualMachine', workloadName, env, location, 'lnx-mgmt', hash)
+param linuxVMName string = generateResourceName('virtualMachine', workloadName, env, location, 'lnx-mgmt', hash)
 
 @description('The name of the Linux virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-lnx-mgmt`.')
 param linuxVMComputerName string = '${take(workloadName, 7)}-lnx-jbx'

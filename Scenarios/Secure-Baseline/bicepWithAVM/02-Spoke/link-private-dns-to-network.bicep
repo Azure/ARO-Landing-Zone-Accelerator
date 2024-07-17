@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 /*                                   IMPORTS                                  */
 /* -------------------------------------------------------------------------- */
 
-import { getResourceNameFromParentResourceName } from '../commonModules/naming/functions.bicep'
+import { generateResourceNameFromParentResourceName } from '../commonModules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
 /*                                 PARAMETERS                                 */
@@ -45,7 +45,7 @@ param tags object = hash == null ? {
 }
 
 @description('The name of the virtual network link.')
-param virtualNetworkLinkName string = getResourceNameFromParentResourceName('virtualNetworkLink', last(split(virtualNetworkResourceId, '/')), null, hash)
+param virtualNetworkLinkName string = generateResourceNameFromParentResourceName('virtualNetworkLink', last(split(virtualNetworkResourceId, '/')), null, hash)
 
 @description('The name of the private DNS zone.')
 param privateDnsZoneName string

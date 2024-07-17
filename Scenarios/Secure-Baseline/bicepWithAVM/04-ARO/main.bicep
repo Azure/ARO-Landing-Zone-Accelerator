@@ -7,8 +7,8 @@ targetScope = 'resourceGroup'
 import { visibilityType, encryptionAtHostType, masterNodesVmSizeType, workerProfileType } from './types.bicep'
 
 import {
-  getResourceName
-  getResourceNameFromParentResourceName
+  generateResourceName
+  generateResourceNameFromParentResourceName
 } from '../commonModules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
@@ -52,7 +52,7 @@ param tags object = hash == null ? {
 @description('The name of the ARO cluster.')
 @minLength(1)
 @maxLength(30)
-param aroClusterName string = getResourceName('aroCluster', workloadName, env, location, null, hash)
+param aroClusterName string = generateResourceName('aroCluster', workloadName, env, location, null, hash)
 
 @description('The version of the ARO cluster (Optional).')
 param aroClusterVersion string?
@@ -63,7 +63,7 @@ param aroClusterDomain string = 'aroclusterdomain1234'
 @description('The name of the managed resource group. Defaults to `aro-<domain>-<location>`.')
 @minLength(1)
 @maxLength(90)
-param managedResourceGroupName string = getResourceNameFromParentResourceName('resourceGroup', aroClusterDomain, 'managed-aro', hash)
+param managedResourceGroupName string = generateResourceName('resourceGroup', workloadName, env, location, 'managed-aro', hash)
 
 @secure()
 @description('The pull secret for the ARO cluster.')
@@ -142,15 +142,7 @@ param diskEncriptionSetResourceId string?
 /*                                  VARIABLES                                 */
 /* -------------------------------------------------------------------------- */
 
-// Azure built-in roles: https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
-// var contributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
-// var userAccessAdministratorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')
-var networkContributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4d97b98b-1d4f-4787-a291-c67834d212e7')
-var readerRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
-
-// The outbound type of the ARO cluster
-var useUdr = !(empty(firewallPrivateIpAddress) || empty(routeTableResourceId))
-var outboundType = useUdr ? 'Loadbalancer' : 'UserDefinedRouting'
+/* ------------------------------- ARO Cluster ------------------------------ */
 
 var managedResourceGRoupId = '/subscriptions/${subscription().subscriptionId}/resourceGroups/${managedResourceGroupName}'
 
@@ -166,7 +158,22 @@ var workerProfiles = [
   }
 ]
 
+/* ---------------------------- Cluster Outbound ---------------------------- */
+
+var useUdr = !(empty(firewallPrivateIpAddress) || empty(routeTableResourceId))
+var outboundType = useUdr ? 'Loadbalancer' : 'UserDefinedRouting'
+
+/* --------------------------- Disk Encryption Set -------------------------- */
+
 var useDiskEncryptionSet = !empty(diskEncriptionSetResourceId)
+
+/* ----------------------------- Built-in roles ----------------------------- */
+
+// Azure built-in roles: https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
+// var contributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+// var userAccessAdministratorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')
+var networkContributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4d97b98b-1d4f-4787-a291-c67834d212e7')
+var readerRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
 
 /* -------------------------------------------------------------------------- */
 /*                                  RESOURCES                                 */
@@ -223,7 +230,7 @@ resource aroCluster 'Microsoft.RedHatOpenShift/openShiftClusters@2023-11-22' = {
   ]
 }
 
-/* --------------------------- ARO Resource Group --------------------------- */
+/* ----------------------------- Role Assignment ---------------------------- */
 
 // resource assignContributorRoleToSPForApplicationResourceGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 //   name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId)
@@ -245,8 +252,7 @@ resource aroCluster 'Microsoft.RedHatOpenShift/openShiftClusters@2023-11-22' = {
 //   }
 // }
 
-/* ------------------------- Sporke Virtual Network ------------------------- */
-
+// Spoke Virtual Network
 module assignNetworkContributorRoleToSPForVirtualNetwork 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useUdr) {
   name: take('${deployment().name}-sp-spoke-vnet-net-contributor', 64)
   params: {
@@ -271,8 +277,7 @@ module assignNetworkContributorRoleToAROResourceProviderSPForVirtualNetwork 'br/
   }
 }
 
-/* ------------------------------- Route Table ------------------------------ */
-
+// Route Table
 // If route table is deployed, both the RP SP and the SP needs to be contributor for the route table
 module assignNetworkContributorRoleToSPForRouteTable 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useUdr) {
   name: take('${deployment().name}-sp-rt-net-contributor', 64)
@@ -298,8 +303,8 @@ module assignNetworkContributorRoleToAROResourceProviderSPForRouteTable 'br/publ
   }
 }
 
-/* --------------------------- Disk Encryption Set -------------------------- */
-
+// Disk Encryption Set
+// If disk encryption set is deployed, both the RP SP and the SP needs to be reader for the disk encryption set
 module assignReaderRoleToSPForDiskEncryptionSet 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useDiskEncryptionSet) {
   name: take('${deployment().name}-sp-des-reader', 64)
   params: {
