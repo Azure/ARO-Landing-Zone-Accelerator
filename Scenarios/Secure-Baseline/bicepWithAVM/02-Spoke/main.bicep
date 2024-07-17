@@ -287,9 +287,6 @@ output resourceGroupName string = resourceGroup.name
 @description('The resource id of the virtual network.')
 output virtualNetworkResourceId string = virtualNetwork.outputs.resourceId
 
-@description('The name of the virtual network.')
-output virtualNetworkName string = virtualNetwork.outputs.name
-
 @description('The resource id of the master nodes subnet.')
 output masterNodesSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[0]
 
@@ -301,3 +298,6 @@ output privateEndpointsSubnetResourceId string = virtualNetwork.outputs.subnetRe
 
 @description('The resource id of the jumpbox subnet.')
 output jumpboxSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[3]
+
+@description('The resource id of the private endpoints network security group.')
+output routeTableResourceId string = deployAroRouteTable ? aroRouteTable.outputs.resourceId : ''

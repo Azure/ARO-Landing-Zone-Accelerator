@@ -127,9 +127,6 @@ param windowsVMName string = getResourceName('virtualMachine', workloadName, env
 @description('The name of the Windows virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-win-mgmt`.')
 param windowsVMComputerName string = '${take(workloadName, 7)}-win-jbx'
 
-@description('The URL of the script for the Windows VM. Defaults to the script for the Secure Baseline scenario: `https://your-windows-script-url.com/script.ps1`')
-param windowsScriptFileUri string = 'https://your-windows-script-url.com/script.ps1'
-
 @description('The image reference for the Windows VM.')
 param imageReferenceWindows imageReferenceType = {
   offer: 'WindowsServer'
@@ -185,9 +182,6 @@ param linuxVMName string = getResourceName('virtualMachine', workloadName, env, 
 
 @description('The name of the Linux virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-lnx-mgmt`.')
 param linuxVMComputerName string = '${take(workloadName, 7)}-lnx-jbx'
-
-@description('The URL of the script for the Linux VM. Defaults to the script for the Secure Baseline scenario: `https://raw.githubusercontent.com/alainvetier/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/script.sh`')
-param linuxScriptFileUri string = 'https://raw.githubusercontent.com/alainvetier/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/script.sh'
 
 @description('The image reference for the Linux VM.')
 param imageReferenceLinux imageReferenceType = {
@@ -320,17 +314,6 @@ module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployW
     adminPassword: windowsAdminPassword
     nicConfigurations: windowsNicConfigurations
     osDisk: windowsOsDiskConfiguration
-    // extensionCustomScriptConfig: {
-    //   enabled: true
-    //   fileData: [
-    //     {
-    //       uri: windowsScriptFileUri
-    //     }
-    //   ]
-    // }
-    // extensionCustomScriptProtectedSetting: {
-    //   commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File script.ps1'
-    // }
   }
 }
 
@@ -351,17 +334,6 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
     adminPassword: linuxAdminPassword
     nicConfigurations: linuxNicConfigurations
     osDisk: linuxOsDiskConfiguration
-    // extensionCustomScriptConfig: {
-    //   enabled: true
-    //   fileData: [
-    //     {
-    //       uri: linuxScriptFileUri
-    //     }
-    //   ]
-    // }
-    // extensionCustomScriptProtectedSetting: {
-    //   commandToExecute: 'sh script.sh'
-    // }
   }
 }
 

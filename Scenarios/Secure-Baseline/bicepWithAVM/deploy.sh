@@ -128,11 +128,11 @@ az deployment sub create \
 # Get the outputs from the spoke network deployment
 SPOKE_RG_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.resourceGroupName.value" -o tsv)
 SPOKE_VNET_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkResourceId.value" -o tsv)
-SPOKE_VNET_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkName.value" -o tsv)
 MASTER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.masterNodesSubnetResourceId.value" -o tsv)
 WORKER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.workerNodesSubnetResourceId.value" -o tsv)
 PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.privateEndpointsSubnetResourceId.value" -o tsv)
 JUMPBOX_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.jumpboxSubnetResourceId.value" -o tsv)
+ROUTE_TABLE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.routeTableResourceId.value" -o tsv)
 display_progress "Spoke network resources deployed successfully"
 display_blank_line
 
@@ -146,7 +146,7 @@ az deployment group create \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         privateDnsZoneName=$KEY_VAULT_PRIVATE_DNS_ZONE_NAME \
-        virtualNetworkResourceId=$SPOKE_VNET_ID
+        virtualNetworkResourceId=$SPOKE_VNET_ID    
 az deployment group create \
     --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-acr-private-dns-to-spoke-network" \
     --resource-group $HUB_RG_NAME \
@@ -213,10 +213,12 @@ az deployment group create \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
-        spokeVirtualNetworkName=$SPOKE_VNET_NAME \
+        spokeVirtualNetworkResourceId=$SPOKE_VNET_ID \
         masterNodesSubnetResourceId=$MASTER_SUBNET_RESOURCE_ID \
         workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID \
         servicePrincipalClientId=$SP_CLIENT_ID \
         servicePrincipalClientSecret=$SP_CLIENT_SECRET \
         servicePrincipalObjectId=$SP_OBJECT_ID \
-        aroResourceProviderServicePrincipalObjectId=$ARO_RP_SP_OBJECT_ID
+        aroResourceProviderServicePrincipalObjectId=$ARO_RP_SP_OBJECT_ID \
+        routeTableResourceId=$ROUTE_TABLE_ID \
+        firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP

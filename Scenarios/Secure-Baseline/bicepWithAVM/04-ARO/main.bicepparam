@@ -1,7 +1,6 @@
 using 'main.bicep'
 
-
-param spokeVirtualNetworkName =  '<spokeVirtualNetworkName>'
+param spokeVirtualNetworkResourceId =  '<spokeVirtualNetworkResourceId>'
 
 param workerNodesSubnetResourceId =  '<workerNodesSubnetId>'
 

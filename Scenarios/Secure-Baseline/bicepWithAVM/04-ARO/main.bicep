@@ -8,6 +8,7 @@ import { visibilityType, encryptionAtHostType, masterNodesVmSizeType, workerProf
 
 import {
   getResourceName
+  getResourceNameFromParentResourceName
 } from '../commonModules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
@@ -62,7 +63,7 @@ param aroClusterDomain string = 'aroclusterdomain1234'
 @description('The name of the managed resource group. Defaults to `aro-<domain>-<location>`.')
 @minLength(1)
 @maxLength(90)
-param managedResourceGroupName string = 'aro-${aroClusterDomain}-${location}'
+param managedResourceGroupName string = getResourceNameFromParentResourceName('resourceGroup', aroClusterDomain, 'managed-aro', hash)
 
 @secure()
 @description('The pull secret for the ARO cluster.')
@@ -94,8 +95,8 @@ param workerProfile workerProfileType = {
 
 /* ------------------------------- Networking ------------------------------- */
 
-@description('The name of the spoke virtual network. This is required for role assignment for the ARO cluster.')
-param spokeVirtualNetworkName string
+@description('The resource id of the spoke virtual network. This is required for role assignment for the ARO cluster.')
+param spokeVirtualNetworkResourceId string
 
 @description('The CIDR for the pods. Defaults to `10.128.0.0/14`')
 param podCidr string = '10.128.0.0/14'
@@ -126,8 +127,8 @@ param aroResourceProviderServicePrincipalObjectId string
 
 /* --------------------------- User Defined Route --------------------------- */
 
-@description('The name of the route table (Optional). If the name is not set the outbound type will be `loadbalancer`. This is required to configure UDR for the ARO cluster.')
-param routeTableName string?
+@description('The resource id of the route table (Optional). If the name is not set the outbound type will be `loadbalancer`. This is required to configure UDR for the ARO cluster.')
+param routeTableResourceId string?
 
 @description('The private IP address of the firewall (Optional). This is required to configure UDR for the ARO cluster. If not set, UDR is not configured and the outbound type of the ARO cluster is set to `Loadbalancer`. If set, the UDR is set for both the master nodes and worker nodes subnets, the outbound type of the ARO cluster is set to UserDefinedRouting, and the cluster API server and ingress need both to be private.')
 param firewallPrivateIpAddress string?
@@ -142,12 +143,13 @@ param diskEncriptionSetResourceId string?
 /* -------------------------------------------------------------------------- */
 
 // Azure built-in roles: https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
-var contributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
-var userAccessAdministratorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')
+// var contributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+// var userAccessAdministratorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')
+var networkContributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4d97b98b-1d4f-4787-a291-c67834d212e7')
 var readerRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
 
 // The outbound type of the ARO cluster
-var useUdr = !(empty(firewallPrivateIpAddress) || empty(routeTableName))
+var useUdr = !(empty(firewallPrivateIpAddress) || empty(routeTableResourceId))
 var outboundType = useUdr ? 'Loadbalancer' : 'UserDefinedRouting'
 
 var managedResourceGRoupId = '/subscriptions/${subscription().subscriptionId}/resourceGroups/${managedResourceGroupName}'
@@ -209,106 +211,115 @@ resource aroCluster 'Microsoft.RedHatOpenShift/openShiftClusters@2023-11-22' = {
       clientSecret: servicePrincipalClientSecret
     }
   }
+  dependsOn: [
+    // assignContributorRoleToSPForApplicationResourceGroup
+    // assignUserAccessAdministratorRoleToSPForApplicationResourceGroup
+    assignNetworkContributorRoleToSPForVirtualNetwork
+    assignNetworkContributorRoleToAROResourceProviderSPForVirtualNetwork
+    assignNetworkContributorRoleToSPForRouteTable
+    assignNetworkContributorRoleToAROResourceProviderSPForRouteTable
+    assignReaderRoleToSPForDiskEncryptionSet
+    assignReaderRoleToAROResourceProviderSPForDiskEncryptionSet
+  ]
 }
 
 /* --------------------------- ARO Resource Group --------------------------- */
 
+// resource assignContributorRoleToSPForApplicationResourceGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+//   name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId)
+//   scope: resourceGroup()
+//   properties: {
+//     principalId: servicePrincipalObjectId
+//     roleDefinitionId: contributorRoleResourceId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
 
-resource assignContributorRoleToSPForApplicationResourceGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId)
-  scope: resourceGroup()
-  properties: {
-    principalId: servicePrincipalObjectId
-    roleDefinitionId: contributorRoleResourceId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource assignUserAccessAdministratorRoleToSPForApplicationResourceGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(servicePrincipalObjectId, resourceGroup().id, userAccessAdministratorRoleResourceId)
-  scope: resourceGroup()
-  properties: {
-    principalId: servicePrincipalObjectId
-    roleDefinitionId: userAccessAdministratorRoleResourceId
-    principalType: 'ServicePrincipal'
-  }
-}
+// resource assignUserAccessAdministratorRoleToSPForApplicationResourceGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+//   name: guid(servicePrincipalObjectId, resourceGroup().id, userAccessAdministratorRoleResourceId)
+//   scope: resourceGroup()
+//   properties: {
+//     principalId: servicePrincipalObjectId
+//     roleDefinitionId: userAccessAdministratorRoleResourceId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
 
 /* ------------------------- Sporke Virtual Network ------------------------- */
 
-resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
-  name: spokeVirtualNetworkName
-}
-
-resource assignContributorRoleToSPForVirtualNetwork 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, spokeVirtualNetwork.name)
-  scope: spokeVirtualNetwork
-  properties: {
+module assignNetworkContributorRoleToSPForVirtualNetwork 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useUdr) {
+  name: take('${deployment().name}-sp-spoke-vnet-net-contributor', 64)
+  params: {
     principalId: servicePrincipalObjectId
-    roleDefinitionId: contributorRoleResourceId
+    resourceId: spokeVirtualNetworkResourceId
+    roleDefinitionId: networkContributorRoleResourceId
+    description: 'Assign Network Contributor role to the ARO Service Principal for the spoke virtual network.'
     principalType: 'ServicePrincipal'
+    roleName: guid(servicePrincipalObjectId, resourceGroup().id, networkContributorRoleResourceId, spokeVirtualNetworkResourceId)
   }
 }
-resource assignContributorRoleToAROResourceProviderSPForVirtualNetwork 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, spokeVirtualNetwork.name)
-  scope: spokeVirtualNetwork
-  properties: {
+
+module assignNetworkContributorRoleToAROResourceProviderSPForVirtualNetwork 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useUdr) {
+  name: take('${deployment().name}-aro-rp-spoke-vnet-net-contributor', 64)
+  params: {
     principalId: aroResourceProviderServicePrincipalObjectId
-    roleDefinitionId: contributorRoleResourceId
+    resourceId: spokeVirtualNetworkResourceId
+    roleDefinitionId: networkContributorRoleResourceId
+    description: 'Assign Network Contributor role to the ARO Resource Provider Service Principal for the spoke virtual network.'
     principalType: 'ServicePrincipal'
+    roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, networkContributorRoleResourceId, spokeVirtualNetworkResourceId)
   }
 }
 
 /* ------------------------------- Route Table ------------------------------ */
 
 // If route table is deployed, both the RP SP and the SP needs to be contributor for the route table
-// resource routeTable 'Microsoft.Network/routeTables@2023-09-01' existing = if (useUdr) {
-//   name: routeTableName ?? ''
-// }
+module assignNetworkContributorRoleToSPForRouteTable 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useUdr) {
+  name: take('${deployment().name}-sp-rt-net-contributor', 64)
+  params: {
+    principalId: servicePrincipalObjectId
+    resourceId: routeTableResourceId!
+    roleDefinitionId: networkContributorRoleResourceId
+    description: 'Assign Network Contributor role to the ARO Service Principal for the route table.'
+    principalType: 'ServicePrincipal'
+    roleName: guid(servicePrincipalObjectId, resourceGroup().id, networkContributorRoleResourceId, routeTableResourceId!)
+  }
+}
 
-// resource assignContributorRoleToSPForRouteTable 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useUdr) {
-//   name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, routeTable.name)
-//   scope: routeTable
-//   properties: {
-//     principalId: servicePrincipalObjectId
-//     roleDefinitionId: contributorRoleResourceId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
-
-// resource assignContributorRoleToAROResourceProviderSPForRouteTable 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useUdr) {
-//   name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, routeTable.name)
-//   scope: routeTable
-//   properties: {
-//     principalId: aroResourceProviderServicePrincipalObjectId
-//     roleDefinitionId: contributorRoleResourceId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
+module assignNetworkContributorRoleToAROResourceProviderSPForRouteTable 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useUdr) {
+  name: take('${deployment().name}-aro-rp-rt-net-contributor', 64)
+  params: {
+    principalId: aroResourceProviderServicePrincipalObjectId
+    resourceId: routeTableResourceId!
+    roleDefinitionId: networkContributorRoleResourceId
+    description: 'Assign Network Contributor role to the ARO Resource Provider Service Principal for the route table.'
+    principalType: 'ServicePrincipal'
+    roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, networkContributorRoleResourceId, routeTableResourceId!)
+  }
+}
 
 /* --------------------------- Disk Encryption Set -------------------------- */
 
-// If disk encryption set is deployed, both the RP SP and the SP needs to be reader for the DES
-// resource diskEncryptionSet 'Microsoft.Compute/diskEncryptionSets@2022-07-02' existing = if (useDiskEncryptionSet) {
-//   name: last(split(diskEncriptionSetResourceId ?? '', '/'))
-// }
+module assignReaderRoleToSPForDiskEncryptionSet 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useDiskEncryptionSet) {
+  name: take('${deployment().name}-sp-des-reader', 64)
+  params: {
+    principalId: servicePrincipalObjectId
+    resourceId: diskEncriptionSetResourceId!
+    roleDefinitionId: readerRoleResourceId
+    description: 'Assign Reader role to the ARO Service Principal for the disk encryption set.'
+    principalType: 'ServicePrincipal'
+    roleName: guid(servicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncriptionSetResourceId!)
+  }
+}
 
-// resource assignReaderRoleToSPForDiskEncryptionSet 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useDiskEncryptionSet) {
-//   name: guid(servicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSet.name)
-//   scope: diskEncryptionSet
-//   properties: {
-//     principalId: servicePrincipalObjectId
-//     roleDefinitionId: readerRoleResourceId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
-
-// resource assignReaderRoleToAROResourceProviderSPForDiskEncryptionSet 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useDiskEncryptionSet) {
-//   name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSet.name)
-//   scope: diskEncryptionSet
-//   properties: {
-//     principalId: aroResourceProviderServicePrincipalObjectId
-//     roleDefinitionId: readerRoleResourceId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
+module assignReaderRoleToAROResourceProviderSPForDiskEncryptionSet 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = if (useDiskEncryptionSet) {
+  name: take('${deployment().name}-aro-rp-des-reader', 64)
+  params: {
+    principalId: aroResourceProviderServicePrincipalObjectId
+    resourceId: diskEncriptionSetResourceId!
+    roleDefinitionId: readerRoleResourceId
+    description: 'Assign Reader role to the ARO Resource Provider Service Principal for the disk encryption set.'
+    principalType: 'ServicePrincipal'
+    roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncriptionSetResourceId!)
+  }
+}

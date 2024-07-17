@@ -14,6 +14,9 @@ func getStringLeadingWithHyphen(value string?) string => empty(value) ? '' : '-$
 @description('Returns the abbreviations object that represents all resource abbreviation.')
 func getAbbreviations() object => loadJsonContent('abbreviations.json')
 
+@description('Returns the abbreviation for the provided resource type. If the abbreviation is not found, returns "unknown".')
+func getAbbreviation(resourceType resourceTypeType) string => getAbbreviations()[resourceType] ?? 'unknown'
+
 @description('Returns the locations object that represents all locations.')
 func getShortLocations() object => loadJsonContent('locations.json')
 
@@ -38,11 +41,6 @@ func getHashOrUniqueString(hash string?, arrayForUniqueString string[]?, uniqueS
 /* -------------------------------------------------------------------------- */
 /*                              PUBLIC FUNCTIONS                              */
 /* -------------------------------------------------------------------------- */
-
-// TODO if abreviation is not used otuside of this module, it should not be exported. Check if it is used in other modules
-@export()
-@description('Returns the abbreviation for the provided resource type. If the abbreviation is not found, returns "unknown".')
-func getAbbreviation(resourceType resourceTypeType) string => getAbbreviations()[resourceType] ?? 'unknown'
 
 @export()
 @description('Returns a resource name that follows the convention: <resource-type-abbreviation>-<workload-name>-<lower-case-env>-<location-short>[<postfix>][<hash>].')
