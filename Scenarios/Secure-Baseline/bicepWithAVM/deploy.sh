@@ -128,6 +128,7 @@ az deployment sub create \
 # Get the outputs from the spoke network deployment
 SPOKE_RG_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.resourceGroupName.value" -o tsv)
 SPOKE_VNET_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkResourceId.value" -o tsv)
+SPOKE_VNET_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkName.value" -o tsv)
 MASTER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.masterSubnetResourceId.value" -o tsv)
 WORKER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.workerSubnetResourceId.value" -o tsv)
 PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.privateEndpointsSubnetResourceId.value" -o tsv)
@@ -212,7 +213,7 @@ az deployment group create \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
-        spokeVirtualNetworkName=$SPOKE_VNET_ID \
+        spokeVirtualNetworkName=$SPOKE_VNET_NAME \
         masterNodesSubnetResourceId=$MASTER_SUBNET_RESOURCE_ID \
         workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID \
         servicePrincipalClientId=$SP_CLIENT_ID \

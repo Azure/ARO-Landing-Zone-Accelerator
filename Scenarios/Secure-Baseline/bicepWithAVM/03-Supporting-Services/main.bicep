@@ -320,17 +320,17 @@ module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployW
     adminPassword: windowsAdminPassword
     nicConfigurations: windowsNicConfigurations
     osDisk: windowsOsDiskConfiguration
-    extensionCustomScriptConfig: {
-      enabled: true
-      fileData: [
-        {
-          uri: windowsScriptFileUri
-        }
-      ]
-    }
-    extensionCustomScriptProtectedSetting: {
-      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File script.ps1'
-    }
+    // extensionCustomScriptConfig: {
+    //   enabled: true
+    //   fileData: [
+    //     {
+    //       uri: windowsScriptFileUri
+    //     }
+    //   ]
+    // }
+    // extensionCustomScriptProtectedSetting: {
+    //   commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File script.ps1'
+    // }
   }
 }
 
@@ -351,17 +351,17 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
     adminPassword: linuxAdminPassword
     nicConfigurations: linuxNicConfigurations
     osDisk: linuxOsDiskConfiguration
-    extensionCustomScriptConfig: {
-      enabled: true
-      fileData: [
-        {
-          uri: linuxScriptFileUri
-        }
-      ]
-    }
-    extensionCustomScriptProtectedSetting: {
-      commandToExecute: 'sh script.sh'
-    }
+    // extensionCustomScriptConfig: {
+    //   enabled: true
+    //   fileData: [
+    //     {
+    //       uri: linuxScriptFileUri
+    //     }
+    //   ]
+    // }
+    // extensionCustomScriptProtectedSetting: {
+    //   commandToExecute: 'sh script.sh'
+    // }
   }
 }
 

@@ -84,7 +84,7 @@ param masterNodesVmSize masterNodesVmSizeType = 'Standard_D8s_v5'
 param encryptionAtHostMasterNodes encryptionAtHostType = 'Enabled'
 
 @description('The worker profile to use for the ARO cluster.')
-param workerProfile workerProfileType = {
+param workerProfile object = {
   name: 'worker'
   count: 3
   vmSize: 'Standard_D4s_v3'
@@ -147,31 +147,31 @@ var userAccessAdministratorRoleResourceId = subscriptionResourceId('Microsoft.Au
 var readerRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
 
 // The outbound type of the ARO cluster
-var outboundType = (firewallPrivateIpAddress == null || routeTableName == null) ? 'Loadbalancer' : 'UserDefinedRouting'
-var useUdr = outboundType == 'UserDefinedRouting'
+var useUdr = !(empty(firewallPrivateIpAddress) || empty(routeTableName))
+var outboundType = useUdr ? 'Loadbalancer' : 'UserDefinedRouting'
 
 var managedResourceGRoupId = '/subscriptions/${subscription().subscriptionId}/resourceGroups/${managedResourceGroupName}'
 
-var workerProfiles = [
-  {
-    name: workerProfile.name
-    count: workerProfile.count
-    vmSize: workerProfile.vmSize
-    diskSizeGB: workerProfile.diskSizeGB
-    encryptionAtHost: workerProfile.encryptionAtHost
-    diskEncryptionSetId: workerProfile.diskEncryptionSetId ?? diskEncryptionSetResourceId
-    subnetId: workerProfile.subnetId ?? workerNodesSubnetResourceId
-  }
-]
+// var workerProfiles = [
+//   {
+//     name: workerProfile.name
+//     count: workerProfile.count
+//     vmSize: workerProfile.vmSize
+//     diskSizeGB: workerProfile.diskSizeGB
+//     encryptionAtHost: workerProfile.encryptionAtHost
+//     diskEncryptionSetId: workerProfile.diskEncryptionSetId ?? diskEncryptionSetResourceId
+//     subnetId: workerProfile.subnetId ?? workerNodesSubnetResourceId
+//   }
+// ]
 
-var useDiskEncryptionSet = diskEncryptionSetName != null
-var diskEncryptionSetResourceId = useDiskEncryptionSet ? diskEncryptionSetName : null
+var useDiskEncryptionSet = !empty(diskEncryptionSetName)
+var diskEncryptionSetResourceId = useDiskEncryptionSet ? diskEncryptionSet.id : null
 
 /* -------------------------------------------------------------------------- */
 /*                                  RESOURCES                                 */
 /* -------------------------------------------------------------------------- */
 
-resource aroCluster 'Microsoft.RedHatOpenShift/openShiftClusters@2023-09-04' = {
+resource aroCluster 'Microsoft.RedHatOpenShift/openShiftClusters@2023-11-22' = {
   name: aroClusterName
   location: location
   tags: tags
@@ -204,7 +204,17 @@ resource aroCluster 'Microsoft.RedHatOpenShift/openShiftClusters@2023-09-04' = {
       vmSize: masterNodesVmSize
       subnetId: masterNodesSubnetResourceId
     }
-    workerProfiles: workerProfiles
+    workerProfiles: [
+      {
+        name: workerProfile.name
+        count: workerProfile.count
+        vmSize: workerProfile.vmSize
+        diskSizeGB: workerProfile.diskSizeGB
+        encryptionAtHost: workerProfile.encryptionAtHost
+        diskEncryptionSetId: diskEncryptionSetResourceId
+        subnetId: workerNodesSubnetResourceId
+      }
+    ]
     servicePrincipalProfile: {
       clientId: servicePrincipalClientId
       clientSecret: servicePrincipalClientSecret
@@ -242,7 +252,7 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exis
 }
 
 resource assignContributorRoleToSPForVirtualNetwork 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, spokeVirtualNetwork.id)
+  name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, spokeVirtualNetwork.name)
   scope: spokeVirtualNetwork
   properties: {
     principalId: servicePrincipalObjectId
@@ -251,7 +261,7 @@ resource assignContributorRoleToSPForVirtualNetwork 'Microsoft.Authorization/rol
   }
 }
 resource assignContributorRoleToAROResourceProviderSPForVirtualNetwork 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, spokeVirtualNetwork.id)
+  name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, spokeVirtualNetwork.name)
   scope: spokeVirtualNetwork
   properties: {
     principalId: aroResourceProviderServicePrincipalObjectId
@@ -264,11 +274,11 @@ resource assignContributorRoleToAROResourceProviderSPForVirtualNetwork 'Microsof
 
 // If route table is deployed, both the RP SP and the SP needs to be contributor for the route table
 resource routeTable 'Microsoft.Network/routeTables@2023-09-01' existing = if (useUdr) {
-  name: routeTableName!
+  name: routeTableName ?? ''
 }
 
 resource assignContributorRoleToSPForRouteTable 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useUdr) {
-  name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, routeTable.id)
+  name: guid(servicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, routeTable.name)
   scope: routeTable
   properties: {
     principalId: servicePrincipalObjectId
@@ -278,7 +288,7 @@ resource assignContributorRoleToSPForRouteTable 'Microsoft.Authorization/roleAss
 }
 
 resource assignContributorRoleToAROResourceProviderSPForRouteTable 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useUdr) {
-  name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, routeTable.id)
+  name: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, contributorRoleResourceId, routeTable.name)
   scope: routeTable
   properties: {
     principalId: aroResourceProviderServicePrincipalObjectId
@@ -291,7 +301,7 @@ resource assignContributorRoleToAROResourceProviderSPForRouteTable 'Microsoft.Au
 
 // If disk encryption set is deployed, both the RP SP and the SP needs to be reader for the DES
 resource diskEncryptionSet 'Microsoft.Compute/diskEncryptionSets@2022-07-02' existing = if (useDiskEncryptionSet) {
-  name: diskEncryptionSetName!
+  name: diskEncryptionSetName ?? ''
 }
 
 resource assignReaderRoleToSPForDiskEncryptionSet 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useDiskEncryptionSet) {
