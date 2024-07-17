@@ -129,8 +129,8 @@ az deployment sub create \
 SPOKE_RG_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.resourceGroupName.value" -o tsv)
 SPOKE_VNET_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkResourceId.value" -o tsv)
 SPOKE_VNET_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.virtualNetworkName.value" -o tsv)
-MASTER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.masterSubnetResourceId.value" -o tsv)
-WORKER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.workerSubnetResourceId.value" -o tsv)
+MASTER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.masterNodesSubnetResourceId.value" -o tsv)
+WORKER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.workerNodesSubnetResourceId.value" -o tsv)
 PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.privateEndpointsSubnetResourceId.value" -o tsv)
 JUMPBOX_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.jumpboxSubnetResourceId.value" -o tsv)
 display_progress "Spoke network resources deployed successfully"
