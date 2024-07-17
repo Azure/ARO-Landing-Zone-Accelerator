@@ -107,7 +107,7 @@ param serviceCidr string = '172.30.0.0/16'
 param masterNodesSubnetResourceId string
 
 @description('The resource id of the subnet to use for the worker nodes.')
-param workerSubnetResourceId string
+param workerNodesSubnetResourceId string
 
 /* --------------------------- Service Principals --------------------------- */
 
@@ -160,7 +160,7 @@ var workerProfiles = [
     diskSizeGB: workerProfile.diskSizeGB
     encryptionAtHost: workerProfile.encryptionAtHost
     diskEncryptionSetId: workerProfile.diskEncryptionSetId ?? diskEncryptionSetResourceId
-    subnetId: workerProfile.subnetId ?? workerSubnetResourceId
+    subnetId: workerProfile.subnetId ?? workerNodesSubnetResourceId
   }
 ]
 

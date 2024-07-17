@@ -3,7 +3,7 @@ using 'main.bicep'
 
 param spokeVirtualNetworkName =  '<spokeVirtualNetworkName>'
 
-param workerSubnetResourceId =  '<workerNodesSubnetId>'
+param workerNodesSubnetResourceId =  '<workerNodesSubnetId>'
 
 param masterNodesSubnetResourceId =  '<masterNodesSubnetId>'
 
