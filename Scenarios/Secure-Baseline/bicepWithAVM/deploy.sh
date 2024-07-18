@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO add hash
-
 # ---------------------------------------------------------------------------- #
 #                                   FUNCTIONS                                  #
 # ---------------------------------------------------------------------------- #
@@ -64,6 +62,7 @@ HUB_WORKLOAD_NAME=${HUB_WORKLOAD_NAME:-"hub"}
 SPOKE_WORKLOAD_NAME=${SPOKE_WORKLOAD_NAME:-"aro-lza"}
 ENVIRONMENT=${ENVIRONMENT:-"DEV"}
 LOCATION=${LOCATION:-"eastus"}
+HASH=${HASH:-$((RANDOM % 1000))$((RANDOM % 1000))$((RANDOM % 1000))}
 
 _environment_lower_case=$(echo $ENVIRONMENT | tr '[:upper:]' '[:lower:]')
 _short_location=$(get_short_location $LOCATION)
@@ -72,6 +71,7 @@ display_message info "Hub workload name: $HUB_WORKLOAD_NAME"
 display_message info "Spoke workload name: $SPOKE_WORKLOAD_NAME"
 display_message info "Environment: $ENVIRONMENT"
 display_message info "Location: $LOCATION"
+display_message info "Hash: $HASH"
 display_blank_line
 
 # ---------------------------------------------------------------------------- #
@@ -88,6 +88,7 @@ az deployment sub create \
     --template-file "./01-Hub/main.bicep" \
     --parameters ./01-Hub/main.bicepparam \
     --parameters \
+        hash=$HASH \
         workloadName=$HUB_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION
@@ -118,6 +119,7 @@ az deployment sub create \
     --template-file "./02-Spoke/main.bicep" \
     --parameters ./02-Spoke/main.bicepparam \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
@@ -143,6 +145,7 @@ az deployment group create \
     --resource-group $HUB_RG_NAME \
     --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         privateDnsZoneName=$KEY_VAULT_PRIVATE_DNS_ZONE_NAME \
@@ -152,6 +155,7 @@ az deployment group create \
     --resource-group $HUB_RG_NAME \
     --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         privateDnsZoneName=$ACR_PRIVATE_DNS_ZONE_NAME \
@@ -169,6 +173,7 @@ az deployment group create \
     --template-file "./03-Supporting-Services/main.bicep" \
     --parameters ./03-Supporting-Services/main.bicepparam \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
@@ -212,6 +217,7 @@ az deployment group create \
     --template-file "./04-ARO/main.bicep" \
     --parameters ./04-ARO/main.bicepparam \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
