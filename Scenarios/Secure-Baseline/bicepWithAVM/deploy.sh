@@ -62,7 +62,7 @@ HUB_WORKLOAD_NAME=${HUB_WORKLOAD_NAME:-"hub"}
 SPOKE_WORKLOAD_NAME=${SPOKE_WORKLOAD_NAME:-"aro-lza"}
 ENVIRONMENT=${ENVIRONMENT:-"DEV"}
 LOCATION=${LOCATION:-"eastus"}
-HASH=${HASH:-$((RANDOM % 1000))$((RANDOM % 1000))$((RANDOM % 1000))}
+HASH=${HASH:-""}
 
 _environment_lower_case=$(echo $ENVIRONMENT | tr '[:upper:]' '[:lower:]')
 _short_location=$(get_short_location $LOCATION)
@@ -71,7 +71,11 @@ display_message info "Hub workload name: $HUB_WORKLOAD_NAME"
 display_message info "Spoke workload name: $SPOKE_WORKLOAD_NAME"
 display_message info "Environment: $ENVIRONMENT"
 display_message info "Location: $LOCATION"
-display_message info "Hash: $HASH"
+if [ -z "$HASH" ]; then
+    display_message info "Hash: not using hash"
+else
+    display_message info "Hash: $HASH"
+fi
 display_blank_line
 
 # ---------------------------------------------------------------------------- #
