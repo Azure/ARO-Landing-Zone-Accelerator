@@ -180,6 +180,8 @@ az deployment group create \
         windowsAdminPassword="P@ssw0rd1234" \
         linuxAdminPassword="P@ssw0rd1234"
 
+# Get the outputs from the spoke services deployment
+DISK_ENCRYPTION_SET_ID=$(az deployment group show --name "$_spoke_services_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.diskEncryptionSetResourceId.value" -o tsv)
 display_progress "Supporting services in the spoke deployed successfully"
 display_blank_line
 
@@ -221,4 +223,5 @@ az deployment group create \
         servicePrincipalObjectId=$SP_OBJECT_ID \
         aroResourceProviderServicePrincipalObjectId=$ARO_RP_SP_OBJECT_ID \
         routeTableResourceId=$ROUTE_TABLE_ID \
-        firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP
+        firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP \
+        diskEncryptionSetResourceId=$DISK_ENCRYPTION_SET_ID

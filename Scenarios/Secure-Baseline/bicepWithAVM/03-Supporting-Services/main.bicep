@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 /*                                   IMPORTS                                  */
 /* -------------------------------------------------------------------------- */
 
-import { skuType as keyVaultSkuType } from './modules/key-vault/types.bicep'
+import { skuType as keyVaultSkuType, keyType } from './modules/key-vault/types.bicep'
 import { skuType as containerRegistrySkuType } from './modules/container-registry/types.bicep'
 import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/virtual-machine/types.bicep'
 
@@ -79,8 +79,8 @@ param keyVaultName string = generateUniqueGlobalName('keyVault', workloadName, e
 @description('The SKU of the key vault. Defaults to premium.')
 param keyVaultSku keyVaultSkuType = 'premium'
 
-@description('Enable purge protection. Defaults to true. If disk encryption set is enabled, this has to be set to `true` or the deployment of the ARO cluster will fail.')
-param enablePurgeProtection bool = true
+@description('Enable purge protection. Defaults to true. If disk encryption set is enabled, it is set to true as it is required by the cluster.')
+param enablePurgeProtection bool = true || deployDiskEncryptionSet
 
 @description('The number of days tp retain soft deleted keys. Defaults to 90.')
 @minValue(7)
@@ -96,12 +96,57 @@ param enableVaultForTemplateDeployment bool = false
 @description('Property to specify whether Azure Disk Encryption is permitted to retrieve secrets from the key vault. Defaults to true.')
 param enableVaultForDiskEncryption bool = true
 
+@description('The key to be created in the key vault. Defaults to an empty array. If deployDiskEncryptionSet is set to true, a key for disk encryption set will be created.')
+param keys keyType[] = []
+
 // TODO add the keys and secret parameters
-param keys array = []
 param secrets array = []
 
 @description('The name of the private endpoint for the key vault. Defaults to the naming convention `<abbreviation-private-endpoint>-<key-vault-name>`.')
 param keyVaultPrivateEndpointName string = generateResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
+
+/* --------------------------- Disk Encryption Set -------------------------- */
+
+@description('Flag to determine if the disk encryption set should be deployed. Defaults to false.')
+param deployDiskEncryptionSet bool = true
+
+@description('The name of the disk encryption set. Defaults to the naming convention `<abbreviation-disk-encryption-set>-<workloadName>-<lower-case-env>-<location-short>-[-<hash>]`.')
+param diskEncryptionSetName string = generateResourceName('diskEncryptionSet', workloadName, env, location, null, hash)
+
+@description('The name of the user managed identity to access the key vault for the disk encryption set. Defaults to the naming convention `<abbreviation-user-managed-identity>-<disk-encryption-set-name>[-<hash>]`.')
+@minLength(3)
+@maxLength(128)
+param userManagedIdentityToAccessDiskEncryptionSetKeyName string = generateResourceNameFromParentResourceName('userManagedIdentity', diskEncryptionSetName, null, hash)
+
+@description('The key to be created in the key vault for the disk encryption set. Defaults to an empty array.')
+param diskEncryptionSetKey keyType = {
+  name: generateResourceNameFromParentResourceName('keyVaultKey', diskEncryptionSetName, null, hash)
+  kty: 'RSA'
+  keySize: 2048
+  rotationPolicy: {
+    attributes: {
+      expiryTime: 'P2Y'
+    }
+    lifetimeActions: [
+      {
+        action: {
+          type: 'Rotate'
+        }
+        trigger: {
+          timeBeforeExpiry: 'P2M'
+        }
+      }
+      {
+        action: {
+          type: 'Notify'
+        }
+        trigger: {
+          timeBeforeExpiry: 'P30D'
+        }
+      }
+    ]
+  }
+}
 
 /* -------------------------------- Container Registry ------------------------------------------ */
 
@@ -121,10 +166,10 @@ param containerRegistryPrivateEndpointName string = generateResourceNameFromPare
 @description('Flag to determine if the Windows VM should be deployed. Defaults to true.')
 param deployWindowsJumpbox bool = true
 
-@description('The name of the Windows virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-win-mgmt[-<hash>]`.')
-param windowsVMName string = generateResourceName('virtualMachine', workloadName, env, location, 'win-mgmt', hash)
+@description('The name of the Windows virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-win-jbx[-<hash>]`.')
+param windowsVMName string = generateResourceName('virtualMachine', workloadName, env, location, 'win-jbx', hash)
 
-@description('The name of the Windows virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-win-mgmt`.')
+@description('The name of the Windows virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-win-jbx`.')
 param windowsVMComputerName string = '${take(workloadName, 7)}-win-jbx'
 
 @description('The image reference for the Windows VM.')
@@ -177,10 +222,10 @@ param deployLinuxJumpbox bool = true
 
 @minLength(1)
 @maxLength(64)
-@description('The name of the Linux virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-lnx-mgmt[-<hash>]`.')
-param linuxVMName string = generateResourceName('virtualMachine', workloadName, env, location, 'lnx-mgmt', hash)
+@description('The name of the Linux virtual machine. Defaults to the naming convention `<abbreviation-virtual-machine><workloadName>-<lower-case-env>-<location-short>-lnx-jbx[-<hash>]`.')
+param linuxVMName string = generateResourceName('virtualMachine', workloadName, env, location, 'lnx-jbx', hash)
 
-@description('The name of the Linux virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-lnx-mgmt`.')
+@description('The name of the Linux virtual machine computer. Defaults to the naming convention `<take(workloadName, 7)>-lnx-jbx`.')
 param linuxVMComputerName string = '${take(workloadName, 7)}-lnx-jbx'
 
 @description('The image reference for the Linux VM.')
@@ -243,6 +288,8 @@ var keyVaultPrivateEndpoint = {
   privateDnsZoneResourceIds: [keyVaultPrivateDnsZoneResourceId]
 }
 
+var _keys = deployDiskEncryptionSet ? concat([diskEncryptionSetKey], keys) : keys
+
 /* -------------------------------- Container Registry ------------------------------- */
 
 var containerRegistryEndpoint = {
@@ -289,15 +336,42 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
       ipRules: []
       virtualNetworkRules: []
     }
-    keys: keys
+    keys: _keys
     secrets: secrets
     diagnosticSettings: diagnosticsSettings
   }
 }
 
-/* ------------------------------- Virtual Machine ------------------------------- */
+/* --------------------------- Disk Encryption Set -------------------------- */
 
-// Windows VM Module
+module diskEncryptionSetForAroUserManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.2.2' = if (deployDiskEncryptionSet)  {
+  name: take('${deployment().name}-umi-for-disk-encryption-set', 64)
+  params: {
+    name: userManagedIdentityToAccessDiskEncryptionSetKeyName!
+    location: location
+    tags: tags
+    enableTelemetry: enableAvmTelemetry
+  }
+}
+
+module diskEncryptionSetForAro 'br/public:avm/res/compute/disk-encryption-set:0.1.5' = if (deployDiskEncryptionSet) {
+  name: take('${deployment().name}-disk-encryption-set', 64)
+  params: {
+    name: diskEncryptionSetName!
+    location: location
+    tags: tags
+    enableTelemetry: enableAvmTelemetry
+    keyVaultResourceId: keyVault.outputs.resourceId
+    keyName: diskEncryptionSetKey.name
+    managedIdentities: {
+      systemAssigned: false
+      userAssignedResourceIds: [diskEncryptionSetForAroUserManagedIdentity.outputs.resourceId]
+    }
+  }
+}
+
+/* ------------------------------- Jumpbox VMs ------------------------------ */
+
 module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployWindowsJumpbox) {
   name: take('${deployment().name}-windows-vm', 64)
   params: {
@@ -317,7 +391,6 @@ module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployW
   }
 }
 
-// Linux VM Module
 module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLinuxJumpbox) {
   name: take('${deployment().name}-linux-vm', 64)
   params: {
@@ -337,7 +410,7 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
   }
 }
 
-/* -------------------------------- Container Registry ------------------------------------------ */
+/* --------------------------- Container Registry --------------------------- */
 
 module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
   name: 'registryDeployment'
@@ -353,3 +426,10 @@ module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
     anonymousPullEnabled: false
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                   OUTPUTS                                  */
+/* -------------------------------------------------------------------------- */
+
+@description('The resource id of the key vault.')
+output diskEncryptionSetResourceId string = deployDiskEncryptionSet ? diskEncryptionSetForAro.outputs.resourceId : ''

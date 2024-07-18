@@ -136,7 +136,7 @@ param firewallPrivateIpAddress string?
 /* -------------------------------- Security -------------------------------- */
 
 @description('The resourceId of the security resource group (Optional). If set the disk encryption set will be used for the ARO cluster.')
-param diskEncriptionSetResourceId string?
+param diskEncryptionSetResourceId string?
 
 /* -------------------------------------------------------------------------- */
 /*                                  VARIABLES                                 */
@@ -153,7 +153,7 @@ var workerProfiles = [
     vmSize: workerProfile.vmSize
     diskSizeGB: workerProfile.diskSizeGB
     encryptionAtHost: workerProfile.encryptionAtHost
-    diskEncryptionSetId: workerProfile.?diskEncryptionSetId ?? diskEncriptionSetResourceId
+    diskEncryptionSetId: workerProfile.?diskEncryptionSetId ?? diskEncryptionSetResourceId
     subnetId: workerProfile.?subnetId ?? workerNodesSubnetResourceId
   }
 ]
@@ -165,7 +165,7 @@ var outboundType = useUdr ? 'Loadbalancer' : 'UserDefinedRouting'
 
 /* --------------------------- Disk Encryption Set -------------------------- */
 
-var useDiskEncryptionSet = !empty(diskEncriptionSetResourceId)
+var useDiskEncryptionSet = !empty(diskEncryptionSetResourceId)
 
 /* ----------------------------- Built-in roles ----------------------------- */
 
@@ -208,7 +208,7 @@ resource aroCluster 'Microsoft.RedHatOpenShift/openShiftClusters@2023-11-22' = {
     }
     masterProfile: {
       encryptionAtHost: encryptionAtHostMasterNodes
-      diskEncryptionSetId: null
+      diskEncryptionSetId: diskEncryptionSetResourceId
       vmSize: masterNodesVmSize
       subnetId: masterNodesSubnetResourceId
     }
@@ -309,11 +309,11 @@ module assignReaderRoleToSPForDiskEncryptionSet 'br/public:avm/ptn/authorization
   name: take('${deployment().name}-sp-des-reader', 64)
   params: {
     principalId: servicePrincipalObjectId
-    resourceId: diskEncriptionSetResourceId!
+    resourceId: diskEncryptionSetResourceId!
     roleDefinitionId: readerRoleResourceId
     description: 'Assign Reader role to the ARO Service Principal for the disk encryption set.'
     principalType: 'ServicePrincipal'
-    roleName: guid(servicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncriptionSetResourceId!)
+    roleName: guid(servicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSetResourceId!)
   }
 }
 
@@ -321,10 +321,10 @@ module assignReaderRoleToAROResourceProviderSPForDiskEncryptionSet 'br/public:av
   name: take('${deployment().name}-aro-rp-des-reader', 64)
   params: {
     principalId: aroResourceProviderServicePrincipalObjectId
-    resourceId: diskEncriptionSetResourceId!
+    resourceId: diskEncryptionSetResourceId!
     roleDefinitionId: readerRoleResourceId
     description: 'Assign Reader role to the ARO Resource Provider Service Principal for the disk encryption set.'
     principalType: 'ServicePrincipal'
-    roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncriptionSetResourceId!)
+    roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSetResourceId!)
   }
 }
