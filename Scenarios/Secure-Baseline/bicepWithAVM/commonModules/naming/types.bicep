@@ -1,6 +1,6 @@
 @export()
 @description('A resource type.')
-type resourceTypeType= 'resourceGroup' | 'virtualNetwork' | 'subnet' | 'networkSecurityGroup' | 'routeTable' | 'applicationGateway' | 'privateEndpoint' | 'networkInterface' | 'keyVault' | 'diskEncryptionSet' | 'keyVaultKey' | 'userManagedIdentity' | 'azureRedHatOpenShift' | 'virtualMachine' | 'firewall' | 'firewallPolicy' | 'firewallPolicyRuleGroup' | 'bastion' | 'publicIp' | 'logAnalyticsWorkspace'
+type resourceTypeType= 'resourceGroup' | 'virtualNetwork' | 'subnet' | 'networkSecurityGroup' | 'routeTable' | 'applicationGateway' | 'privateEndpoint' | 'networkInterface' | 'keyVault' | 'diskEncryptionSet' | 'keyVaultKey' | 'userManagedIdentity' | 'azureRedHatOpenShift' | 'virtualMachine' | 'firewall' | 'firewallPolicy' | 'firewallPolicyRuleGroup' | 'bastion' | 'publicIp' | 'logAnalyticsWorkspace' | 'containerRegistry' | 'virtualNetworkLink' | 'aroCluster'
 
 @export()
 @description('Azure location type.')

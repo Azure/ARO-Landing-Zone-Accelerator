@@ -18,5 +18,8 @@
     "firewallPolicyRuleGroup": "wafrg",
     "bastion": "bas",
     "publicIp": "pip",
-    "logAnalyticsWorkspace": "log"
+    "logAnalyticsWorkspace": "log",
+    "containerRegistry": "cr",
+    "virtualNetworkLink": "vnlink",
+    "aroCluster": "aro"
   }

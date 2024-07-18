@@ -5,9 +5,8 @@ targetScope = 'subscription'
 /* -------------------------------------------------------------------------- */
 
 import {
-  getResourceName
-  getResourceNameFromParentResourceName
-  replaceSubnetNamePlaceholders
+  generateResourceName
+  generateResourceNameFromParentResourceName
 } from '../commonModules/naming/functions.bicep'
 
 import { 
@@ -56,17 +55,17 @@ param tags object = hash == null ? {
 param enableAvmTelemetry bool = true
 
 @description('The name of the resource group for the spoke. Defaults to the naming convention `<abbreviation-resource-group>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
-param resourceGroupName string = getResourceName('resourceGroup', workloadName, env, location, null, hash)
+param resourceGroupName string = generateResourceName('resourceGroup', workloadName, env, location, null, hash)
 
 /* ----------------------------- Virtual Network ---------------------------- */
 
 @description('The resource id of the hub virtual network. This is required to peer the spoke virtual network with the hub virtual network.')
-param hubVirtualNetworkId string
+param hubVirtualNetworkResourceId string
 
 @description('The name of the spoke virtual network. Defaults to the naming convention `<abbreviation-virtual-network>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(64)
-param virtualNetworkName string = getResourceName('virtualNetwork', workloadName, env, location, null, hash)
+param virtualNetworkName string = generateResourceName('virtualNetwork', workloadName, env, location, null, hash)
 
 @description('The CIDR for the spoke virtual network. Defaults to 10.1.0.0/16.')
 param virtualNetworkAddressPrefix string = '10.1.0.0/16'
@@ -79,7 +78,7 @@ param dnsServers array?
 @description('The name of the master nodes subnet. Defaults to the naming convention `<abbreviation-subnet>-aro-master-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(80)
-param masterNodesSubnetName string = getResourceName('subnet', 'aro-master-${workloadName}', env, location, null, hash)
+param masterNodesSubnetName string = generateResourceName('subnet', 'aro-master-${workloadName}', env, location, null, hash)
 
 @description('The CIDR for the master nodes subnet. Defaults to 10.1.0.0/23.')
 param masterNodesSubnetAddressPrefix string = '10.1.0.0/23'
@@ -89,7 +88,7 @@ param masterNodesSubnetAddressPrefix string = '10.1.0.0/23'
 @description('The name of the worker nodes subnet. Defaults to the naming convention `<abbreviation-subnet>-aro-worker-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(80)
-param workerNodesSubnetName string = getResourceName('subnet', 'aro-worker-${workloadName}', env, location, null, hash)
+param workerNodesSubnetName string = generateResourceName('subnet', 'aro-worker-${workloadName}', env, location, null, hash)
 
 @description('The CIDR for the worker nodes subnet. Defaults to 10.1.2.0/23.')
 param workerNodesSubnetAddressPrefix string = '10.1.2.0/23'
@@ -99,26 +98,26 @@ param workerNodesSubnetAddressPrefix string = '10.1.2.0/23'
 @description('The name of the private endpoints subnet. Defaults to the naming convention `<abbreviation-subnet>-pep-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(80)
-param privateEndpointsSubnetName string = getResourceName('subnet', 'pep-${workloadName}', env, location, null, hash)
+param privateEndpointsSubnetName string = generateResourceName('subnet', 'pep-${workloadName}', env, location, null, hash)
 
 @description('The CIDR for the private endpoints subnet. Defaults to 10.1.4.0/24.')
 param privateEndpointsSubnetAddressPrefix string = '10.1.4.0/24'
 
 @description('The name of the network security group for the private endpoints subnet. Defaults to the naming convention `<abbreviation-nsg>-<privateEndpointsSubnetName>`.')
-param privateEndpointsNetworkSecurityGroupName string = getResourceNameFromParentResourceName('networkSecurityGroup', privateEndpointsSubnetName, null, hash)
+param privateEndpointsNetworkSecurityGroupName string = generateResourceNameFromParentResourceName('networkSecurityGroup', privateEndpointsSubnetName, null, hash)
 
 /* ----------------------------- Jumpbox Subnet ----------------------------- */
 
 @description('The name of the jumpbox subnet. Defaults to the naming convention `<abbreviation-subnet>-jumpbox-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(80)
-param jumpboxSubnetName string = getResourceName('subnet', 'jumpbox-${workloadName}', env, location, null, hash)
+param jumpboxSubnetName string = generateResourceName('subnet', 'jumpbox-${workloadName}', env, location, null, hash)
 
 @description('The CIDR for the jumpbox subnet. Defaults to 10.1.5.0/24')
 param jumpboxSubnetAddressPrefix string = '10.1.5.0/24'
 
 @description('The name of the network security group for the jumpbox subnet. Defaults to the naming convention `<abbreviation-nsg>-<jumpboxSubnetName>`.')
-param jumpboxNetworkSecurityGroupName string = getResourceNameFromParentResourceName('networkSecurityGroup', jumpboxSubnetName, null, hash)
+param jumpboxNetworkSecurityGroupName string = generateResourceNameFromParentResourceName('networkSecurityGroup', jumpboxSubnetName, null, hash)
 
 /* ------------------------------ Other Subnets ----------------------------- */
 
@@ -128,15 +127,15 @@ param otherSubnets subnetType[]?
 /* ------------------------------- Route Table ------------------------------ */
 
 @description('The name of the route table for the two ARO subnets. Defaults to the naming convention `<abbreviation-route-table>-aro-<lower-case-env>-<location-short>[-<hash>]`.')
-param aroRouteTableName string = getResourceName('routeTable', 'aro', env, location, null, hash)
+param aroRouteTableName string = generateResourceName('routeTable', 'aro', env, location, null, hash)
 
 @description('The private IP address of the firewall to route ARO egress traffic to it (Optional). If not provided, the route table will not be created and not associated with the worker nodes and master nodes subnets.')
 param firewallPrivateIpAddress string?
 
 /* ------------------------------- Monitoring ------------------------------- */
 
-@description('The Log Analytics workspace id. This is required to enable monitoring.')
-param logAnalyticsWorkspaceId string
+@description('The Log Analytics workspace resource id. This is required to enable monitoring.')
+param logAnalyticsWorkspaceResourceId string
 
 /* -------------------------------------------------------------------------- */
 /*                                  VARIABLES                                 */
@@ -146,7 +145,7 @@ var deployAroRouteTable = firewallPrivateIpAddress != null
 
 /* --------------------------------- Peering -------------------------------- */
 
-var hubVirtualNetworkName = last(split(hubVirtualNetworkId, '/'))
+var hubVirtualNetworkName = last(split(hubVirtualNetworkResourceId, '/'))
 
 var remotePeeringName = '${hubVirtualNetworkName}-to-${virtualNetworkName}-peering'
 
@@ -155,7 +154,7 @@ var peerings = [
     name: '${virtualNetworkName}-to-${hubVirtualNetworkName}-peering'
     remotePeeringEnabled: true
     remotePeeringName: remotePeeringName
-    remoteVirtualNetworkId: hubVirtualNetworkId
+    remoteVirtualNetworkId: hubVirtualNetworkResourceId
   }
 ]
 
@@ -197,7 +196,7 @@ var subnets = concat(predefinedSubnets, otherSubnets == null ? [] : otherSubnets
 var diagnosticsSettings = [
   {
     logAnalyticsDestinationType: 'AzureDiagnostics'
-    workspaceResourceId: logAnalyticsWorkspaceId
+    workspaceResourceId: logAnalyticsWorkspaceResourceId
   }
 ]
 
@@ -277,3 +276,28 @@ module aroRouteTable 'br/public:avm/res/network/route-table:0.2.3' = if (deployA
     ]
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                   OUTPUTS                                  */
+/* -------------------------------------------------------------------------- */
+
+@description('The name of the resource group.')
+output resourceGroupName string = resourceGroup.name
+
+@description('The resource id of the virtual network.')
+output virtualNetworkResourceId string = virtualNetwork.outputs.resourceId
+
+@description('The resource id of the master nodes subnet.')
+output masterNodesSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[0]
+
+@description('The resource id of the worker nodes subnet.')
+output workerNodesSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[1]
+
+@description('The resource id of the private endpoints subnet.')
+output privateEndpointsSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[2]
+
+@description('The resource id of the jumpbox subnet.')
+output jumpboxSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[3]
+
+@description('The resource id of the private endpoints network security group.')
+output routeTableResourceId string = deployAroRouteTable ? aroRouteTable.outputs.resourceId : ''
