@@ -21,7 +21,7 @@ This template deploys the following resources:
 
 ### Parameters
 
-he parameters can be set using the cli command `--parameters <parameter-name>=<value>` or in the parameters file `main.bicepparam`. Below you can find a table with all parameters with. The required parameters are:
+The parameters can be set using the cli command `--parameters <parameter-name>=<value>` or in the parameters file `main.bicepparam`. Below you can find a table with all parameters with. The required parameters are:
 
 - `privateEndpointSubnetResourceId`: the resource id of the subnet used for the private endpoints that will be created.
 - `jumpBoxSubnetResourceId`: the resource id of the subnet used for the jumpbox VMs that will be created.
@@ -42,7 +42,7 @@ The following parameters are required only if you want to deploy the jumpbox VMs
 - `linuxAdminPassword`: the password for the Linux Jumpbox.
 
 > [!TIP]
-> In `bicepparam` file you can set the parameters in the following ways:
+> In `bicepparam` file you can set these parameters in the following ways:
 > - Using `getSecret` function to access the secret from the key vault.
 > - Using `readEnvironmentVariable ` function to access the environment variable.
 

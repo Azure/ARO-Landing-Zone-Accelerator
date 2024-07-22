@@ -71,7 +71,7 @@ param acrPrivateDnsZoneResourceId string
 
 /* -------------------------------- Key Vault ------------------------------- */
 
-@description('The name of the key vault. Defaults to the naming convention `<abbreviation-key-vault><workloadName><lower-case-env><location-short>[<hash>]`.')
+@description('The name of the key vault. Defaults to the naming convention `<abbreviation-key-vault><workload-name><lower-case-env><location-short>[<hash>]`.')
 @minLength(3)
 @maxLength(24)
 param keyVaultName string = generateUniqueGlobalName('keyVault', workloadName, env, location, null, hash, [resourceGroup().id], 5, 24, false)
