@@ -38,7 +38,7 @@ param env string = 'DEV'
 
 @minLength(3)
 @maxLength(5)
-@description('The hash to be added to every resource, configuration and exemption name. If not set, a unique string is generated for resources with global name based on its resource group id. The size of the hash is 5 characters.')
+@description('The hash to be added to every name like resource, subnet, etc. If not set, a unique string is generated for resources with global name based on its resource group id. The size of the hash is 5 characters.')
 param hash string?
 
 @description('The tags to apply to the resources. Defaults to an object with the environment and workload name.')
@@ -281,10 +281,10 @@ module aroRouteTable 'br/public:avm/res/network/route-table:0.2.3' = if (deployA
 /*                                   OUTPUTS                                  */
 /* -------------------------------------------------------------------------- */
 
-@description('The name of the resource group.')
+@description('The name of the spoke resource group.')
 output resourceGroupName string = resourceGroup.name
 
-@description('The resource id of the virtual network.')
+@description('The resource id of the spoke virtual network.')
 output virtualNetworkResourceId string = virtualNetwork.outputs.resourceId
 
 @description('The resource id of the master nodes subnet.')

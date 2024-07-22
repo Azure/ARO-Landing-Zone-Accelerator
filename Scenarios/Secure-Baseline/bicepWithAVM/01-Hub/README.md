@@ -32,9 +32,9 @@ The parameters can be set using the cli command `--parameters <parameter-name>=<
 
 | Name               | Type   | Description                                                                                                                                                                                                 | Default Value                 |
 |--------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------|
-| `workloadName`     | string | The name of the workload. Defaults to hub.                                                                                                                                                                 | `'hub'`                       |
+| `workloadName`     | string | The name of the workload. Defaults to hub.                                                                                                                                                                 | `hub`                       |
 | `location`         | string | The location of the resources. Defaults to the deployment location.                                                                                                                                        | `deployment().location`       |
-| `env`              | string | The type of environment. Defaults to DEV.                                                                                                                                                                  | `'DEV'`                       |
+| `env`              | string | The type of environment. Defaults to DEV.                                                                                                                                                                  | `DEV`                       |
 | `hash`             | string | The hash to be added to every name like resource, subnet, etc. If not set, a unique string is generated for resources with global name based on its resource group id. The size of the hash is 5 characters. | `null` (optional parameter)   |
 | `tags`             | object | The tags to apply to the resources. Defaults to an object with the environment and workload name.                                                                                                          | Object with `environment`, `workload`, and optionally `hash` |
 | `enableAvmTelemetry` | bool | Enable Azure Verified Modules (AVM) telemetry. Defaults to true.                                                                                                                                           | `true`                        |
@@ -66,13 +66,16 @@ The parameters can be set using the cli command `--parameters <parameter-name>=<
 
 These are the output of the deployment:
 
-| Output Name                    | Type    | Description                                         |
-|--------------------------------|---------|-----------------------------------------------------|
-| `Hub Virtual Network ID`       | string  | The resource ID of the Hub Virtual Network.         |
-| `Log Analytics Workspace ID`   | string  | The resource ID of the Log Analytics Workspace.     |
-| `Key Vault Private DNS Zone ID`| string  | The resource ID of the Key Vault Private DNS Zone.  |
-| `ACR Private DNS Zone ID`      | string  | The resource ID of the ACR Private DNS Zone.        |
-| `Firewall Private IP`          | string  | The private IP address of the firewall.             |
+| Output Name                        | Type   | Description                                         |
+|------------------------------------|--------|-----------------------------------------------------|
+| `resourceGroupName`                | string | The name of the hub resource group.                 |
+| `virtualNetworkResourceId`         | string | The resource id of the hub virtual network.         |
+| `logAnalyticsWorkspaceResourceId`  | string | The resource id of the log analytics workspace.     |
+| `keyVaultPrivateDnsZoneResourceId` | string | The resource id of the key vault private DNS zone.  |
+| `keyVaultPrivateDnsZoneName`       | string | The name of the key vault private DNS zone.         |
+| `acrPrivateDnsZoneResourceId`      | string | The resource id of the ACR private DNS zone.        |
+| `acrPrivateDnsZoneName`            | string | The name of the ACR private DNS zone.               |
+| `firewallPrivateIp`                | string | The private IP address of the firewall.             |
 
 These outputs will be used in subsequent deployments to link resources to the hub network.
 

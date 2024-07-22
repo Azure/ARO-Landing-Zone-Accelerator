@@ -31,7 +31,7 @@ param env string = 'DEV'
 
 @minLength(3)
 @maxLength(5)
-@description('The hash to be added to every resource, configuration and exemption name. If not set, a unique string is generated for resources with global name based on its resource group id. The size of the hash is 5 characters.')
+@description('The hash to be added to every name like resource, subnet, etc. If not set, a unique string is generated for resources with global name based on its resource group id. The size of the hash is 5 characters.')
 param hash string?
 
 @description('The tags to apply to the resources. Defaults to an object with the environment and workload name.')
@@ -44,7 +44,7 @@ param tags object = hash == null ? {
   hash: hash
 }
 
-@description('The name of the virtual network link.')
+@description('The name of the virtual network link. Defaults to the naming convention `<abbreviation-virtual-network-link>-<virtual-network-name>[-<hash>]`. ')
 param virtualNetworkLinkName string = generateResourceNameFromParentResourceName('virtualNetworkLink', last(split(virtualNetworkResourceId, '/')), null, hash)
 
 @description('The name of the private DNS zone.')

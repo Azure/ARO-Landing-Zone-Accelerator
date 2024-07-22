@@ -34,6 +34,7 @@ The core architecture components of this reference implementation are divides in
         - Private Endpoints Subnet: used to deploy the private endpoints for all supporting services like the Azure Container Registry and the Azure Key Vault.
         - Jumpbox Subnet: used to deploy the jumpbox virtual machines that are used to access the control plane of the ARO cluster.
     - Network Peering: used to connect the spoke virtual network to the hub virtual network.
+    - Route Table: used to control the routing of egrees traffic from ARO subnets to the Azure Firewall.
     - Link private DNS Zone: used to resolve the private IP addresses of the Azure Key Vault and the Azure Container Registry.
 3. [Supporting Services](./03-SupportingServices/README.md): this module is used to deploy the supporting services that the ARO cluster will need.
     - Azure Key Vault: used to store and manage sensitive information such as secrets, keys, and certificates.

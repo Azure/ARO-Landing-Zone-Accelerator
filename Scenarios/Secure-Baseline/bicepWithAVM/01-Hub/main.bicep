@@ -357,7 +357,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
 /*                                   OUTPUTS                                  */
 /* -------------------------------------------------------------------------- */
 
-@description('The name of the resource group.')
+@description('The name of the hub resource group.')
 output resourceGroupName string = resourceGroup.name
 
 @description('The resource id of the hub virtual network.')
