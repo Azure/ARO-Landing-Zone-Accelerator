@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO add hash
-
 # ---------------------------------------------------------------------------- #
 #                                   FUNCTIONS                                  #
 # ---------------------------------------------------------------------------- #
@@ -64,6 +62,7 @@ HUB_WORKLOAD_NAME=${HUB_WORKLOAD_NAME:-"hub"}
 SPOKE_WORKLOAD_NAME=${SPOKE_WORKLOAD_NAME:-"aro-lza"}
 ENVIRONMENT=${ENVIRONMENT:-"DEV"}
 LOCATION=${LOCATION:-"eastus"}
+HASH=${HASH:-""}
 
 _environment_lower_case=$(echo $ENVIRONMENT | tr '[:upper:]' '[:lower:]')
 _short_location=$(get_short_location $LOCATION)
@@ -72,6 +71,13 @@ display_message info "Hub workload name: $HUB_WORKLOAD_NAME"
 display_message info "Spoke workload name: $SPOKE_WORKLOAD_NAME"
 display_message info "Environment: $ENVIRONMENT"
 display_message info "Location: $LOCATION"
+if [ -z "$HASH" ]; then
+    HASH_WITH_HYPHEN=""
+    display_message info "Hash: not using hash"
+else
+    HASH_WITH_HYPHEN=-$HASH
+    display_message info "Hash: $HASH"
+fi
 display_blank_line
 
 # ---------------------------------------------------------------------------- #
@@ -94,7 +100,7 @@ display_blank_line
 # ---------------------------------------------------------------------------- #
 
 # Deploy the hub resources
-_hub_deployment_name="$HUB_WORKLOAD_NAME-$_environment_lower_case-$_short_location"
+_hub_deployment_name="$HUB_WORKLOAD_NAME-$_environment_lower_case-$_short_location$HASH_WITH_HYPHEN"
 display_progress "Deploying the hub resources"
 display_message info "Deployment name: $_hub_deployment_name"
 az deployment sub create \
@@ -103,6 +109,7 @@ az deployment sub create \
     --template-file "./01-Hub/main.bicep" \
     --parameters ./01-Hub/main.bicepparam \
     --parameters \
+        hash=$HASH \
         workloadName=$HUB_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION
@@ -124,7 +131,7 @@ display_blank_line
 # ---------------------------------------------------------------------------- #
 
 # Deploy the spoke network resources
-_spoke_network_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location"
+_spoke_network_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location$HASH_WITH_HYPHEN"
 display_progress "Deploying the spoke network resources"
 display_message info "Deployment name: $_spoke_network_deployment_name"
 az deployment sub create \
@@ -133,6 +140,7 @@ az deployment sub create \
     --template-file "./02-Spoke/main.bicep" \
     --parameters ./02-Spoke/main.bicepparam \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
@@ -154,19 +162,21 @@ display_blank_line
 # Link spoke virtual network to private DNS zones
 display_progress "Linking spoke virtual network to private DNS zones"
 az deployment group create \
-    --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-keyvault-private-dns-to-spoke-network" \
+    --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-keyvault-private-dns-to-spoke-network$HASH_WITH_HYPHEN" \
     --resource-group $HUB_RG_NAME \
     --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         privateDnsZoneName=$KEY_VAULT_PRIVATE_DNS_ZONE_NAME \
         virtualNetworkResourceId=$SPOKE_VNET_ID    
 az deployment group create \
-    --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-acr-private-dns-to-spoke-network" \
+    --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-acr-private-dns-to-spoke-network$HASH_WITH_HYPHEN" \
     --resource-group $HUB_RG_NAME \
     --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         privateDnsZoneName=$ACR_PRIVATE_DNS_ZONE_NAME \
@@ -175,7 +185,7 @@ display_progress "Spoke virtual network linked to private DNS zones"
 display_blank_line
 
 # Deploy the supporting services in the spoke
-_spoke_services_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-services"
+_spoke_services_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-services$HASH_WITH_HYPHEN"
 display_progress "Deploying the supporting services in the spoke"
 display_message info "Deployment name: $_spoke_services_deployment_name"
 az deployment group create \
@@ -184,6 +194,7 @@ az deployment group create \
     --template-file "./03-Supporting-Services/main.bicep" \
     --parameters ./03-Supporting-Services/main.bicepparam \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
@@ -219,7 +230,7 @@ display_blank_line
 
 # Deploy ARO Cluster
 display_progress "Deploying Azure Red Hat OpenShift cluster"
-_aro_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-aro"
+_aro_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-aro$HASH_WITH_HYPHEN"
 display_message info "Deployment name: $_aro_deployment_name"
 az deployment group create \
     --name $_aro_deployment_name \
@@ -227,6 +238,7 @@ az deployment group create \
     --template-file "./04-ARO/main.bicep" \
     --parameters ./04-ARO/main.bicepparam \
     --parameters \
+        hash=$HASH \
         workloadName=$SPOKE_WORKLOAD_NAME \
         env=$ENVIRONMENT \
         location=$LOCATION \
