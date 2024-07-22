@@ -136,4 +136,4 @@ To deploy the supporting services, follow the steps:
 
 After deploying the supporting services, you can deploy the ARO cluster.
 
-:arrow_forward: [ARO cluster](../04-ARO-Cluster/README.md)
+:arrow_forward: [ARO cluster](../04-ARO/README.md)

@@ -36,16 +36,16 @@ The core architecture components of this reference implementation are divides in
     - Network Peering: used to connect the spoke virtual network to the hub virtual network.
     - Route Table: used to control the routing of egrees traffic from ARO subnets to the Azure Firewall.
     - Link private DNS Zone: used to resolve the private IP addresses of the Azure Key Vault and the Azure Container Registry.
-3. [Supporting Services](./03-SupportingServices/README.md): this module is used to deploy the supporting services that the ARO cluster will need.
+3. [Supporting Services](./03-Supporting-Services/README.md): this module is used to deploy the supporting services that the ARO cluster will need.
     - Azure Key Vault: used to store and manage sensitive information such as secrets, keys, and certificates.
     - Disk Encryption Set: used to encrypt the disks of the virtual machines in the ARO cluster with Customer Managed Key (CMK).
     - Azure Container Registry: used to store and manage container images for the ARO cluster.
     - Jumpbox VMs: used to access the control plane of the ARO cluster.
-4. [ARO Cluster](./04-AROCluster/README.md): this module is used to deploy the ARO cluster.
+4. [ARO Cluster](./04-ARO/README.md): this module is used to deploy the ARO cluster.
     - Azure Red Hat OpenShift: fully managed Openshift cluster that is monitored and operated jointly by Microsoft and Red Hat that is by default deployed with Disk Encryption Set and encryption at host.
     - Role Assignments: used to assign the necessary roles to the ARO cluster.
 5. [Workload](./05-Workload/README.md): this module is used to deploy the Ratings app workload.
-6. [Azure Front Door](./06-FrontDoor/README.md): this module is used to deploy the Azure Front Door that will be used to route traffic to the ARO cluster.
+6. [Azure Front Door](./06-AFD/README.md): this module is used to deploy the Azure Front Door that will be used to route traffic to the ARO cluster.
 
 > [!NOTE]
 > When using a private cluster, the control plane can only be accessed from virtual machines (Jumbox) that are in the same virtual network as the control plane or a peered virtual network. For this reason, in this reference implementation, you are able to deploy two jumpbox VMs in the spoke virtual network that is peered with the ARO virtual network. This is to ensure that you can access the control plane from the jumpbox VMs using Bastion Host deployed in the hub virtual network.
