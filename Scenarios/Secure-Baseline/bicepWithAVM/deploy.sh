@@ -202,7 +202,7 @@ az deployment group create \
         jumpBoxSubnetResourceId=$JUMPBOX_SUBNET_RESOURCE_ID \
         keyVaultPrivateDnsZoneResourceId=$KEY_VAULT_PRIVATE_DNS_ZONE_RESOURCE_ID \
         logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
-        containerRegistryDnsZoneResourceId=$ACR_PRIVATE_DNS_ZONE_RESOURCE_ID \
+        acrPrivateDnsZoneResourceId=$ACR_PRIVATE_DNS_ZONE_RESOURCE_ID \
         windowsAdminPassword="P@ssw0rd1234" \
         linuxAdminPassword="P@ssw0rd1234"
 

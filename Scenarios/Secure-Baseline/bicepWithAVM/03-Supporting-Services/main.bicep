@@ -67,7 +67,7 @@ param jumpBoxSubnetResourceId string
 param keyVaultPrivateDnsZoneResourceId string
 
 @description('The resource id of the private DNS zone for the container registry.')
-param containerRegistryDnsZoneResourceId string
+param acrPrivateDnsZoneResourceId string
 
 /* -------------------------------- Key Vault ------------------------------- */
 
@@ -117,6 +117,13 @@ param diskEncryptionSetName string = generateResourceName('diskEncryptionSet', w
 @minLength(3)
 @maxLength(128)
 param userManagedIdentityToAccessDiskEncryptionSetKeyName string = generateResourceNameFromParentResourceName('userManagedIdentity', diskEncryptionSetName, null, hash)
+
+@description('The type of encryption to be used for the disk encryption set. Defaults to `EncryptionAtRestWithCustomerKey`. Currently `ConfidentialVmEncryptedWithCustomerKey` is not supported by the AVM template.')
+@allowed([
+  'EncryptionAtRestWithCustomerKey'
+  'EncryptionAtRestWithPlatformAndCustomerKeys'
+])
+param diskEncryptionSetEncryptionType string = 'EncryptionAtRestWithCustomerKey'
 
 @description('The key to be created in the key vault for the disk encryption set. Defaults to an empty array.')
 param diskEncryptionSetKey keyType = {
@@ -295,7 +302,7 @@ var _keys = deployDiskEncryptionSet ? concat([diskEncryptionSetKey], keys) : key
 var containerRegistryEndpoint = {
   name: containerRegistryPrivateEndpointName
   subnetResourceId: privateEndpointSubnetResourceId
-  privateDnsZoneResourceIds: [containerRegistryDnsZoneResourceId]
+  privateDnsZoneResourceIds: [acrPrivateDnsZoneResourceId]
 }
 
 /* ------------------------------- Monitoring ------------------------------- */
@@ -363,10 +370,28 @@ module diskEncryptionSetForAro 'br/public:avm/res/compute/disk-encryption-set:0.
     enableTelemetry: enableAvmTelemetry
     keyVaultResourceId: keyVault.outputs.resourceId
     keyName: diskEncryptionSetKey.name
+    encryptionType: diskEncryptionSetEncryptionType
     managedIdentities: {
       systemAssigned: false
       userAssignedResourceIds: [diskEncryptionSetForAroUserManagedIdentity.outputs.resourceId]
     }
+  }
+}
+
+/* --------------------------- Container Registry --------------------------- */
+
+module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
+  name: 'registryDeployment'
+  params: {
+    name: containerRegistryName
+    location: location
+    tags: tags
+    enableTelemetry: enableAvmTelemetry
+    acrSku: containerRegistrySku
+    publicNetworkAccess: 'Disabled'
+    privateEndpoints: [containerRegistryEndpoint]
+    acrAdminUserEnabled: true
+    anonymousPullEnabled: false
   }
 }
 
@@ -407,23 +432,6 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
     adminPassword: linuxAdminPassword
     nicConfigurations: linuxNicConfigurations
     osDisk: linuxOsDiskConfiguration
-  }
-}
-
-/* --------------------------- Container Registry --------------------------- */
-
-module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
-  name: 'registryDeployment'
-  params: {
-    name: containerRegistryName
-    location: location
-    tags: tags
-    enableTelemetry: enableAvmTelemetry
-    acrSku: containerRegistrySku
-    publicNetworkAccess: 'Disabled'
-    privateEndpoints: [containerRegistryEndpoint]
-    acrAdminUserEnabled: true
-    anonymousPullEnabled: false
   }
 }
 

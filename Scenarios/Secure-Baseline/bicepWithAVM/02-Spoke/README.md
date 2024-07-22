@@ -85,7 +85,7 @@ These outputs will be used in subsequent deployments.
 
 ## Deployment
 
-To deploy this hub, follow these steps:
+To deploy this spoke, follow these steps:
 
 1. Navigate to the directory containing the Bicep file.
 
@@ -131,7 +131,7 @@ The parameters can be set using the cli command `--parameters <parameter-name>=<
 | `location`         | string | The location of the resources. Defaults to the deployment location.                                                                                                                                        | `deployment().location`       |
 | `env`              | string | The type of environment. Defaults to DEV.                                                                                                                                                                  | `DEV`                       |
 | `hash`             | string | The hash to be added to every name like resource, subnet, etc. If not set, a unique string is generated for resources with global name based on its resource group id. The size of the hash is 5 characters. | `null` (optional parameter)   |
-| `tags`             | object | The tags to apply to the resources. Defaults to an object with the environment and workload name.     
+| `tags`             | object | The tags to apply to the resources. Defaults to an object with the environment and workload name.                                                                                                          | Object with `environment`, `workload`, and optionally `hash` |
 | `virtualNetworkLinkName`  | string  | The name of the virtual network link. Defaults to the naming convention `<abbreviation-virtual-network-link>-<virtual-network-name>[-<hash>]`.  | `generateResourceNameFromParentResourceName('virtualNetworkLink', last(split(virtualNetworkResourceId, '/')), null, hash)`|
 | `privateDnsZoneName`      | string  | The name of the private DNS zone.                                                                                        |                                                                                                                 |
 | `virtualNetworkResourceId` | string  | The resource id of the virtual network to link the private DNS zone to.                                                    |                                                                                                                 |
