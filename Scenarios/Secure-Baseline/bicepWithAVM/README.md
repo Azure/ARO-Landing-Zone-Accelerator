@@ -20,12 +20,14 @@ This landinxg zone accelertor provides end-to-end [Bicep templates](#bicep-templ
 The core architecture components of this reference implementation are divides in 6 main modules as follows (cf. the diagram above):
 
 1. [Hub](./01-Hub/README.md): this module is the central point of connectivity to the on-premises network and the internet. An example of a hub is provided with this template. However we recommend that you bring your own hub to this deployment.
+    - Hub resource group: contains all the hub resources.
     - Hub virtual network: the central point of connectivity to the on-premises network and the internet.
     - Azure Bastion: host used to provide secure RDP and SSH connectivity to the virtual machines in the spoke virtual networks
     - Azure Firewall: used to protect the hub virtual network and its peered networks from unwanted traffic.
     - Private DNS Zone: used to resolve the private IP addresses of the Azure Key Vault and the Azure Container Registry. The template is modular enough to let you choose if Private DNS Zones are part of the Hub or the Spoke.
     - Log Analytics Workspace: used to collect log data centrally.
 2. [Spoke](./02-Spoke/README.md): this module is used build the foundation for the spoke in which the ARO cluster will be deployed.
+    - Spoek resource group: contains all the spoke resources.
     - Spoke virtual network: the virtual network where the ARO cluster is deployed.
         - Master Node Subnet: used to deploy the master nodes of the ARO cluster. It cannot present a Network Security Group (NSG) as it is not yet supported by ARO.
         - Worker Node Subnet: used to deploy the worker nodes of the ARO cluster. It cannot present a Network Security Group (NSG) as it is not yet supported by ARO.
@@ -121,30 +123,30 @@ Before you start the deployment, make sure you fulfill the following prerequisit
     - [Git](https://git-scm.com/downloads)
 3. Register the following providers:
 
-        ```bash
-        az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
-        az provider register --namespace 'Microsoft.Compute' --wait
-        az provider register --namespace 'Microsoft.Storage' --wait
-        az provider register --namespace 'Microsoft.Authorization' --wait
-        ```
+    ```bash
+    az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
+    az provider register --namespace 'Microsoft.Compute' --wait
+    az provider register --namespace 'Microsoft.Storage' --wait
+    az provider register --namespace 'Microsoft.Authorization' --wait
+    ```
 
 4. If you are using encryption at host, register the following feature:
 
-        ```bash
-        az feature registration create --name EncryptionAtHost --namespace Microsoft.Compute
-        ```
+    ```bash
+    az feature registration create --name EncryptionAtHost --namespace Microsoft.Compute
+    ```
 
 5. Login to your Azure account:
 
-        ```bash
-        az login
-        ```
+    ```bash
+    az login
+    ```
 
 6. Clone this repository to your local machine:
 
-        ```bash
-        git clone https://github.com/Azure/ARO-Landing-Zone-Accelerator.git
-        ```
+    ```bash
+    git clone https://github.com/Azure/ARO-Landing-Zone-Accelerator.git
+    ```
 
 ### Next Step
 
