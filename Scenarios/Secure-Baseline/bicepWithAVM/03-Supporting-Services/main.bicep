@@ -12,7 +12,7 @@ import {
   generateResourceName
   generateUniqueGlobalName
   generateResourceNameFromParentResourceName
-} from '../commonModules/naming/functions.bicep'
+} from '../common-modules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
 /*                                 PARAMETERS                                 */

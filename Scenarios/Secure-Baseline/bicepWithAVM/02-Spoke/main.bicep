@@ -7,11 +7,11 @@ targetScope = 'subscription'
 import {
   generateResourceName
   generateResourceNameFromParentResourceName
-} from '../commonModules/naming/functions.bicep'
+} from '../common-modules/naming/functions.bicep'
 
 import { 
   subnetType 
-} from '../commonModules/network/types.bicep'
+} from '../common-modules/network/types.bicep'
 
 /* -------------------------------------------------------------------------- */
 /*                                 PARAMETERS                                 */

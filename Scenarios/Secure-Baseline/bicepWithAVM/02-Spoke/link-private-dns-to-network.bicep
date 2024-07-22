@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 /*                                   IMPORTS                                  */
 /* -------------------------------------------------------------------------- */
 
-import { generateResourceNameFromParentResourceName } from '../commonModules/naming/functions.bicep'
+import { generateResourceNameFromParentResourceName } from '../common-modules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
 /*                                 PARAMETERS                                 */

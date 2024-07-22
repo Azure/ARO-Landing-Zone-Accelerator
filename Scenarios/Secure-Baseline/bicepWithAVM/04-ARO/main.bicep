@@ -4,12 +4,12 @@ targetScope = 'resourceGroup'
 /*                                   IMPORTS                                  */
 /* -------------------------------------------------------------------------- */
 
-import { visibilityType, encryptionAtHostType, masterNodesVmSizeType, workerProfileType } from './types.bicep'
+import { visibilityType, encryptionAtHostType, masterNodesVmSizeType, workerProfileType } from './modules/aro/types.bicep'
 
 import {
   generateResourceName
   generateResourceNameFromParentResourceName
-} from '../commonModules/naming/functions.bicep'
+} from '../common-modules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
 /*                                 PARAMETERS                                 */

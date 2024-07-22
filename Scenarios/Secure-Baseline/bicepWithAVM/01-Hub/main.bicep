@@ -7,7 +7,7 @@ targetScope = 'subscription'
 import {
   generateResourceName
   generateResourceNameFromParentResourceName
-} from '../commonModules/naming/functions.bicep'
+} from '../common-modules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
 /*                                 PARAMETERS                                 */

@@ -75,6 +75,21 @@ display_message info "Location: $LOCATION"
 display_blank_line
 
 # ---------------------------------------------------------------------------- #
+#                              REGISTRER PROVIDERS                             #
+# ---------------------------------------------------------------------------- #
+
+display_progress "Registering providers"
+az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
+az provider register --namespace 'Microsoft.Compute' --wait
+az provider register --namespace 'Microsoft.Storage' --wait
+az provider register --namespace 'Microsoft.Authorization' --wait
+
+display_progress "Enable encryption at host"
+az feature registration create --name EncryptionAtHost --namespace Microsoft.Compute
+display_progress "Registration of providers completed successfully"
+display_blank_line
+
+# ---------------------------------------------------------------------------- #
 #                                      HUB                                     #
 # ---------------------------------------------------------------------------- #
 
