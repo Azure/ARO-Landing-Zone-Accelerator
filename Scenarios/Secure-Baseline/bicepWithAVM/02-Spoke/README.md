@@ -165,4 +165,4 @@ Replace `<deployment-name>` with a name for the deployment, `<resource-group-con
 
 After deploying the spoke foundation, you will deploy the supporting services like the Azure Container Registry and the Azure Key Vault.
 
-:arrow_forward: [Deploy the Azure Container Registry](../03-ACR/README.md)
+:arrow_forward: [Supporting Services](../03-Supporting-Services/README.md)
