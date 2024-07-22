@@ -104,9 +104,9 @@ The following parameters are required only if you want to deploy the jumpbox VMs
 
 These are the outputs of the template:
 
-\| Output                        \| Type    \| Description                                                                                   \|
-\|-------------------------------\|---------\|-----------------------------------------------------------------------------------------------\|
-\| `diskEncryptionSetResourceId`  \| string  \| The resource id of the key vault. If `deployDiskEncryptionSet` is true, it returns the disk encryption set's resource id; otherwise, it returns an empty string. \|
+| Output                        | Type    | Description                                                                                   |
+|-------------------------------|---------|-----------------------------------------------------------------------------------------------|
+| `diskEncryptionSetResourceId`  | string  | The resource id of the key vault. If `deployDiskEncryptionSet` is true, it returns the disk encryption set's resource id; otherwise, it returns an empty string. |
 
 These outputs will be used in subsequent deployments.
 
