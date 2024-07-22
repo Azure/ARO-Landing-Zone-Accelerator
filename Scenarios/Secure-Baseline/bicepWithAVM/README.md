@@ -112,34 +112,39 @@ This step-by-step guide will help you deploy a secure baseline ARO cluster using
 
 ### Prerequisites
 
-Before you start the deployment, make sure you have the following prerequisites:
+Before you start the deployment, make sure you fulfill the following prerequisites:
 
-- An Azure subscription. If you don't have an Azure subscription, create a [free account](https://azure.microsoft.com/free/) before you begin.
-- Create a `GitHub CodeSpace`, start a `Dev Container` or install the following tools on your local machine:
+1. Have an Azure subscription. If you don't have an Azure subscription, create a [free account](https://azure.microsoft.com/free/) before you begin.
+2. Create a `GitHub CodeSpace`, start a `Dev Container` or install the following tools on your local machine:
     - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) 2.47.0 or newer
     - [Bicep CLI](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/install) 0.18.4 or newer 
     - [Git](https://git-scm.com/downloads)
+3. Register the following providers:
 
-Register the following providers:
+        ```bash
+        az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
+        az provider register --namespace 'Microsoft.Compute' --wait
+        az provider register --namespace 'Microsoft.Storage' --wait
+        az provider register --namespace 'Microsoft.Authorization' --wait
+        ```
 
-```bash
-az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
-az provider register --namespace 'Microsoft.Compute' --wait
-az provider register --namespace 'Microsoft.Storage' --wait
-az provider register --namespace 'Microsoft.Authorization' --wait
-```
+4. If you are using encryption at host, register the following feature:
 
-If you are using encryption at host, register the following feature:
+        ```bash
+        az feature registration create --name EncryptionAtHost --namespace Microsoft.Compute
+        ```
 
-```bash
-az feature registration create --name EncryptionAtHost --namespace Microsoft.Compute
-```
+5. Login to your Azure account:
 
-Login to your Azure account:
+        ```bash
+        az login
+        ```
 
-```bash
-az login
-```
+6. Clone this repository to your local machine:
+
+        ```bash
+        git clone https://github.com/Azure/ARO-Landing-Zone-Accelerator.git
+        ```
 
 ### Next Step
 
