@@ -1,0 +1,26 @@
+[
+  {
+    "name": "<FIREWALL_POLICY_RULE_GROUP_NAME_PLACEHOLDER>",
+    "priority": 300,
+    "ruleCollections": [
+      {
+        "name": "DenyAll",
+        "priority": 301,
+        "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+        "action": {
+          "type": "Deny"
+        },
+        "rules": [
+          {
+            "name": "DenyAllIps",
+            "ruleType": "NetworkRule",
+            "ipProtocols": ["Any"],
+            "sourceAddresses": ["*"],
+            "destinationAddresses": ["*"],
+            "destinationPorts": ["*"]
+          }
+        ]
+      }
+    ]
+  }
+]

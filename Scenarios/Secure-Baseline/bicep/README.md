@@ -7,6 +7,7 @@
 > This deployment method currently expects the usage of Azure DevOps or deployment.sh script.
 
 ## Azure Devops Instructions
+
 ### Portal / integration configuration:
 
 Begin by configuring an azure devops org and project at devops.azure.com
