@@ -73,6 +73,9 @@ param defaultSubnetName string = 'default'
 @description('The name of the default subnet network security group. Defaults to the naming convention `<abbreviation-nsg>-<default-subnet-name>[-<hash>]`.')
 param defaultSubnetNetworkSecurityGroupName string = generateResourceNameFromParentResourceName('networkSecurityGroup', defaultSubnetName, null, hash)
 
+@description('Additional subnets to add to the virtual network (Optional). Each object should contain name, addressPrefix, and optionally networkSecurityGroupResourceId.')
+param additionalSubnets array? 
+
 @description('The address prefix for the firewall subnet. Defaults to `10.0.1.0/26`.')
 param firewallSubnetAddressPrefix string = '10.0.1.0/26'
 
@@ -134,7 +137,7 @@ param logAnalyticsWorkspaceName string = generateResourceName('logAnalyticsWorks
 var bastionNSGSecurityRules = loadJsonContent('nsg/bastion-nsg.jsonc', 'securityRules')
 
 // NSG for firewall subnets is not required
-var subnets = [
+var defaultSubnets = [
   {
     name: defaultSubnetName
     addressPrefix: defaultSubnetAddressPrefix
@@ -154,6 +157,8 @@ var subnets = [
     networkSecurityGroupResourceId: bastionSubnetNetworkSecurityGroup.outputs.resourceId
   }
 ]
+
+var allSubnets = concat(defaultSubnets, additionalSubnets ?? [])
 
 var keyVaultPrivateDnsZoneName = 'privatelink.vaultcore.azure.net'
 
@@ -210,7 +215,7 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
     enableTelemetry: enableAvmTelemetry
     addressPrefixes: [virtualNetworkAddressPrefix]
     dnsServers: dnsServers
-    subnets: subnets
+    subnets: allSubnets
     diagnosticSettings: diagnosticsSettings
   }
 }
