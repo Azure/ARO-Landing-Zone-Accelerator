@@ -4,12 +4,13 @@ targetScope = 'resourceGroup'
 /*                                   IMPORTS                                  */
 /* -------------------------------------------------------------------------- */
 
-import { visibilityType, encryptionAtHostType, masterNodesVmSizeType, workerProfileType } from './types.bicep'
+import { visibilityType, encryptionAtHostType, workerProfileType } from './modules/aro/types.bicep'
 
 import {
   generateResourceName
   generateResourceNameFromParentResourceName
-} from '../commonModules/naming/functions.bicep'
+  generateAroDomain
+} from '../common-modules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
 /*                                 PARAMETERS                                 */
@@ -49,7 +50,12 @@ param tags object = hash == null ? {
   hash: hash
 }
 
-@description('The name of the ARO cluster.')
+@description('Enable Azure Verified Modules (AVM) telemetry. Defaults to true.')
+param enableAvmTelemetry bool = true
+
+/* ------------------------------- ARO Cluster ------------------------------- */
+
+@description('The name of the ARO cluster. Defaults to `<abbreviation-aro>-<workload-name>-<lower-case-env>-<location-short>[-<hash>]`.')
 @minLength(1)
 @maxLength(30)
 param aroClusterName string = generateResourceName('aroCluster', workloadName, env, location, null, hash)
@@ -57,8 +63,8 @@ param aroClusterName string = generateResourceName('aroCluster', workloadName, e
 @description('The version of the ARO cluster (Optional).')
 param aroClusterVersion string?
 
-@description('The domain to use for the ARO cluster.')
-param aroClusterDomain string = 'aroclusterdomain1234'
+@description('The domain to use for the ARO cluster. Defaults to `<workload-name>-<lower-case-env>-<location-short>-<hash-or-unique-string>`.')
+param aroClusterDomain string = generateAroDomain(workloadName, env, location, hash, [resourceGroup().id, aroClusterName], 5, 30)
 
 @description('The name of the managed resource group. Defaults to `aro-<domain>-<location>`.')
 @minLength(1)
@@ -79,7 +85,7 @@ param ingressVisibility visibilityType = 'Private'
 param enableFipsValidatedModules bool = false
 
 @description('The VM size to use for the master nodes. Defaults to `Standard_D8s_v5`.')
-param masterNodesVmSize masterNodesVmSizeType = 'Standard_D8s_v5'
+param masterNodesVmSize string = 'Standard_D8s_v5'
 
 @description('Enable encryption at host for the master nodes. Defaults to `Enabled`.')
 param encryptionAtHostMasterNodes encryptionAtHostType = 'Enabled'
@@ -262,6 +268,7 @@ module assignNetworkContributorRoleToSPForVirtualNetwork 'br/public:avm/ptn/auth
     description: 'Assign Network Contributor role to the ARO Service Principal for the spoke virtual network.'
     principalType: 'ServicePrincipal'
     roleName: guid(servicePrincipalObjectId, resourceGroup().id, networkContributorRoleResourceId, spokeVirtualNetworkResourceId)
+    enableTelemetry: enableAvmTelemetry
   }
 }
 
@@ -274,6 +281,7 @@ module assignNetworkContributorRoleToAROResourceProviderSPForVirtualNetwork 'br/
     description: 'Assign Network Contributor role to the ARO Resource Provider Service Principal for the spoke virtual network.'
     principalType: 'ServicePrincipal'
     roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, networkContributorRoleResourceId, spokeVirtualNetworkResourceId)
+    enableTelemetry: enableAvmTelemetry
   }
 }
 
@@ -288,6 +296,7 @@ module assignNetworkContributorRoleToSPForRouteTable 'br/public:avm/ptn/authoriz
     description: 'Assign Network Contributor role to the ARO Service Principal for the route table.'
     principalType: 'ServicePrincipal'
     roleName: guid(servicePrincipalObjectId, resourceGroup().id, networkContributorRoleResourceId, routeTableResourceId!)
+    enableTelemetry: enableAvmTelemetry
   }
 }
 
@@ -300,6 +309,7 @@ module assignNetworkContributorRoleToAROResourceProviderSPForRouteTable 'br/publ
     description: 'Assign Network Contributor role to the ARO Resource Provider Service Principal for the route table.'
     principalType: 'ServicePrincipal'
     roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, networkContributorRoleResourceId, routeTableResourceId!)
+    enableTelemetry: enableAvmTelemetry
   }
 }
 
@@ -314,6 +324,7 @@ module assignReaderRoleToSPForDiskEncryptionSet 'br/public:avm/ptn/authorization
     description: 'Assign Reader role to the ARO Service Principal for the disk encryption set.'
     principalType: 'ServicePrincipal'
     roleName: guid(servicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSetResourceId!)
+    enableTelemetry: enableAvmTelemetry
   }
 }
 
@@ -326,5 +337,6 @@ module assignReaderRoleToAROResourceProviderSPForDiskEncryptionSet 'br/public:av
     description: 'Assign Reader role to the ARO Resource Provider Service Principal for the disk encryption set.'
     principalType: 'ServicePrincipal'
     roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSetResourceId!)
+    enableTelemetry: enableAvmTelemetry
   }
 }

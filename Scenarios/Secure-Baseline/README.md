@@ -6,7 +6,7 @@ There are various ways to secure your ARO cluster. From a network security persp
 
 By the end of this, you would have deployed a secure ARO cluster, compliant with ARO landing zone accelerator guidance and best practices. We will also be deploying a workload known as the Ratings app that is also featured in the [Azure Kubernetes Services Workshop](https://docs.microsoft.com/en-us/learn/modules/aks-workshop/).
 
-For this scenario, we have various IaC technology as well as the Azure CLI option that you can choose from depending on your preference. At this time only the Terraform version is available in IaC.
+For this scenario, we have various IaC technology as well as the Azure CLI option that you can choose from depending on your preference.
 
 ## Deployment
 
@@ -30,6 +30,6 @@ For more information about the architecture, please check out the [ARO Landing Z
 
 Pick one of these options below
 
-:arrow_forward: [Azure CLI](./Azure-CLI/README.md)
+:arrow_forward: [Bicep with AVM](./bicepWithAVM/README.md)
 
 :arrow_forward: [Terraform](./terraform/README.md)

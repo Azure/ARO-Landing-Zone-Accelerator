@@ -7,10 +7,6 @@ type visibilityType = 'Private' | 'Public'
 type encryptionAtHostType = 'Disabled' | 'Enabled'
 
 @export()
-@description('The size of the master VM.')
-type masterNodesVmSizeType = 'Standard_D8s_v5' | 'Standard_D16s_v5' | 'Standard_D32s_v5' | 'Standard_D8as_v5' | 'Standard_D16as_v5' | 'Standard_D32as_v5' | 'Standard_E8s_v5' | 'Standard_E16s_v5' | 'Standard_E20s_v5' | 'Standard_E32s_v5' | 'Standard_E48s_v5' | 'Standard_E64s_v5' | 'Standard_E96s_v5'| 'Standard_E104is_v5' | 'Standard_E8as_v5' | 'Standard_E16as_v5' | 'Standard_E20as_v5' | 'Standard_E32as_v5' | 'Standard_E48as_v5' | 'Standard_E64as_v5' | 'Standard_E96as_v5' | 'Standard_E104ids_v5' | 'Standard_F72s_v2' | 'Standard_M128ms'
-
-@export()
 @description('The worker profile.')
 type workerProfileType = {
   @description('The name of the worker profile.')

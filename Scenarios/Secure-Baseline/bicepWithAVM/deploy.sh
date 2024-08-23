@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO add hash
-
 # ---------------------------------------------------------------------------- #
 #                                   FUNCTIONS                                  #
 # ---------------------------------------------------------------------------- #
@@ -43,7 +41,7 @@ display_blank_line() {
 
 get_short_location() {
     # Read JSON with all the locations
-    local locations=$(cat ./commonModules/naming/locations.json)
+    local locations=$(cat ./common-modules/naming/locations.json)
     # Get the short location where the input is the key and the short location is the value
     local short_location=$(echo $locations | jq -r ".$1")
     echo $short_location
@@ -72,6 +70,28 @@ display_message info "Hub workload name: $HUB_WORKLOAD_NAME"
 display_message info "Spoke workload name: $SPOKE_WORKLOAD_NAME"
 display_message info "Environment: $ENVIRONMENT"
 display_message info "Location: $LOCATION"
+if [ -z "$HASH" ]; then
+    HASH_WITH_HYPHEN=""
+    display_message info "Hash: not using hash"
+else
+    HASH_WITH_HYPHEN=-$HASH
+    display_message info "Hash: $HASH"
+fi
+display_blank_line
+
+# ---------------------------------------------------------------------------- #
+#                              REGISTRER PROVIDERS                             #
+# ---------------------------------------------------------------------------- #
+
+display_progress "Registering providers"
+az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
+az provider register --namespace 'Microsoft.Compute' --wait
+az provider register --namespace 'Microsoft.Storage' --wait
+az provider register --namespace 'Microsoft.Authorization' --wait
+
+display_progress "Enable encryption at host"
+az feature registration create --name EncryptionAtHost --namespace Microsoft.Compute
+display_progress "Registration of providers completed successfully"
 display_blank_line
 
 # ---------------------------------------------------------------------------- #
@@ -79,18 +99,31 @@ display_blank_line
 # ---------------------------------------------------------------------------- #
 
 # Deploy the hub resources
-_hub_deployment_name="$HUB_WORKLOAD_NAME-$_environment_lower_case-$_short_location"
+_hub_deployment_name="$HUB_WORKLOAD_NAME-$_environment_lower_case-$_short_location$HASH_WITH_HYPHEN"
 display_progress "Deploying the hub resources"
 display_message info "Deployment name: $_hub_deployment_name"
-az deployment sub create \
-    --name $_hub_deployment_name \
-    --location $LOCATION \
-    --template-file "./01-Hub/main.bicep" \
-    --parameters ./01-Hub/main.bicepparam \
-    --parameters \
-        workloadName=$HUB_WORKLOAD_NAME \
-        env=$ENVIRONMENT \
-        location=$LOCATION
+if [ -z "$HASH" ]; then
+    az deployment sub create \
+        --name $_hub_deployment_name \
+        --location $LOCATION \
+        --template-file "./01-Hub/main.bicep" \
+        --parameters ./01-Hub/main.bicepparam \
+        --parameters \
+            workloadName=$HUB_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION
+else
+    az deployment sub create \
+        --name $_hub_deployment_name \
+        --location $LOCATION \
+        --template-file "./01-Hub/main.bicep" \
+        --parameters ./01-Hub/main.bicepparam \
+        --parameters \
+            hash=$HASH \
+            workloadName=$HUB_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION
+fi
 
 # Get the outputs from the hub deployment
 HUB_RG_NAME=$(az deployment sub show --name "$_hub_deployment_name" --query "properties.outputs.resourceGroupName.value" -o tsv)
@@ -109,21 +142,37 @@ display_blank_line
 # ---------------------------------------------------------------------------- #
 
 # Deploy the spoke network resources
-_spoke_network_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location"
+_spoke_network_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location$HASH_WITH_HYPHEN"
 display_progress "Deploying the spoke network resources"
 display_message info "Deployment name: $_spoke_network_deployment_name"
-az deployment sub create \
-    --name $_spoke_network_deployment_name \
-    --location $LOCATION \
-    --template-file "./02-Spoke/main.bicep" \
-    --parameters ./02-Spoke/main.bicepparam \
-    --parameters \
-        workloadName=$SPOKE_WORKLOAD_NAME \
-        env=$ENVIRONMENT \
-        location=$LOCATION \
-        hubVirtualNetworkResourceId=$HUB_VNET_ID \
-        logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
-        firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP
+if [ -z "$HASH" ]; then
+    az deployment sub create \
+        --name $_spoke_network_deployment_name \
+        --location $LOCATION \
+        --template-file "./02-Spoke/main.bicep" \
+        --parameters ./02-Spoke/main.bicepparam \
+        --parameters \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            hubVirtualNetworkResourceId=$HUB_VNET_ID \
+            logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
+            firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP
+else
+    az deployment sub create \
+        --name $_spoke_network_deployment_name \
+        --location $LOCATION \
+        --template-file "./02-Spoke/main.bicep" \
+        --parameters ./02-Spoke/main.bicepparam \
+        --parameters \
+            hash=$HASH \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            hubVirtualNetworkResourceId=$HUB_VNET_ID \
+            logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
+            firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP
+fi
 
 # Get the outputs from the spoke network deployment
 SPOKE_RG_NAME=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.resourceGroupName.value" -o tsv)
@@ -138,47 +187,90 @@ display_blank_line
 
 # Link spoke virtual network to private DNS zones
 display_progress "Linking spoke virtual network to private DNS zones"
-az deployment group create \
-    --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-keyvault-private-dns-to-spoke-network" \
-    --resource-group $HUB_RG_NAME \
-    --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
-    --parameters \
-        workloadName=$SPOKE_WORKLOAD_NAME \
-        env=$ENVIRONMENT \
-        privateDnsZoneName=$KEY_VAULT_PRIVATE_DNS_ZONE_NAME \
-        virtualNetworkResourceId=$SPOKE_VNET_ID    
-az deployment group create \
-    --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-acr-private-dns-to-spoke-network" \
-    --resource-group $HUB_RG_NAME \
-    --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
-    --parameters \
-        workloadName=$SPOKE_WORKLOAD_NAME \
-        env=$ENVIRONMENT \
-        privateDnsZoneName=$ACR_PRIVATE_DNS_ZONE_NAME \
-        virtualNetworkResourceId=$SPOKE_VNET_ID
+if [ -z "$HASH" ]; then
+    az deployment group create \
+        --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-keyvault-private-dns-to-spoke-network$HASH_WITH_HYPHEN" \
+        --resource-group $HUB_RG_NAME \
+        --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
+        --parameters \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            privateDnsZoneName=$KEY_VAULT_PRIVATE_DNS_ZONE_NAME \
+            virtualNetworkResourceId=$SPOKE_VNET_ID    
+    az deployment group create \
+        --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-acr-private-dns-to-spoke-network$HASH_WITH_HYPHEN" \
+        --resource-group $HUB_RG_NAME \
+        --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
+        --parameters \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            privateDnsZoneName=$ACR_PRIVATE_DNS_ZONE_NAME \
+            virtualNetworkResourceId=$SPOKE_VNET_ID
+else
+    az deployment group create \
+        --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-keyvault-private-dns-to-spoke-network$HASH_WITH_HYPHEN" \
+        --resource-group $HUB_RG_NAME \
+        --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
+        --parameters \
+            hash=$HASH \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            privateDnsZoneName=$KEY_VAULT_PRIVATE_DNS_ZONE_NAME \
+            virtualNetworkResourceId=$SPOKE_VNET_ID    
+    az deployment group create \
+        --name "$SPOKE_WORKLOAD_NAME-$_environment_lower_case-link-acr-private-dns-to-spoke-network$HASH_WITH_HYPHEN" \
+        --resource-group $HUB_RG_NAME \
+        --template-file "./02-Spoke/link-private-dns-to-network.bicep" \
+        --parameters \
+            hash=$HASH \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            privateDnsZoneName=$ACR_PRIVATE_DNS_ZONE_NAME \
+            virtualNetworkResourceId=$SPOKE_VNET_ID
+fi
 display_progress "Spoke virtual network linked to private DNS zones"
 display_blank_line
 
 # Deploy the supporting services in the spoke
-_spoke_services_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-services"
+_spoke_services_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-services$HASH_WITH_HYPHEN"
 display_progress "Deploying the supporting services in the spoke"
 display_message info "Deployment name: $_spoke_services_deployment_name"
-az deployment group create \
-    --name $_spoke_services_deployment_name \
-    --resource-group $SPOKE_RG_NAME \
-    --template-file "./03-Supporting-Services/main.bicep" \
-    --parameters ./03-Supporting-Services/main.bicepparam \
-    --parameters \
-        workloadName=$SPOKE_WORKLOAD_NAME \
-        env=$ENVIRONMENT \
-        location=$LOCATION \
-        privateEndpointSubnetResourceId=$PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID \
-        jumpBoxSubnetResourceId=$JUMPBOX_SUBNET_RESOURCE_ID \
-        keyVaultPrivateDnsZoneResourceId=$KEY_VAULT_PRIVATE_DNS_ZONE_RESOURCE_ID \
-        logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
-        containerRegistryDnsZoneResourceId=$ACR_PRIVATE_DNS_ZONE_RESOURCE_ID \
-        windowsAdminPassword="P@ssw0rd1234" \
-        linuxAdminPassword="P@ssw0rd1234"
+if [ -z "$HASH" ]; then
+    az deployment group create \
+        --name $_spoke_services_deployment_name \
+        --resource-group $SPOKE_RG_NAME \
+        --template-file "./03-Supporting-Services/main.bicep" \
+        --parameters ./03-Supporting-Services/main.bicepparam \
+        --parameters \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            privateEndpointSubnetResourceId=$PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID \
+            jumpBoxSubnetResourceId=$JUMPBOX_SUBNET_RESOURCE_ID \
+            keyVaultPrivateDnsZoneResourceId=$KEY_VAULT_PRIVATE_DNS_ZONE_RESOURCE_ID \
+            logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
+            acrPrivateDnsZoneResourceId=$ACR_PRIVATE_DNS_ZONE_RESOURCE_ID \
+            windowsAdminPassword="P@ssw0rd1234" \
+            linuxAdminPassword="P@ssw0rd1234"
+else
+    az deployment group create \
+        --name $_spoke_services_deployment_name \
+        --resource-group $SPOKE_RG_NAME \
+        --template-file "./03-Supporting-Services/main.bicep" \
+        --parameters ./03-Supporting-Services/main.bicepparam \
+        --parameters \
+            hash=$HASH \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            privateEndpointSubnetResourceId=$PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID \
+            jumpBoxSubnetResourceId=$JUMPBOX_SUBNET_RESOURCE_ID \
+            keyVaultPrivateDnsZoneResourceId=$KEY_VAULT_PRIVATE_DNS_ZONE_RESOURCE_ID \
+            logAnalyticsWorkspaceResourceId=$LOG_ANALYTICS_WORKSPACE_ID \
+            acrPrivateDnsZoneResourceId=$ACR_PRIVATE_DNS_ZONE_RESOURCE_ID \
+            windowsAdminPassword="P@ssw0rd1234" \
+            linuxAdminPassword="P@ssw0rd1234"
+fi
 
 # Get the outputs from the spoke services deployment
 DISK_ENCRYPTION_SET_ID=$(az deployment group show --name "$_spoke_services_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.diskEncryptionSetResourceId.value" -o tsv)
@@ -204,24 +296,47 @@ display_blank_line
 
 # Deploy ARO Cluster
 display_progress "Deploying Azure Red Hat OpenShift cluster"
-_aro_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-aro"
+_aro_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-aro$HASH_WITH_HYPHEN"
 display_message info "Deployment name: $_aro_deployment_name"
-az deployment group create \
-    --name $_aro_deployment_name \
-    --resource-group $SPOKE_RG_NAME \
-    --template-file "./04-ARO/main.bicep" \
-    --parameters ./04-ARO/main.bicepparam \
-    --parameters \
-        workloadName=$SPOKE_WORKLOAD_NAME \
-        env=$ENVIRONMENT \
-        location=$LOCATION \
-        spokeVirtualNetworkResourceId=$SPOKE_VNET_ID \
-        masterNodesSubnetResourceId=$MASTER_SUBNET_RESOURCE_ID \
-        workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID \
-        servicePrincipalClientId=$SP_CLIENT_ID \
-        servicePrincipalClientSecret=$SP_CLIENT_SECRET \
-        servicePrincipalObjectId=$SP_OBJECT_ID \
-        aroResourceProviderServicePrincipalObjectId=$ARO_RP_SP_OBJECT_ID \
-        routeTableResourceId=$ROUTE_TABLE_ID \
-        firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP \
-        diskEncryptionSetResourceId=$DISK_ENCRYPTION_SET_ID
+if [ -z "$HASH" ]; then
+    az deployment group create \
+        --name $_aro_deployment_name \
+        --resource-group $SPOKE_RG_NAME \
+        --template-file "./04-ARO/main.bicep" \
+        --parameters ./04-ARO/main.bicepparam \
+        --parameters \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            spokeVirtualNetworkResourceId=$SPOKE_VNET_ID \
+            masterNodesSubnetResourceId=$MASTER_SUBNET_RESOURCE_ID \
+            workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID \
+            servicePrincipalClientId=$SP_CLIENT_ID \
+            servicePrincipalClientSecret=$SP_CLIENT_SECRET \
+            servicePrincipalObjectId=$SP_OBJECT_ID \
+            aroResourceProviderServicePrincipalObjectId=$ARO_RP_SP_OBJECT_ID \
+            routeTableResourceId=$ROUTE_TABLE_ID \
+            firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP \
+            diskEncryptionSetResourceId=$DISK_ENCRYPTION_SET_ID
+else
+    az deployment group create \
+        --name $_aro_deployment_name \
+        --resource-group $SPOKE_RG_NAME \
+        --template-file "./04-ARO/main.bicep" \
+        --parameters ./04-ARO/main.bicepparam \
+        --parameters \
+            hash=$HASH \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            spokeVirtualNetworkResourceId=$SPOKE_VNET_ID \
+            masterNodesSubnetResourceId=$MASTER_SUBNET_RESOURCE_ID \
+            workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID \
+            servicePrincipalClientId=$SP_CLIENT_ID \
+            servicePrincipalClientSecret=$SP_CLIENT_SECRET \
+            servicePrincipalObjectId=$SP_OBJECT_ID \
+            aroResourceProviderServicePrincipalObjectId=$ARO_RP_SP_OBJECT_ID \
+            routeTableResourceId=$ROUTE_TABLE_ID \
+            firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP \
+            diskEncryptionSetResourceId=$DISK_ENCRYPTION_SET_ID
+fi

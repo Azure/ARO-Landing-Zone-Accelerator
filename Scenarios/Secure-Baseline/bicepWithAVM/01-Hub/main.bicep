@@ -7,7 +7,7 @@ targetScope = 'subscription'
 import {
   generateResourceName
   generateResourceNameFromParentResourceName
-} from '../commonModules/naming/functions.bicep'
+} from '../common-modules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
 /*                                 PARAMETERS                                 */
@@ -34,7 +34,7 @@ param env string = 'DEV'
 
 @minLength(3)
 @maxLength(5)
-@description('The hash to be added to every resource, configuration and exemption name. If not set, a unique string is generated for resources with global name based on its resource group id. The size of the hash is 5 characters.')
+@description('The hash to be added to every name like resource, subnet, etc. If not set, a unique string is generated for resources with global name based on its resource group id. The size of the hash is 5 characters.')
 param hash string?
 
 @description('The tags to apply to the resources. Defaults to an object with the environment and workload name.')
@@ -357,7 +357,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
 /*                                   OUTPUTS                                  */
 /* -------------------------------------------------------------------------- */
 
-@description('The name of the resource group.')
+@description('The name of the hub resource group.')
 output resourceGroupName string = resourceGroup.name
 
 @description('The resource id of the hub virtual network.')
