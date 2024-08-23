@@ -103,7 +103,7 @@ param keys keyType[] = []
 param keyVaultPrivateEndpointName string = generateResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
 
 @description('The secrets to be created in the key vault. Defaults to an empty array.')
-param secrets secretType[]
+param secrets secretType[] = []
 
 /* --------------------------- Disk Encryption Set -------------------------- */
 

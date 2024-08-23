@@ -13,5 +13,3 @@ param windowsAdminPassword = '<windowsAdminPassword>'
 param linuxAdminPassword = '<linuxAdminPassword>'
 
 param logAnalyticsWorkspaceResourceId = '<logAnalyticsWorkspaceResourceId>'
-
-param secrets = []
