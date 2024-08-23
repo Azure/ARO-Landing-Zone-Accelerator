@@ -50,6 +50,9 @@ param tags object = hash == null ? {
   hash: hash
 }
 
+@description('Enable sending usage and telemetry feedback to Microsoft. Defaults to true.')
+param enableTelemetry bool = true
+
 @description('Enable Azure Verified Modules (AVM) telemetry. Defaults to true.')
 param enableAvmTelemetry bool = true
 
@@ -180,6 +183,10 @@ var useDiskEncryptionSet = !empty(diskEncryptionSetResourceId)
 // var userAccessAdministratorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')
 var networkContributorRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4d97b98b-1d4f-4787-a291-c67834d212e7')
 var readerRoleResourceId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
+
+/* -------------------------------- Telemetry ------------------------------- */
+
+var telemetryId = '1adc75a7-5143-4889-b19b-46b2d976020c'
 
 /* -------------------------------------------------------------------------- */
 /*                                  RESOURCES                                 */
@@ -338,5 +345,22 @@ module assignReaderRoleToAROResourceProviderSPForDiskEncryptionSet 'br/public:av
     principalType: 'ServicePrincipal'
     roleName: guid(aroResourceProviderServicePrincipalObjectId, resourceGroup().id, readerRoleResourceId, diskEncryptionSetResourceId!)
     enableTelemetry: enableAvmTelemetry
+  }
+}
+
+/* -------------------------------- Telemetry ------------------------------- */
+
+@description('Microsoft telemetry deployment.')
+#disable-next-line no-deployments-resources
+resource telemetrydeployment 'Microsoft.Resources/deployments@2021-04-01' = if (enableTelemetry) {
+  location: location
+  name: telemetryId
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#'
+      contentVersion: '1.0.0.0'
+      resources: {}
+    }
   }
 }
