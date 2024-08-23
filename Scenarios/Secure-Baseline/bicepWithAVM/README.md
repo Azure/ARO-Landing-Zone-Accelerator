@@ -78,6 +78,14 @@ The Bicep templates are organized in the same structure as the [Core Architectur
 
 The parameters files are used to pass the parameters to the Bicep templates. The parameters files are named `main.bicepparam` and contains only required parameters for the deployment. Each module contains a `README.md` file that describes the module and all its parameters. To know available parameters for each module, please refer to the `README.md` or use completion in Visual Studio Code. To know more about `bicepparam` files, please refer to the [Bicep documentation](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/parameter-files?tabs=Bicep).
 
+### Telemetry
+
+By default, telemetry is on both to send usage and telemetry feedback to Microsoft and the Azure Verified Modules (AVM) telemetry.
+
+Telemetry to send usage and telemetry feedback to Microsoft is only defined for the [ARO cluster deployment](./04-ARO/). The parameter is `enableTelemetry` and is set to `true` by default. You can set it to `false` to disable telemetry in [04-ARO/main.bicepparam](./04-ARO/main.bicepparam).
+
+For each module, AVM telemetry is enabled by default. The parameter is `enableAvmTelemetry` and is set to `true` by default. You can set it to `false` to disable telemetry in each `main.bicepparam` file.
+
 ### Functions and types
 
 The Bicep templates use functions and types to simplify the code and make it more readable. The functions and types are defined in the `functions.bicep` and `types.bicep` files. They are organized as sub-modules in the `modules` folder. Each `main.bicep` file contains an `include` statement at the begining of the template to include the required functions and types.
