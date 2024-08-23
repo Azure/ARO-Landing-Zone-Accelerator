@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 /*                                   IMPORTS                                  */
 /* -------------------------------------------------------------------------- */
 
-import { skuType as keyVaultSkuType, keyType } from './modules/key-vault/types.bicep'
+import { skuType as keyVaultSkuType, keyType, secretType } from './modules/key-vault/types.bicep'
 import { skuType as containerRegistrySkuType } from './modules/container-registry/types.bicep'
 import { imageReferenceType, nicConfigurationType, osDiskType } from './modules/virtual-machine/types.bicep'
 
@@ -99,11 +99,11 @@ param enableVaultForDiskEncryption bool = true
 @description('The key to be created in the key vault. Defaults to an empty array. If deployDiskEncryptionSet is set to true, a key for disk encryption set will be created.')
 param keys keyType[] = []
 
-// TODO add the keys and secret parameters
-param secrets array = []
-
 @description('The name of the private endpoint for the key vault. Defaults to the naming convention `<abbreviation-private-endpoint>-<key-vault-name>`.')
 param keyVaultPrivateEndpointName string = generateResourceNameFromParentResourceName('privateEndpoint', keyVaultName, null, hash)
+
+@description('The secrets to be created in the key vault. Defaults to an empty array.')
+param secrets secretType[]
 
 /* --------------------------- Disk Encryption Set -------------------------- */
 
