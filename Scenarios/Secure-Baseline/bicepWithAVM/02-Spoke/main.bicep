@@ -67,8 +67,8 @@ param hubVirtualNetworkResourceId string
 @maxLength(64)
 param virtualNetworkName string = generateResourceName('virtualNetwork', workloadName, env, location, null, hash)
 
-@description('The CIDR for the spoke virtual network. Defaults to 10.1.0.0/16.')
-param virtualNetworkAddressPrefix string = '10.1.0.0/16'
+@description('The address prefixes for the spoke virtual network. Defaults to ["10.1.0.0/16"].')
+param virtualNetworkAddressPrefixes array = ['10.1.0.0/16']
 
 @description('The DNS server array (Optional).')
 param dnsServers array?
@@ -189,7 +189,7 @@ var predefinedSubnets = [
   }
 ]
 
-var subnets = concat(predefinedSubnets, otherSubnets == null ? [] : otherSubnets!)
+var subnets = concat(predefinedSubnets, otherSubnets ?? [])
 
 /* ------------------------------- Monitoring ------------------------------- */
 
@@ -219,7 +219,7 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
     location: location
     tags: tags
     enableTelemetry: enableAvmTelemetry
-    addressPrefixes: [virtualNetworkAddressPrefix]
+    addressPrefixes: virtualNetworkAddressPrefixes
     dnsServers: dnsServers
     peerings: peerings
     subnets: subnets

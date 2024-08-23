@@ -13,3 +13,5 @@ param servicePrincipalClientSecret =  '<servicePrincipalClientSecret>'
 param servicePrincipalObjectId =  '<servicePrincipalObjectId>'
 
 param aroResourceProviderServicePrincipalObjectId =  '<aroResourceProviderServicePrincipalObjectId>'
+
+param aroClusterVersion =  '4.12.25'

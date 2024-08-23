@@ -58,8 +58,8 @@ param resourceGroupName string = generateResourceName('resourceGroup', workloadN
 @description('The name of the virtual network for the hub. Defaults to the naming convention `<abbreviation-virtual-network>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
 param virtualNetworkName string = generateResourceName('virtualNetwork', workloadName, env, location, null, hash)
 
-@description('The CIDR for the virtual network. Defaults to `10.0.0.0/16`.')
-param virtualNetworkAddressPrefix string = '10.0.0.0/16'
+@description('The address prefixes for the hub virtual network. Defaults to ["10.1.0.0/16"].')
+param virtualNetworkAddressPrefixes array = ['10.0.0.0/16']
 
 @description('The DNS servers (Optional).')
 param dnsServers array?
@@ -72,6 +72,9 @@ param defaultSubnetName string = 'default'
 
 @description('The name of the default subnet network security group. Defaults to the naming convention `<abbreviation-nsg>-<default-subnet-name>[-<hash>]`.')
 param defaultSubnetNetworkSecurityGroupName string = generateResourceNameFromParentResourceName('networkSecurityGroup', defaultSubnetName, null, hash)
+
+@description('Additional subnets to add to the virtual network (Optional). Each object should contain name, addressPrefix, and optionally networkSecurityGroupResourceId.')
+param additionalSubnets array? 
 
 @description('The address prefix for the firewall subnet. Defaults to `10.0.1.0/26`.')
 param firewallSubnetAddressPrefix string = '10.0.1.0/26'
@@ -134,7 +137,7 @@ param logAnalyticsWorkspaceName string = generateResourceName('logAnalyticsWorks
 var bastionNSGSecurityRules = loadJsonContent('nsg/bastion-nsg.jsonc', 'securityRules')
 
 // NSG for firewall subnets is not required
-var subnets = [
+var defaultSubnets = [
   {
     name: defaultSubnetName
     addressPrefix: defaultSubnetAddressPrefix
@@ -154,6 +157,8 @@ var subnets = [
     networkSecurityGroupResourceId: bastionSubnetNetworkSecurityGroup.outputs.resourceId
   }
 ]
+
+var allSubnets = concat(defaultSubnets, additionalSubnets ?? [])
 
 var keyVaultPrivateDnsZoneName = 'privatelink.vaultcore.azure.net'
 
@@ -208,9 +213,9 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
     location: location
     tags: tags
     enableTelemetry: enableAvmTelemetry
-    addressPrefixes: [virtualNetworkAddressPrefix]
+    addressPrefixes: virtualNetworkAddressPrefixes
     dnsServers: dnsServers
-    subnets: subnets
+    subnets: allSubnets
     diagnosticSettings: diagnosticsSettings
   }
 }
