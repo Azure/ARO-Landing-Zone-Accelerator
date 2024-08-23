@@ -303,7 +303,7 @@ module firewall 'br/public:avm/res/network/azure-firewall:0.3.0' = {
     }
     managementIPResourceID: firewallManagementPublicIp.outputs.resourceId
     threatIntelMode: 'Deny'
-    azureSkuTier: 'Basic'
+    azureSkuTier: 'Standard'
     zones: firewallAvailabilityZone
     firewallPolicyId: firewallPolicy.outputs.resourceId
     applicationRuleCollections: []
@@ -321,9 +321,11 @@ module firewallPolicy 'br/public:avm/res/network/firewall-policy:0.1.3' = {
     location: location
     tags: tags
     enableTelemetry: enableAvmTelemetry
-    tier: 'Basic'
+    tier: 'Standard'
     threatIntelMode: 'Alert'
     ruleCollectionGroups: firewallPolicyRuleCollectionGroups
+    servers: ['168.63.129.16']
+    enableProxy: true
   }
 }
 

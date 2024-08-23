@@ -279,7 +279,7 @@ display_blank_line
 
 # Deploy Service Principal
 display_progress "Creating a service principal for the workload"
-SP=$(az ad sp create-for-rbac --name "sp-$WORKLOAD_NAME-$_environment_lower_case-$_short_location$HASH_WITH_HYPHEN")
+SP=$(az ad sp create-for-rbac --name "sp-$HUB_WORKLOAD_NAME-$_environment_lower_case-$_short_location$HASH_WITH_HYPHEN")
 SP_CLIENT_ID=$(echo $SP | jq -r '.appId')
 SP_CLIENT_SECRET=$(echo $SP | jq -r '.password')
 SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID --query "id" -o tsv)
