@@ -85,9 +85,6 @@ param firewallManagementSubnetAddressPrefix string = '10.0.2.0/26'
 @description('The name of the public IP for the firewall. Defaults to the naming convention `<abbreviation-public-ip>-<firewall-name>[-<hash>]`.')
 param firewallPublicIpName string = generateResourceNameFromParentResourceName('publicIp', firewallName, null, hash)
 
-@description('The name of the public IP for the firewall management. Defaults to the naming convention `<abbreviation-public-ip>-<firewall-name>-mgmt[-<hash>]`.')
-param firewallManagementPublicIpName string = generateResourceNameFromParentResourceName('publicIp', firewallName, 'mgmt', hash)
-
 @description('The address prefix for the bastion subnet. Defaults to `10.0.3.0/27`.')
 param bastionSubnetAddressPrefix string = '10.0.3.0/27'
 
@@ -275,26 +272,9 @@ module containerRegistryPrivateDnsZone 'br/public:avm/res/network/private-dns-zo
   }
 }
 
-// This public IP address is required because of this bug in AVM module: https://github.com/Azure/bicep-registry-modules/issues/2589
-module firewallManagementPublicIp 'br/public:avm/res/network/public-ip-address:0.4.2' = {
-  name: take('${deployment().name}-firewall-management-public-ip', 64)
-  scope: resourceGroup
-  params: {
-    name: firewallManagementPublicIpName
-    location: location
-    tags: tags
-    enableTelemetry: enableAvmTelemetry
-    publicIPAllocationMethod: 'Static'
-    skuName: 'Standard'
-    skuTier: 'Regional'
-    zones: firewallAvailabilityZone
-    diagnosticSettings: diagnosticsSettings
-  }
-}
-
 /* -------------------------------- Firewall -------------------------------- */
 
-module firewall 'br/public:avm/res/network/azure-firewall:0.3.0' = {
+module firewall 'br/public:avm/res/network/azure-firewall:0.4.0' = {
   name: take('${deployment().name}-firewall', 64)
   scope: resourceGroup
   params: {
@@ -306,7 +286,6 @@ module firewall 'br/public:avm/res/network/azure-firewall:0.3.0' = {
     publicIPAddressObject: {
       name: firewallPublicIpName
     }
-    managementIPResourceID: firewallManagementPublicIp.outputs.resourceId
     threatIntelMode: 'Deny'
     azureSkuTier: 'Standard'
     zones: firewallAvailabilityZone
