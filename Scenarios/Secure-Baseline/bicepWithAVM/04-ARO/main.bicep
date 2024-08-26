@@ -353,7 +353,6 @@ module assignReaderRoleToAROResourceProviderSPForDiskEncryptionSet 'br/public:av
 @description('Microsoft telemetry deployment.')
 #disable-next-line no-deployments-resources
 resource telemetrydeployment 'Microsoft.Resources/deployments@2021-04-01' = if (enableTelemetry) {
-  location: location
   name: telemetryId
   properties: {
     mode: 'Incremental'
