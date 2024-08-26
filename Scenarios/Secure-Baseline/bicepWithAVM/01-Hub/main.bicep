@@ -324,7 +324,6 @@ module firewallPolicy 'br/public:avm/res/network/firewall-policy:0.1.3' = {
     tier: 'Standard'
     threatIntelMode: 'Alert'
     ruleCollectionGroups: firewallPolicyRuleCollectionGroups
-    servers: ['168.63.129.16']
     enableProxy: true
   }
 }
