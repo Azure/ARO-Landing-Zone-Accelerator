@@ -24,7 +24,8 @@
             "targetFqdns": [
               "*.pkg.dev",
               "registry.k8s.io",
-              "prod-registry-k8s-io-eu-central-1.s3.dualstack.eu-central-1.amazonaws.com"
+              "prod-registry-k8s-io-eu-central-1.s3.dualstack.eu-central-1.amazonaws.com",
+              "mcr.microsoft.com"
             ]
           }
         ]
