@@ -1,0 +1,34 @@
+[
+  {
+    "name": "<FIREWALL_POLICY_RULE_GROUP_NAME_PLACEHOLDER>",
+    "priority": 200,
+    "ruleCollections": [
+      {
+        "name": "AllowSampleApp",
+        "priority": 201,
+        "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+        "action": {
+          "type": "Allow"
+        },
+        "rules": [
+          {
+            "name": "AllowRegistries",
+            "ruleType": "ApplicationRule",
+            "protocols": [
+              {
+                "protocolType": "Https",
+                "port": 443
+              }
+            ],
+            "sourceAddresses": ["*"],
+            "targetFqdns": [
+              "*.pkg.dev",
+              "registry.k8s.io",
+              "prod-registry-k8s-io-eu-central-1.s3.dualstack.eu-central-1.amazonaws.com"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

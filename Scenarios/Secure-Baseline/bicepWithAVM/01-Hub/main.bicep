@@ -117,6 +117,9 @@ param firewallPolicyName string = generateResourceName('firewallPolicy', workloa
 @description('The name of the firewall policy rule group. Defaults to the naming convention `<abbreviation-firewall-policy-rule-group>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
 param firewallPolicyRuleGroupName string = generateResourceName('firewallPolicyRuleGroup', workloadName, env, location, null, hash)
 
+@description('Flag to deploy the firewall policy rule group for the sample app. Defaults to true. It uses the `afwp-rule-collection-groups-sample-app.jsonc` file.')
+param deployFirewallPolicyRuleGroupSampleApp bool = true
+
 /* --------------------------------- Bastion -------------------------------- */
 
 @description('The name of the bastion. Defaults to the naming convention `<abbreviation-bastion>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
@@ -178,7 +181,9 @@ var acrPrivateDnsZoneVnetLinks = linkAcrDnsZoneToHubVnet ? [
 
 /* -------------------------------- Firewall -------------------------------- */
 
-var firewallPolicyRuleCollectionGroups = [ for ruleCollectionGroup in loadJsonContent('firewall/afwp-rule-collection-groups.jsonc') : {
+var firewallPolicyRuleGroupFile = deployFirewallPolicyRuleGroupSampleApp ? loadJsonContent('firewall/afwp-rule-collection-groups-sample-app.jsonc') : loadJsonContent('firewall/afwp-rule-collection-groups.jsonc')
+
+var firewallPolicyRuleCollectionGroups = [ for ruleCollectionGroup in firewallPolicyRuleGroupFile : {
   name: ruleCollectionGroup.name == '<FIREWALL_POLICY_RULE_GROUP_NAME_PLACEHOLDER>' ? firewallPolicyRuleGroupName : ruleCollectionGroup.name
   priority: ruleCollectionGroup.priority
   ruleCollections: ruleCollectionGroup.ruleCollections
