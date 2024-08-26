@@ -54,7 +54,7 @@ type keyType = {
   tags: object?
 
   @description('The role assignments for the key vault (Optional).')
-  roleAssignments: roleAssignmentType?
+  roleAssignments: roleAssignmentType[]?
 }
 
 @export()
@@ -87,7 +87,7 @@ type secretType = {
   tags: object?
 
   @description('The role assignments for the secret (Optional).')
-  roleAssignments: roleAssignmentType?
+  roleAssignments: roleAssignmentType[]?
 }
 
 @description('The role assignments for the secret')
@@ -115,4 +115,4 @@ type roleAssignmentType = {
       @description('Id of the delegated managed identity resource (Optional).')
       delegatedManagedIdentityResourceId: string?
     }
-  }[]
+  }
