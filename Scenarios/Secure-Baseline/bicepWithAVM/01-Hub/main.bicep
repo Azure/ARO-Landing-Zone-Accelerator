@@ -168,7 +168,7 @@ var keyVaultPrivateDnsZoneVnetLinks = linkKeyvaultDnsZoneToHubVnet ? [
   }
 ] : []
 
-var acrPrivateDnsZoneName = 'private${environment().suffixes.acrLoginServer}'
+var acrPrivateDnsZoneName = 'privatelink${environment().suffixes.acrLoginServer}'
 
 var acrPrivateDnsZoneVnetLinks = linkAcrDnsZoneToHubVnet ? [
   {
