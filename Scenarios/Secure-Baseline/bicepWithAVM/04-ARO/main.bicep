@@ -170,7 +170,7 @@ var workerProfiles = [
 /* ---------------------------- Cluster Outbound ---------------------------- */
 
 var useUdr = !(empty(firewallPrivateIpAddress) || empty(routeTableResourceId))
-var outboundType = useUdr ? 'Loadbalancer' : 'UserDefinedRouting'
+var outboundType = useUdr ? 'UserDefinedRouting' : 'Loadbalancer'
 
 /* --------------------------- Disk Encryption Set -------------------------- */
 
@@ -363,3 +363,10 @@ resource telemetrydeployment 'Microsoft.Resources/deployments@2021-04-01' = if (
     }
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                   OUTPUTS                                  */
+/* -------------------------------------------------------------------------- */
+
+@description('The name of the deployed ARO cluster.')
+output aroClusterName string = aroCluster.name

@@ -37,4 +37,12 @@ resource privateLinkService 'Microsoft.Network/privateLinkServices@2024-01-01' =
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                   OUTPUTS                                  */
+/* -------------------------------------------------------------------------- */
+
+@description('The private link service ID.')
 output privateLinkServiceId string = privateLinkService.id
+
+@description('The private link service Name.')
+output privateLinkServiceName string = privateLinkService.name

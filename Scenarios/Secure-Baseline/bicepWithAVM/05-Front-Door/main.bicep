@@ -51,18 +51,18 @@ param tags object = hash == null ? {
 /* ------------------------------- WAF Policy ------------------------------- */
 
 @description('Name of the Front Door Web Application Firewall (WAF) policy')
-param wafPolicyName string = generateResourceName('webApplicationFirewall', workloadName, env, location, null, hash) 
+param wafPolicyName string = generateUniqueGlobalName('webApplicationFirewall', workloadName, env, location, null, hash, [resourceGroup().id], 5, 24, false)
 
 /* -------------------------- Private Link Service -------------------------- */
 
 @description('Name of the Private Link Service')
 param privateLinkServiceName string = generateResourceName('privateLinkService', workloadName, env, location, null, hash)
 
-@description('Resource ID of the Load Balancer')
+@description('Resource ID of the internal Load Balancer')
 param internalLoadBalancerResourceId string
 
-@description('Resource ID of the Subnet')
-param workerSubnetResourceId string
+@description('Resource ID of the Worker Subnet')
+param workerNodesSubnetResourceId string
 
 /* ------------------------------- Front Door ------------------------------- */
 
@@ -81,6 +81,9 @@ param originName string = 'default-origin'
 @description('Hostname of the origin')
 param originHostName string
 
+/* -------------------------------------------------------------------------- */
+/*                                   MODULES                                  */
+/* -------------------------------------------------------------------------- */
 
 module wafPolicy './modules/front-door/waf-policy.bicep' = {
   name: 'wafPolicyDeployment'
@@ -94,7 +97,7 @@ module privateLinkService './modules/private-link-service/private-link-service.b
   params: {
     privateLinkServiceName: privateLinkServiceName
     loadBalancerId: internalLoadBalancerResourceId
-    subnetId: workerSubnetResourceId
+    subnetId: workerNodesSubnetResourceId
     location: location
   }
 }
@@ -117,3 +120,10 @@ module frontDoor './modules/front-door/front-door.bicep' = {
     privateLinkService
   ]
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                   OUTPUTS                                  */
+/* -------------------------------------------------------------------------- */
+
+@description('The private link service name.')
+output privateLinkServiceName string = privateLinkService.outputs.privateLinkServiceName
