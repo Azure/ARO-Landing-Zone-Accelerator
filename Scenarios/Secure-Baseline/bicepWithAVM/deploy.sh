@@ -340,3 +340,65 @@ else
             firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP \
             diskEncryptionSetResourceId=$DISK_ENCRYPTION_SET_ID
 fi
+
+# Get the outputs from the ARO deployment
+ARO_CLUSTER_NAME=$(az deployment group show --name "$_aro_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.aroClusterName.value" -o tsv)
+display_progress "Supporting services in the spoke deployed successfully"
+display_blank_line
+
+# Get the name of the ARO managed resource group
+ARO_MANAGED_RG_NAME=$(az aro show --name $ARO_CLUSTER_NAME -g $SPOKE_RG_NAME --query "clusterProfile.resourceGroupId" -o tsv | sed 's/.*\///')
+# Get the name of the internal load balancer in the managed resource group
+INTERNAL_LB_NAME=$(az network lb list --resource-group $ARO_MANAGED_RG_NAME --query "[? contains(name, 'internal')].name" -o tsv)
+# Get the ID of the load balancer frontend IP configuration associated with the worker subnet
+LB_CONFIG_ID=$(az network lb frontend-ip list -g $ARO_MANAGED_RG_NAME --lb-name $INTERNAL_LB_NAME --query "[? contains(subnet.id,'$WORKER_SUBNET_RESOURCE_ID')].id" -o tsv)
+# Get the private IP address of the load balancer frontend IP configuration
+LB_CONFIG_IP=$(az network lb frontend-ip list -g $ARO_MANAGED_RG_NAME --lb-name $INTERNAL_LB_NAME --query "[? contains(subnet.id,'$WORKER_SUBNET_RESOURCE_ID')].privateIPAddress" -o tsv)
+
+# Deploy Azure Front Door
+display_progress "Deploying Azure Front Door"
+_frontdoor_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-frontdoor$HASH_WITH_HYPHEN"
+display_message info "Deployment name: $_frontdoor_deployment_name"
+if [ -z "$HASH" ]; then
+    az deployment group create \
+        --name $_frontdoor_deployment_name \
+        --resource-group $SPOKE_RG_NAME \
+        --template-file "./05-Front-Door/main.bicep" \
+        --parameters ./05-Front-Door/main.bicepparam \
+        --parameters \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            internalLoadBalancerResourceId=$LB_CONFIG_ID \
+            originHostName=$LB_CONFIG_IP \
+            workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID
+else
+    az deployment group create \
+        --name $_frontdoor_deployment_name \
+        --resource-group $SPOKE_RG_NAME \
+        --template-file "./05-Front-Door/main.bicep" \
+        --parameters ./05-Front-Door/main.bicepparam \
+        --parameters \
+            hash=$HASH \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            internalLoadBalancerResourceId=$LB_CONFIG_ID \
+            originHostName=$LB_CONFIG_IP \
+            workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID
+fi
+
+# Get the outputs from the ARO deployment
+PRIVATE_LINK_SERVICE_NAME=$(az deployment group show --name "$_frontdoor_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.privateLinkServiceName.value" -o tsv)
+display_progress "Azure Front Door deployed successfully"
+display_blank_line
+
+# Get the private link service endpoint id
+PRIVATE_LINK_SERVICE_ENDPOINT_ID=$(az network private-link-service show --name $PRIVATE_LINK_SERVICE_NAME -g $SPOKE_RG_NAME --query 'privateEndpointConnections[0].id' -o tsv)
+
+display_progress "Approving private link service endpoint connection"
+az network private-endpoint-connection approve \
+--description 'Approved' \
+--id $PRIVATE_LINK_SERVICE_ENDPOINT_ID
+display_progress "Approved private link service endpoint connection"
+display_blank_line
