@@ -170,7 +170,7 @@ var workerProfiles = [
 /* ---------------------------- Cluster Outbound ---------------------------- */
 
 var useUdr = !(empty(firewallPrivateIpAddress) || empty(routeTableResourceId))
-var outboundType = useUdr ? 'Loadbalancer' : 'UserDefinedRouting'
+var outboundType = useUdr ? 'UserDefinedRouting' : 'Loadbalancer'
 
 /* --------------------------- Disk Encryption Set -------------------------- */
 
