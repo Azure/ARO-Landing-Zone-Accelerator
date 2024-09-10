@@ -178,7 +178,7 @@ var acrPrivateDnsZoneVnetLinks = linkAcrDnsZoneToHubVnet ? [
 
 /* -------------------------------- Firewall -------------------------------- */
 
-var firewallPolicyRuleGroupFile = deployFirewallPolicyRuleGroupSampleApp ? loadJsonContent('firewall/afwp-rule-collection-groups-sample-app.jsonc') : loadJsonContent('firewall/afwp-rule-collection-groups.jsonc')
+var firewallPolicyRuleGroupFile = deployFirewallPolicyRuleGroupSampleApp ? loadJsonContent('firewall/afwp-rule-collection-groups-sample-app.jsonc') : loadJsonContent('firewall/afwp-rule-collection-groups-network-lockdown.jsonc')
 
 var firewallPolicyRuleCollectionGroups = [ for ruleCollectionGroup in firewallPolicyRuleGroupFile : {
   name: ruleCollectionGroup.name == '<FIREWALL_POLICY_RULE_GROUP_NAME_PLACEHOLDER>' ? firewallPolicyRuleGroupName : ruleCollectionGroup.name
