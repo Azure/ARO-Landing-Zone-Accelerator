@@ -19,7 +19,7 @@ The template deploys the following resources:
     - `AzureFirewallManagementSubnet` for the Azure Firewall management without NSG.
     - `AzureBastionSubnet` for Azure Bastion with an NSG: `./nsg/bastion-nsg.jsonc`.
 4. Private DNS Zones: For Azure Key Vault and Azure Container Registry.
-5. Azure Firewall: Includes a firewall policy and associated public IP addresses for the firewall and its management. The firewall rules are defined in `./firewall/afwp-rule-collection-groups.jsonc`.
+5. Azure Firewall: Includes a firewall policy and associated Public IP addresses for the firewall and its management. The firewall rules are defined in `./firewall/afwp-rule-collection-groups.jsonc`.
 6. Azure Bastion: For secure access to virtual machines.
 7. Log Analytics Workspace: For centralized logging and monitoring.
 
