@@ -416,7 +416,7 @@ module windowsVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployW
   }
 }
 
-module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLinuxJumpbox) {
+module linuxVM 'br/public:avm/res/compute/virtual-machine:0.6.0' = if (deployLinuxJumpbox) {
   name: take('${deployment().name}-linux-vm', 64)
   params: {
     name: linuxVMName
@@ -432,6 +432,17 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
     adminPassword: linuxAdminPassword
     nicConfigurations: linuxNicConfigurations
     osDisk: linuxOsDiskConfiguration
+    extensionCustomScriptConfig:{
+      enabled: true 
+      fileData:[
+        {
+          uri: 'https://raw.githubusercontent.com/mateo762/test-vm-script/main/install_linux_vm_libraries.sh'
+        }
+      ]
+    }
+    extensionCustomScriptProtectedSetting: {
+      commandToExecute: 'bash install_linux_vm_libraries.sh'
+    }
   }
 }
 
@@ -441,3 +452,6 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.5.3' = if (deployLin
 
 @description('The resource id of the key vault.')
 output diskEncryptionSetResourceId string = deployDiskEncryptionSet ? diskEncryptionSetForAro.outputs.resourceId : ''
+
+@description('The name of the linux jumpbox virtual machine.')
+output linuxJumpboxVMName string = linuxVM.outputs.name
