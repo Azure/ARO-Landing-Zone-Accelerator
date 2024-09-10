@@ -7,7 +7,6 @@ targetScope = 'resourceGroup'
 import {
   generateResourceName
   generateUniqueGlobalName
-  generateResourceNameFromParentResourceName
 } from '../common-modules/naming/functions.bicep'
 
 /* -------------------------------------------------------------------------- */
@@ -70,7 +69,7 @@ param workerNodesSubnetResourceId string
 param frontDoorProfileName string = generateResourceName('frontDoor', workloadName, env, location, null, hash)
 
 @description('Name of the endpoint')
-param endpointName string = 'hello-world-endpoint'
+param endpointName string = 'endpoint-${substring(uniqueString(resourceGroup().id), 0, 6)}'
 
 @description('Name of the origin group')
 param originGroupName string = 'default-origin-group'
@@ -85,28 +84,49 @@ param originHostName string
 /*                                   MODULES                                  */
 /* -------------------------------------------------------------------------- */
 
+/* ------------------------------- WAF Policy ------------------------------- */
 module wafPolicy './modules/front-door/waf-policy.bicep' = {
-  name: 'wafPolicyDeployment'
-  params: {
+  name: take('${deployment().name}-waf', 64) 
+  params:{
     wafPolicyName: wafPolicyName
   }
 }
 
-module privateLinkService './modules/private-link-service/private-link-service.bicep' = {
-  name: 'privateLinkServiceDeployment'
+/* -------------------------- Private Link Service -------------------------- */
+module privateLinkService 'br/public:avm/res/network/private-link-service:0.2.0' = {
+  name: take('${deployment().name}-pls', 64)
   params: {
-    privateLinkServiceName: privateLinkServiceName
-    loadBalancerId: internalLoadBalancerResourceId
-    subnetId: workerNodesSubnetResourceId
+    name: privateLinkServiceName
     location: location
+    fqdns: []
+    enableProxyProtocol: false
+    loadBalancerFrontendIpConfigurations: [
+      {
+        id: internalLoadBalancerResourceId
+      }
+    ]
+    ipConfigurations: [
+      {
+        name: '${privateLinkServiceName}_ipconfig_0'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: workerNodesSubnetResourceId
+          }
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+        }
+      }
+    ]
   }
 }
 
+/* ------------------------------- Front Door ------------------------------- */
 module frontDoor './modules/front-door/front-door.bicep' = {
-  name: 'frontDoorDeployment'
+  name: take('${deployment().name}-afd', 64)
   params: {
     frontDoorProfileName: frontDoorProfileName
-    privateLinkServiceId: privateLinkService.outputs.privateLinkServiceId
+    privateLinkServiceId: privateLinkService.outputs.resourceId
     wafPolicyId: wafPolicy.outputs.wafPolicyId
     endpointName: endpointName
     originGroupName: originGroupName
@@ -126,4 +146,7 @@ module frontDoor './modules/front-door/front-door.bicep' = {
 /* -------------------------------------------------------------------------- */
 
 @description('The private link service name.')
-output privateLinkServiceName string = privateLinkService.outputs.privateLinkServiceName
+output privateLinkServiceName string = privateLinkService.outputs.name
+
+@description('The FQDN of the front door endpoint')
+output frontDoorFQDN string = frontDoor.outputs.frontDoorFQDN

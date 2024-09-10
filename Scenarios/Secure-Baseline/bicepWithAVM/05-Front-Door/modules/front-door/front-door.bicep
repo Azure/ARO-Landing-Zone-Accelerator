@@ -1,3 +1,7 @@
+/* -------------------------------------------------------------------------- */
+/*                                 PARAMETERES                                */
+/* -------------------------------------------------------------------------- */
+
 @description('Name of the Azure Front Door profile')
 param frontDoorProfileName string
 
@@ -24,6 +28,10 @@ param privateLinkLocation string
 
 @description('The tags to apply to the resources. Defaults to an object with the environment and workload name.')
 param tags object
+
+/* -------------------------------------------------------------------------- */
+/*                                  RESOURCES                                 */
+/* -------------------------------------------------------------------------- */
 
 resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-05-01-preview' = {
   name: frontDoorProfileName
@@ -140,3 +148,9 @@ resource route 'Microsoft.Cdn/profiles/afdendpoints/routes@2024-05-01-preview' =
     securityPolicy
   ]
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                   OUTPUTS                                  */
+/* -------------------------------------------------------------------------- */ 
+
+output frontDoorFQDN string = frontDoorEndpoint.properties.hostName

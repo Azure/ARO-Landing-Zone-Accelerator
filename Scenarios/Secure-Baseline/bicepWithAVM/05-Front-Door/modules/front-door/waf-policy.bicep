@@ -1,5 +1,13 @@
+/* -------------------------------------------------------------------------- /
+/                                 PARAMETERS                                 /
+/ -------------------------------------------------------------------------- */ 
+
 @description('Name of the Web Application Firewall (WAF) policy')
 param wafPolicyName string
+
+/* -------------------------------------------------------------------------- /
+/                                  RESOURCES                                 /
+/ -------------------------------------------------------------------------- */
 
 resource wafPolicy 'Microsoft.Network/frontdoorwebapplicationfirewallpolicies@2024-02-01' = {
   name: wafPolicyName
@@ -31,5 +39,8 @@ resource wafPolicy 'Microsoft.Network/frontdoorwebapplicationfirewallpolicies@20
   }
 }
 
+/* -------------------------------------------------------------------------- /
+/                                   OUTPUTS                                  /
+/ -------------------------------------------------------------------------- */
 @description('The resource ID of the created WAF policy')
 output wafPolicyId string = wafPolicy.id
