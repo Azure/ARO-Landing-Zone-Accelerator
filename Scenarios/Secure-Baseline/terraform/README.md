@@ -7,17 +7,15 @@ This Terraform deployment will deploy a secure baseline Azure RedHat Openshift (
   - [Log Analytics Workspace](main.tf)
   - [Azure Firewall](modules/vnet/firewall.tf)
   - [Virtual Network](modules/vnet/hub.tf)
-  - [Key Vault](modules/keyvault/keyvault.tf)
+  - [Key Vault](modules/keyvault/kv.tf)
   - [UDR](modules/vnet/udr.tf)
   - [Bastion Host and 2 jumpboxes](modules/vm/vm.tf)
 - Spoke resource group
-  - [Virtual Network](modules/vnet/spoke.tf)
+  - [Virtual Network](modules/vnet/spoke.tf) 
   - Supporting Services:
     - [Azure Container Registry](modules/supporting/acr.tf)
     - [Key Vault](modules/supporting/sup_kv.tf)
-    - [Cosmos DB](modules/supporting/cosmos.tf)
     - [Azure RedHat Openshift Cluster](modules/aro/aro.tf)
-    - [Front Door](modules/supporting/frontdoor.tf)
 - [Service Principal](modules/serviceprincipal/serviceprincipal.tf) with `Contributor` role on both Hub and Spoke virtual networks
 
 ### Log Analytics Workspace
@@ -34,17 +32,13 @@ The service principal should not have the contributor role on the hub virtual ne
 
 The hub key vault provides public access and is deployed to store the credentials of the jumpboxes.
 
-### Front Door
-
-Front door use the private IP address of the internal load balancer of the ARO cluster. This internal load balancer is part of the control planed of the ARO cluster and is managed by Azure.
-
 ## Terraform State Management
 
 In this example, state is to be stored in an Azure Storage Account. The storage account is not created as part of the terraform templates but it is the first step of the deployment. All deployments reference this storage account to either store state or reference variables from other parts of the deployment however you may choose to use other tools for state management, like Terraform Cloud after making the necessary code changes.
 
 > **IMPORTANT**
 > 
-> Azure RedHat OpenShift (ARO) cluster is deployed using an ARM template. Indeed the terraform deployment is using the [azurerm_resource_group_template_deployment](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) resource. This means that this is a one time install. Running this Terraform deployment as Infrastructure as Code will allow management of the environment supporting ARO but not ARO itself. Changes made to ARO after the initial deployment will be ignored. When a proper ARO provider will be available, this deployment will be updated to use it.
+> Azure RedHat OpenShift (ARO) cluster is deployed using [Azure Verified Modules terraform deployment](https://azure.github.io/Azure-Verified-Modules/) and [azurerm_resource_group_template_deployment](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) resource. 
 >
 
 ## Prerequisites
@@ -96,46 +90,6 @@ In this example, state is to be stored in an Azure Storage Account. The storage 
         Write-Output $ARO_RP_OBJECT_ID
         ```
 
-1. Create the storage account for state management
-
-    1. Define some variables
-
-        - `Bash`:
-
-            ```bash
-            REGION=<REGION>
-            STORAGEACCOUNTNAME=<UNIQUENAME>
-            CONTAINERNAME=arolzaterraform
-            TFSTATE_RG=rg-aro-lza-terraform
-            ```
-
-        - `PowerShell`:
-
-            ```powershell
-            $REGION="<REGION>"
-            $STORAGEACCOUNTNAME="<UNIQUENAME>"
-            $CONTAINERNAME="arolzaterraform"
-            $TFSTATE_RG="rg-aro-lza-terraform"
-            ```
-        Where `<REGION>` is the region where you want to deploy the storage account and `<UNIQUENAME>` is a unique name for the storage account.
-
-    1. Create the resource group
-
-        ```bash
-        az group create --name $TFSTATE_RG --location $REGION
-        ```
-    
-    1. Create the storage account
-
-        ```bash
-        az storage account create --name $STORAGEACCOUNTNAME --resource-group $TFSTATE_RG --location $REGION --sku Standard_GRS
-        ```
-
-    1. Create the storage container within the storage account
-
-        ```bash
-        az storage container create --name $CONTAINERNAME --account-name $STORAGEACCOUNTNAME --resource-group $TFSTATE_RG
-        ```
 
 1. Review carrefully the implementation of the LZA and all the parameters before deploying the solution.
 
@@ -233,17 +187,6 @@ To deploy the landing zone, follow the steps below.
       -var aro_domain=$ARO_DOMAIN
     ```
 
-## Post Deployment Tasks
-
-There are a few tasks that need to be completed after the deployment. For some tasks there are scripts to be run from one of the jumpbox. The jumpboxes are created during the deployment (read how to get credentials below).
-
-These are the post deployment tasks:
-
-* [AAD Integration](./post_deployment/aad-RBAC)
-* [Container Insights Integration](./post_deployment/containerinsights)
-* [Application Deployment](./post_deployment/appdeployment)
-* Disable `kubeadmin` login
-
 ### Retrieve Jumpbox and ARO credentials
 
 To retrieve the credentials for the jumpboxes, you need to be Secret Officer on the hub key vault. Then you can execute the following commands:
@@ -281,6 +224,4 @@ Where `<your-unique-keyvault-name>` is the name of the key vault created during 
 
     Where `<SPOKE_RESOURCE_GROUP_NAME>` is the name of the spoke resource group and `<HUB_RESOURCE_GROUP_NAME>` is the name of the hub resource group.
 
-## Known Issues
 
-There is no ARO Terraform provider so this deployment uses an ARM template for the ARO deployment. This means that this is a one time install. Running this Terraform deployment as Infrastructure as Code will allow management of the environment supporting ARO but not ARO itself. Changes made to ARO after the initial deployment will be ignored.

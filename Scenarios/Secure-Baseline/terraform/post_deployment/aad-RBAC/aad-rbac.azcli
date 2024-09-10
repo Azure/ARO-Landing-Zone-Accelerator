@@ -1,9 +1,0 @@
-
-## add steps by steps based on the 2 official guidance or simply redirect to these links
-
-## using Azure portal and ARO Portal from windows Jumpbox
-https://learn.microsoft.com/en-us/azure/openshift/configure-azure-ad-ui
-
-## using CLI from linux or Windows jumpbox
-https://learn.microsoft.com/en-us/azure/openshift/configure-azure-ad-cli
-
