@@ -7,8 +7,6 @@ LOCATION=$(az aro show -g $SPOKE_RG_NAME -n $AROCLUSTER --query location -o tsv)
 FRONT_DOOR_FQDN=$(az network front-door show -g $SPOKE_RG_NAME --query "frontendEndpoints[0].hostName" -o tsv)
 apiServer=$(az aro show -g $SPOKE_RG_NAME -n $AROCLUSTER --query apiserverProfile.url -o tsv)
 webConsole=$(az aro show -g $SPOKE_RG_NAME -n $AROCLUSTER --query consoleProfile.url -o tsv)
-echo "ARO Cluster: $AROCLUSTER"
-echo "Location: $LOCATION"
 
 # Log in to ARO cluster
 echo "Logging in to ARO cluster..."
@@ -52,8 +50,6 @@ spec:
         fsGroup: 0
 EOF
 
-sleep 10
-
 echo "Creating Service..."
 cat <<EOF | oc apply -f -
 apiVersion: v1
@@ -71,8 +67,6 @@ spec:
     app: contoso-website
   type: ClusterIP
 EOF
-
-sleep 10
 
 echo "Creating Ingress..."
 cat <<EOF | oc apply -f -
