@@ -431,7 +431,7 @@ if [ "$DEPLOY_APP" = true ] ; then
       --resource-group $SPOKE_RG_NAME \
       --name $LINUX_JUMPBOX_VM_NAME \
       --command-id RunShellScript \
-      --scripts "wget -O script.sh https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/Scenarios/Secure-Baseline/bicepWithAVM/vm-scripts/linux/application_deployment.sh && chmod +x script.sh && bash script.sh \"$SPOKE_RG_NAME\" \"$FRONT_DOOR_FQDN\" \"$SP_APP_ID\" \"$SP_PASSWORD\" \"$TENANT_ID\""
+      --scripts "wget -O script.sh https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/bicepWithAVM/vm-scripts/linux/application_deployment.sh && chmod +x script.sh && bash script.sh \"$SPOKE_RG_NAME\" \"$FRONT_DOOR_FQDN\" \"$SP_APP_ID\" \"$SP_PASSWORD\" \"$TENANT_ID\""
     display_progress "Sample app deployed in ARO cluster"
     display_blank_line
 
