@@ -49,35 +49,35 @@ param tags object = hash == null ? {
 
 /* ------------------------------- WAF Policy ------------------------------- */
 
-@description('Name of the Front Door Web Application Firewall (WAF) policy')
+@description('The name of the Web Application Firewall (WAF) policy for the Front Door.')
 param wafPolicyName string = generateUniqueGlobalName('webApplicationFirewall', workloadName, env, location, null, hash, [resourceGroup().id], 5, 24, false)
 
 /* -------------------------- Private Link Service -------------------------- */
 
-@description('Name of the Private Link Service')
+@description('The name of the Private Link Service.')
 param privateLinkServiceName string = generateResourceName('privateLinkService', workloadName, env, location, null, hash)
 
-@description('Resource ID of the internal Load Balancer')
+@description('The resource of the internal load balancer of the ARO cluster.')
 param internalLoadBalancerResourceId string
 
-@description('Resource ID of the Worker Subnet')
-param workerNodesSubnetResourceId string
+@description('The resource id of the subnet where the Private Link Service will be deployed, i.e. front door subnet.')
+param frontDoorSubnetResourceId string
 
 /* ------------------------------- Front Door ------------------------------- */
 
-@description('Name of the Azure Front Door profile')
+@description('The name of the Front Door profile.')
 param frontDoorProfileName string = generateResourceName('frontDoor', workloadName, env, location, null, hash)
 
-@description('Name of the endpoint')
+@description('The name of the endpoint.')
 param endpointName string = 'endpoint-${substring(uniqueString(resourceGroup().id), 0, 6)}'
 
-@description('Name of the origin group')
+@description('The name of the origin group')
 param originGroupName string = 'default-origin-group'
 
-@description('Name of the origin')
+@description('The name of the origin')
 param originName string = 'default-origin'
 
-@description('Hostname of the origin')
+@description('The host name of the origin')
 param originHostName string
 
 /* -------------------------------------------------------------------------- */
@@ -85,6 +85,7 @@ param originHostName string
 /* -------------------------------------------------------------------------- */
 
 /* ------------------------------- WAF Policy ------------------------------- */
+
 module wafPolicy './modules/front-door/waf-policy.bicep' = {
   name: take('${deployment().name}-waf', 64) 
   params:{
@@ -93,6 +94,7 @@ module wafPolicy './modules/front-door/waf-policy.bicep' = {
 }
 
 /* -------------------------- Private Link Service -------------------------- */
+
 module privateLinkService 'br/public:avm/res/network/private-link-service:0.2.0' = {
   name: take('${deployment().name}-pls', 64)
   params: {
@@ -111,7 +113,7 @@ module privateLinkService 'br/public:avm/res/network/private-link-service:0.2.0'
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           subnet: {
-            id: workerNodesSubnetResourceId
+            id: frontDoorSubnetResourceId
           }
           primary: true
           privateIPAddressVersion: 'IPv4'
@@ -122,6 +124,7 @@ module privateLinkService 'br/public:avm/res/network/private-link-service:0.2.0'
 }
 
 /* ------------------------------- Front Door ------------------------------- */
+
 module frontDoor './modules/front-door/front-door.bicep' = {
   name: take('${deployment().name}-afd', 64)
   params: {

@@ -29,8 +29,17 @@ echo "Logging in to ARO cluster..."
 kubeadmin_password=$(az aro list-credentials --name $AROCLUSTER --resource-group $SPOKE_RG_NAME --query kubeadminPassword --output tsv)
 oc login $apiServer -u kubeadmin -p $kubeadmin_password
 
-oc new-project contoso
-oc adm policy add-scc-to-user anyuid -z default
+# Check if the project exists, if not create it
+CONTOSO_EXISITS=$(oc projects | grep contoso)
+if [ -z "$CONTOSO_EXISITS" ]; then
+  echo "Creating project..."
+  oc new-project contoso
+  oc adm policy add-scc-to-user anyuid -z default
+else
+  echo "Project already exists"
+  oc project contoso
+  oc adm policy add-scc-to-user anyuid -z default
+fi
 
 echo "Creating Deployment..."
 cat <<EOF | oc apply -f -

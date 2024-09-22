@@ -182,6 +182,7 @@ MASTER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deplo
 WORKER_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.workerNodesSubnetResourceId.value" -o tsv)
 PRIVATE_ENDPOINTS_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.privateEndpointsSubnetResourceId.value" -o tsv)
 JUMPBOX_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.jumpboxSubnetResourceId.value" -o tsv)
+FRONT_DOOR_SUBNET_RESOURCE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.frontDoorSubnetResourceId.value" -o tsv)
 ROUTE_TABLE_ID=$(az deployment sub show --name "$_spoke_network_deployment_name" --query "properties.outputs.routeTableResourceId.value" -o tsv)
 display_progress "Spoke network resources deployed successfully"
 display_blank_line
@@ -383,7 +384,7 @@ if [ -z "$HASH" ]; then
             location=$LOCATION \
             internalLoadBalancerResourceId=$LB_CONFIG_ID \
             originHostName=$LB_CONFIG_IP \
-            workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID
+            frontDoorSubnetResourceId=$FRONT_DOOR_SUBNET_RESOURCE_ID
 else
     az deployment group create \
         --name $_frontdoor_deployment_name \
@@ -397,7 +398,7 @@ else
             location=$LOCATION \
             internalLoadBalancerResourceId=$LB_CONFIG_ID \
             originHostName=$LB_CONFIG_IP \
-            workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID
+            frontDoorSubnetResourceId=$FRONT_DOOR_SUBNET_RESOURCE_ID
 fi
 
 # Get the outputs from the ARO deployment
