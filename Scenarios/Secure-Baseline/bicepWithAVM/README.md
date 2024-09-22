@@ -13,11 +13,11 @@ This reference architecture is designed to deploy a secure baseline ARO cluster 
 
 ![Architectural diagram for the secure baseline scenario.](./media/aro_lza_avm.png)
 
-This landinxg zone accelertor provides end-to-end [Bicep templates](#bicep-templates) that are composed mainly of [Azure Verified Modules (AVM)](https://azure.github.io/Azure-Verified-Modules/). AVM is an initiative ti consolidate and set the standards for what a good Infrastructure as Code (IaC) module should look like. These templates are divided into six main components that are descibed in the [Core Architecture Components](#core-architecture-components) section below. When you deploy these templates, you will have a secure ARO cluster that is compliant with the ARO landing zone accelerator guidance and best practices. Optionally, you can also deploy a workload known as the Ratings app that is also featured in the [Azure Kubernetes Services Workshop](https://docs.microsoft.com/en-us/learn/modules/aks-workshop/). Adapt, update, and extend these templates to meet your specific requirements. They are designed to be a starting point for your own implementation and to accelerate your deployment of a secure ARO cluster. Review carefully and modify them to meet your own requirements.
+This landing zone accelerator provides end-to-end [Bicep templates](#bicep-templates) that are composed mainly of [Azure Verified Modules (AVM)](https://azure.github.io/Azure-Verified-Modules/). AVM is an initiative to consolidate and set the standards for what a good Infrastructure as Code (IaC) module should look like. These templates are divided into six main components that are descibed in the [Core Architecture Components](#core-architecture-components) section below. When you deploy these templates, you will have a secure ARO cluster that is compliant with the ARO landing zone accelerator guidance and best practices. Optionally, you can also deploy a workload known as the Ratings app that is also featured in the [Azure Kubernetes Services Workshop](https://docs.microsoft.com/en-us/learn/modules/aks-workshop/). Adapt, update, and extend these templates to meet your specific requirements. They are designed to be a starting point for your own implementation and to accelerate your deployment of a secure ARO cluster. Review carefully and modify them to meet your own requirements.
 
 ## Core Architecture Components
 
-The core architecture components of this reference implementation are divides in 6 main modules as follows (cf. the diagram above):
+The core architecture components of this reference implementation are divided into 6 main modules as follows (cf. the diagram above):
 
 1. [Hub](./01-Hub/README.md): this module is the central point of connectivity to the on-premises network and the internet. An example of a hub is provided with this template. However we recommend that you bring your own hub to this deployment.
     - Hub resource group: contains all the hub resources.
@@ -27,14 +27,14 @@ The core architecture components of this reference implementation are divides in
     - Private DNS Zone: used to resolve the private IP addresses of the Azure Key Vault and the Azure Container Registry. The template is modular enough to let you choose if Private DNS Zones are part of the Hub or the Spoke.
     - Log Analytics Workspace: used to collect log data centrally.
 2. [Spoke](./02-Spoke/README.md): this module is used build the foundation for the spoke in which the ARO cluster will be deployed.
-    - Spoek resource group: contains all the spoke resources.
+    - Spoke resource group: contains all the spoke resources.
     - Spoke virtual network: the virtual network where the ARO cluster is deployed.
         - Master Node Subnet: used to deploy the master nodes of the ARO cluster. It cannot present a Network Security Group (NSG) as it is not yet supported by ARO.
         - Worker Node Subnet: used to deploy the worker nodes of the ARO cluster. It cannot present a Network Security Group (NSG) as it is not yet supported by ARO.
         - Private Endpoints Subnet: used to deploy the private endpoints for all supporting services like the Azure Container Registry and the Azure Key Vault.
         - Jumpbox Subnet: used to deploy the jumpbox virtual machines that are used to access the control plane of the ARO cluster.
     - Network Peering: used to connect the spoke virtual network to the hub virtual network.
-    - Route Table: used to control the routing of egrees traffic from ARO subnets to the Azure Firewall.
+    - Route Table: used to control the routing of egress traffic from ARO subnets to the Azure Firewall.
     - Link private DNS Zone: used to resolve the private IP addresses of the Azure Key Vault and the Azure Container Registry.
 3. [Supporting Services](./03-Supporting-Services/README.md): this module is used to deploy the supporting services that the ARO cluster will need.
     - Azure Key Vault: used to store and manage sensitive information such as secrets, keys, and certificates.
@@ -76,7 +76,7 @@ The Bicep templates are organized in the same structure as the [Core Architectur
 
 ### Parameters
 
-The parameters files are used to pass the parameters to the Bicep templates. The parameters files are named `main.bicepparam` and contains only required parameters for the deployment. Each module contains a `README.md` file that describes the module and all its parameters. To know available parameters for each module, please refer to the `README.md` or use completion in Visual Studio Code. To know more about `bicepparam` files, please refer to the [Bicep documentation](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/parameter-files?tabs=Bicep).
+The parameters files are used to pass the parameters to the Bicep templates. The parameters files are named `main.bicepparam` and contain only required parameters for the deployment. Each module contains a `README.md` file that describes the module and all its parameters. To know available parameters for each module, please refer to the `README.md` or use completion in Visual Studio Code. To know more about `bicepparam` files, please refer to the [Bicep documentation](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/parameter-files?tabs=Bicep).
 
 ### Telemetry
 
@@ -102,10 +102,10 @@ The naming convention used in this reference implementation is based on the [Azu
 The naming convention is based on the following rules: `<resource-type-abbreviation>-<workload-name>-<lower-case-environment>-<short-location>-<unique-hash>`:
 
 - `<resource-type-abbreviation>`: the resource type abbreviation. These abbreviations are defined in JSON files `common-modules\naming\abbreviations.json`.
-- `<workload-name>`: the workload or the application name. The workload name is limited to 15 characters with a minimum of 3 characters. The workload paramater is by default `hub` for the hub and `aro-lza` for the spoke. The workload name paramater is `workloadName`.
-- `<lower-case-environment>`: the environment name in lower case. The environment is limited to 3 characters. It can be `DEV`, `TST`, `UAT`, or `The environment paramater is `env`.`. The environment paramater is `env`.
-- `<short-location>`: the short location name. The short location name is defined in JSON files `common-modules\naming\locations.json`. It takes as default vaule the location of the deployment for `subscription` scope template and the location of the resource group for `resourceGroup` scope template. The location paramater is `location`.
-- `unique-hash`: a unique hash to append to the resource names. This hash is optional. If not set, it won't be appended to the resource names. This is useful when you want to deploy multiple environments in the same subscription with the same name like for blue-green deployments. The hash is limited to 5 characters with a minimum of 3 characters. The hash paramater is `hash`.
+- `<workload-name>`: the workload or the application name. The workload name is limited to 15 characters with a minimum of 3 characters. The workload parameter is by default `hub` for the hub and `aro-lza` for the spoke. The workload name parameter is `workloadName`.
+- `<lower-case-environment>`: the environment name in lower case. The environment is limited to 3 characters. It can be `DEV`, `TST`, `UAT`, or `The environment parameter is `env`.`. The environment parameter is `env`.
+- `<short-location>`: the short location name. The short location name is defined in JSON files `common-modules\naming\locations.json`. It takes as default vaule the location of the deployment for `subscription` scope template and the location of the resource group for `resourceGroup` scope template. The location parameter is `location`.
+- `unique-hash`: a unique hash to append to the resource names. This hash is optional. If not set, it won't be appended to the resource names. This is useful when you want to deploy multiple environments in the same subscription with the same name like for blue-green deployments. The hash is limited to 5 characters with a minimum of 3 characters. The hash parameter is `hash`.
 
 The type of resource and the type of location are defined in the `types.bicep` file.
 

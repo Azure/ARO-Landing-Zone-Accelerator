@@ -23,7 +23,7 @@ For both service principals, the following role assignments are required:
 >
 > If you want to deploy with the Azure CLI, you will need additional permissions on the spoke resource group level like `User Access Administrator` to be able to assign the roles for the SP and the RP SP, and `Contributor` to be able to create resources.
 >
-> If you use want to be able to deploy Azure resources using ARO portal, you will need to add the [Azure Service Operator v2](https://operatorhub.io/operator/azure-service-operator) and be `Contributor` on the spoke resource group or the subscription.
+> If you want to be able to deploy Azure resources using ARO portal, you will need to add the [Azure Service Operator v2](https://operatorhub.io/operator/azure-service-operator) and be `Contributor` on the spoke resource group or the subscription.
 
 ### Parameters
 
@@ -101,7 +101,7 @@ Before you can deploy the ARO cluster, you need to create the `ARO Service Princ
 
     Replace `<service-principal-name>` with the name of the service principal.
 
-1. Get the credientals of the service principal:
+1. Get the credentials of the service principal:
 
     ```bash
     SP_CLIENT_ID=$(echo $SP | jq -r '.appId')

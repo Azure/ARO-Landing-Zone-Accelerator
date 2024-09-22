@@ -85,9 +85,6 @@ param firewallManagementSubnetAddressPrefix string = '10.0.2.0/26'
 @description('The name of the public IP for the firewall. Defaults to the naming convention `<abbreviation-public-ip>-<firewall-name>[-<hash>]`.')
 param firewallPublicIpName string = generateResourceNameFromParentResourceName('publicIp', firewallName, null, hash)
 
-@description('The name of the public IP for the firewall management. Defaults to the naming convention `<abbreviation-public-ip>-<firewall-name>-mgmt[-<hash>]`.')
-param firewallManagementPublicIpName string = generateResourceNameFromParentResourceName('publicIp', firewallName, 'mgmt', hash)
-
 @description('The address prefix for the bastion subnet. Defaults to `10.0.3.0/27`.')
 param bastionSubnetAddressPrefix string = '10.0.3.0/27'
 
@@ -116,6 +113,9 @@ param firewallPolicyName string = generateResourceName('firewallPolicy', workloa
 
 @description('The name of the firewall policy rule group. Defaults to the naming convention `<abbreviation-firewall-policy-rule-group>-<workload>-<lower-case-env>-<location-short>[-<hash>]`.')
 param firewallPolicyRuleGroupName string = generateResourceName('firewallPolicyRuleGroup', workloadName, env, location, null, hash)
+
+@description('Flag to deploy the firewall policy rule group for the sample app. Defaults to true. It uses the `afwp-rule-collection-groups-sample-app.jsonc` file.')
+param deployFirewallPolicyRuleGroupSampleApp bool = true
 
 /* --------------------------------- Bastion -------------------------------- */
 
@@ -178,7 +178,9 @@ var acrPrivateDnsZoneVnetLinks = linkAcrDnsZoneToHubVnet ? [
 
 /* -------------------------------- Firewall -------------------------------- */
 
-var firewallPolicyRuleCollectionGroups = [ for ruleCollectionGroup in loadJsonContent('firewall/afwp-rule-collection-groups.jsonc') : {
+var firewallPolicyRuleGroupFile = deployFirewallPolicyRuleGroupSampleApp ? loadJsonContent('firewall/afwp-rule-collection-groups-sample-app.jsonc') : loadJsonContent('firewall/afwp-rule-collection-groups-network-lockdown.jsonc')
+
+var firewallPolicyRuleCollectionGroups = [ for ruleCollectionGroup in firewallPolicyRuleGroupFile : {
   name: ruleCollectionGroup.name == '<FIREWALL_POLICY_RULE_GROUP_NAME_PLACEHOLDER>' ? firewallPolicyRuleGroupName : ruleCollectionGroup.name
   priority: ruleCollectionGroup.priority
   ruleCollections: ruleCollectionGroup.ruleCollections
@@ -270,26 +272,9 @@ module containerRegistryPrivateDnsZone 'br/public:avm/res/network/private-dns-zo
   }
 }
 
-// This public IP address is required because of this bug in AVM module: https://github.com/Azure/bicep-registry-modules/issues/2589
-module firewallManagementPublicIp 'br/public:avm/res/network/public-ip-address:0.4.2' = {
-  name: take('${deployment().name}-firewall-management-public-ip', 64)
-  scope: resourceGroup
-  params: {
-    name: firewallManagementPublicIpName
-    location: location
-    tags: tags
-    enableTelemetry: enableAvmTelemetry
-    publicIPAllocationMethod: 'Static'
-    skuName: 'Standard'
-    skuTier: 'Regional'
-    zones: firewallAvailabilityZone
-    diagnosticSettings: diagnosticsSettings
-  }
-}
-
 /* -------------------------------- Firewall -------------------------------- */
 
-module firewall 'br/public:avm/res/network/azure-firewall:0.3.0' = {
+module firewall 'br/public:avm/res/network/azure-firewall:0.4.0' = {
   name: take('${deployment().name}-firewall', 64)
   scope: resourceGroup
   params: {
@@ -301,9 +286,8 @@ module firewall 'br/public:avm/res/network/azure-firewall:0.3.0' = {
     publicIPAddressObject: {
       name: firewallPublicIpName
     }
-    managementIPResourceID: firewallManagementPublicIp.outputs.resourceId
     threatIntelMode: 'Deny'
-    azureSkuTier: 'Basic'
+    azureSkuTier: 'Standard'
     zones: firewallAvailabilityZone
     firewallPolicyId: firewallPolicy.outputs.resourceId
     applicationRuleCollections: []
@@ -321,9 +305,10 @@ module firewallPolicy 'br/public:avm/res/network/firewall-policy:0.1.3' = {
     location: location
     tags: tags
     enableTelemetry: enableAvmTelemetry
-    tier: 'Basic'
+    tier: 'Standard'
     threatIntelMode: 'Alert'
     ruleCollectionGroups: firewallPolicyRuleCollectionGroups
+    enableProxy: true
   }
 }
 

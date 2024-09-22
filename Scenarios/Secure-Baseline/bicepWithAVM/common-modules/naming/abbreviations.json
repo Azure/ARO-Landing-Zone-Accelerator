@@ -21,5 +21,8 @@
     "logAnalyticsWorkspace": "log",
     "containerRegistry": "cr",
     "virtualNetworkLink": "vnlink",
-    "aroCluster": "aro"
+    "aroCluster": "aro",
+    "webApplicationFirewall": "waf",
+    "privateLinkService": "pl",
+    "frontDoor": "afd"
   }

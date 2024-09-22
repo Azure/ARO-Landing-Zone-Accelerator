@@ -62,6 +62,7 @@ HUB_WORKLOAD_NAME=${HUB_WORKLOAD_NAME:-"hub"}
 SPOKE_WORKLOAD_NAME=${SPOKE_WORKLOAD_NAME:-"aro-lza"}
 ENVIRONMENT=${ENVIRONMENT:-"DEV"}
 LOCATION=${LOCATION:-"eastus"}
+DEPLOY_APP=${DEPLOY_APP:-false}
 
 _environment_lower_case=$(echo $ENVIRONMENT | tr '[:upper:]' '[:lower:]')
 _short_location=$(get_short_location $LOCATION)
@@ -231,6 +232,10 @@ fi
 display_progress "Spoke virtual network linked to private DNS zones"
 display_blank_line
 
+# ---------------------------------------------------------------------------- #
+#                              SUPPORTING SERVICES                             #
+# ---------------------------------------------------------------------------- #
+
 # Deploy the supporting services in the spoke
 _spoke_services_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-services$HASH_WITH_HYPHEN"
 display_progress "Deploying the supporting services in the spoke"
@@ -274,6 +279,7 @@ fi
 
 # Get the outputs from the spoke services deployment
 DISK_ENCRYPTION_SET_ID=$(az deployment group show --name "$_spoke_services_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.diskEncryptionSetResourceId.value" -o tsv)
+LINUX_JUMPBOX_VM_NAME=$(az deployment group show --name "$_spoke_services_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.linuxJumpboxVMName.value" -o tsv)
 display_progress "Supporting services in the spoke deployed successfully"
 display_blank_line
 
@@ -283,8 +289,6 @@ SP=$(az ad sp create-for-rbac --name "sp-$WORKLOAD_NAME-$_environment_lower_case
 SP_CLIENT_ID=$(echo $SP | jq -r '.appId')
 SP_CLIENT_SECRET=$(echo $SP | jq -r '.password')
 SP_OBJECT_ID=$(az ad sp show --id $SP_CLIENT_ID --query "id" -o tsv)
-display_message info "  SP_CLIENT_ID: $SP_CLIENT_ID"
-display_message info "  SP_OBJECT_ID: $SP_OBJECT_ID"
 display_progress "Service principal created successfully"
 display_blank_line
 
@@ -293,6 +297,10 @@ ARO_RP_SP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" 
 display_message info "  ARO_RP_SP_OBJECT_ID: $ARO_RP_SP_OBJECT_ID"
 display_progress "Azure Red Hat OpenShift RP SP Object ID retrieved successfully"
 display_blank_line
+
+# ---------------------------------------------------------------------------- #
+#                                  ARO CLUSTER                                 #
+# ---------------------------------------------------------------------------- #
 
 # Deploy ARO Cluster
 display_progress "Deploying Azure Red Hat OpenShift cluster"
@@ -339,4 +347,97 @@ else
             routeTableResourceId=$ROUTE_TABLE_ID \
             firewallPrivateIpAddress=$FIREWALL_PRIVATE_IP \
             diskEncryptionSetResourceId=$DISK_ENCRYPTION_SET_ID
+fi
+
+# Get the outputs from the ARO deployment
+ARO_CLUSTER_NAME=$(az deployment group show --name "$_aro_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.aroClusterName.value" -o tsv)
+display_progress "Aro cluster deployed successfully"
+display_blank_line
+
+# Get the name of the ARO managed resource group
+ARO_MANAGED_RG_NAME=$(az aro show --name $ARO_CLUSTER_NAME -g $SPOKE_RG_NAME --query "clusterProfile.resourceGroupId" -o tsv | sed 's/.*\///')
+# Get the name of the internal load balancer in the managed resource group
+INTERNAL_LB_NAME=$(az network lb list --resource-group $ARO_MANAGED_RG_NAME --query "[? contains(name, 'internal')].name" -o tsv)
+# Get the ID of the load balancer frontend IP configuration associated with the worker subnet
+LB_CONFIG_ID=$(az network lb frontend-ip list -g $ARO_MANAGED_RG_NAME --lb-name $INTERNAL_LB_NAME --query "[? contains(subnet.id,'$WORKER_SUBNET_RESOURCE_ID')].id" -o tsv)
+# Get the private IP address of the load balancer frontend IP configuration
+LB_CONFIG_IP=$(az network lb frontend-ip list -g $ARO_MANAGED_RG_NAME --lb-name $INTERNAL_LB_NAME --query "[? contains(subnet.id,'$WORKER_SUBNET_RESOURCE_ID')].privateIPAddress" -o tsv)
+
+# ---------------------------------------------------------------------------- #
+#                                  FRONT DOOR                                  #
+# ---------------------------------------------------------------------------- #
+
+# Deploy Azure Front Door
+display_progress "Deploying Azure Front Door"
+ _frontdoor_deployment_name="$SPOKE_WORKLOAD_NAME-$_environment_lower_case-$_short_location-frontdoor$HASH_WITH_HYPHEN"
+display_message info "Deployment name: $_frontdoor_deployment_name"
+if [ -z "$HASH" ]; then
+    az deployment group create \
+        --name $_frontdoor_deployment_name \
+        --resource-group $SPOKE_RG_NAME \
+        --template-file "./05-Front-Door/main.bicep" \
+        --parameters ./05-Front-Door/main.bicepparam \
+        --parameters \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            internalLoadBalancerResourceId=$LB_CONFIG_ID \
+            originHostName=$LB_CONFIG_IP \
+            workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID
+else
+    az deployment group create \
+        --name $_frontdoor_deployment_name \
+        --resource-group $SPOKE_RG_NAME \
+        --template-file "./05-Front-Door/main.bicep" \
+        --parameters ./05-Front-Door/main.bicepparam \
+        --parameters \
+            hash=$HASH \
+            workloadName=$SPOKE_WORKLOAD_NAME \
+            env=$ENVIRONMENT \
+            location=$LOCATION \
+            internalLoadBalancerResourceId=$LB_CONFIG_ID \
+            originHostName=$LB_CONFIG_IP \
+            workerNodesSubnetResourceId=$WORKER_SUBNET_RESOURCE_ID
+fi
+
+# Get the outputs from the ARO deployment
+PRIVATE_LINK_SERVICE_NAME=$(az deployment group show --name "$_frontdoor_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.privateLinkServiceName.value" -o tsv)
+FRONT_DOOR_FQDN=$(az deployment group show --name "$_frontdoor_deployment_name" --resource-group $SPOKE_RG_NAME --query "properties.outputs.frontDoorFQDN.value" -o tsv)
+display_progress "Azure Front Door deployed successfully"
+display_blank_line
+
+# Get the private link service endpoint id
+PRIVATE_LINK_SERVICE_ENDPOINT_ID=$(az network private-link-service show --name $PRIVATE_LINK_SERVICE_NAME -g $SPOKE_RG_NAME --query 'privateEndpointConnections[0].id' -o tsv)
+
+display_progress "Approving private link service endpoint connection"
+az network private-endpoint-connection approve \
+--description 'Approved' \
+--id $PRIVATE_LINK_SERVICE_ENDPOINT_ID
+display_progress "Approved private link service endpoint connection"
+display_blank_line
+
+if [ "$DEPLOY_APP" = true ] ; then
+    display_progress "Creating a service principal to log in to the Linux jumpbox virtual machine"
+    SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+    SP_INFO=$(az ad sp create-for-rbac --name "SP-VM-Script-Executor" --role contributor --scopes /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$SPOKE_RG_NAME --query '{appId:appId, password:password, tenant:tenant}')
+    # Extract the necessary information
+    SP_APP_ID=$(echo $SP_INFO | jq -r .appId)
+    SP_PASSWORD=$(echo $SP_INFO | jq -r .password)
+    TENANT_ID=$(echo $SP_INFO | jq -r .tenant)
+    display_progress "Service principal created"
+    display_blank_line
+    display_progress "Deploying sample app inside the ARO cluster"
+    az vm run-command invoke \
+      --resource-group $SPOKE_RG_NAME \
+      --name $LINUX_JUMPBOX_VM_NAME \
+      --command-id RunShellScript \
+      --scripts "wget -O script.sh https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/bicepWithAVM/vm-scripts/linux/application_deployment.sh && chmod +x script.sh && bash script.sh \"$SPOKE_RG_NAME\" \"$FRONT_DOOR_FQDN\" \"$SP_APP_ID\" \"$SP_PASSWORD\" \"$TENANT_ID\""
+    display_progress "Sample app deployed in ARO cluster"
+    display_blank_line
+
+    display_message info "You can now open the application at http://$FRONT_DOOR_FQDN"
+    display_blank_line
+else
+    display_progress "Skipping sample app deployment"
+    display_blank_line
 fi
