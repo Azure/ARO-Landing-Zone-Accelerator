@@ -1,6 +1,6 @@
 # ARO Secure Baseline - ARO Cluster Deployment Guide (Bicep - AVM)
 
-This guide provides comprehensive instructions for deploying a sample application to your Azure Red Hat OpenShift (ARO) cluster. We'll be using the [Contoso Website](https://github.com/MicrosoftDocs/mslearn-aks-deploy-container-app) from the Microsoft Container Registry as our sample application.
+This guide provides comprehensive instructions for deploying a sample application to your Azure Red Hat OpenShift (ARO) cluster. We'll be using the [Contoso Website](https://github.com/MicrosoftDocs/mslearn-aks-deploy-container-app) from the Microsoft Container Registry as our sample application. You can also find the script that we will be executing to deploy the application [here](./app_deployment.sh).
 
 ![Screenshot of the Contoso Website](../media/contoso_website.png)
 

@@ -62,7 +62,6 @@ HUB_WORKLOAD_NAME=${HUB_WORKLOAD_NAME:-"hub"}
 SPOKE_WORKLOAD_NAME=${SPOKE_WORKLOAD_NAME:-"aro-lza"}
 ENVIRONMENT=${ENVIRONMENT:-"DEV"}
 LOCATION=${LOCATION:-"eastus"}
-DEPLOY_APP=${DEPLOY_APP:-false}
 
 _environment_lower_case=$(echo $ENVIRONMENT | tr '[:upper:]' '[:lower:]')
 _short_location=$(get_short_location $LOCATION)
@@ -416,29 +415,3 @@ az network private-endpoint-connection approve \
 --id $PRIVATE_LINK_SERVICE_ENDPOINT_ID
 display_progress "Approved private link service endpoint connection"
 display_blank_line
-
-if [ "$DEPLOY_APP" = true ] ; then
-    display_progress "Creating a service principal to log in to the Linux jumpbox virtual machine"
-    SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-    SP_INFO=$(az ad sp create-for-rbac --name "SP-VM-Script-Executor" --role contributor --scopes /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$SPOKE_RG_NAME --query '{appId:appId, password:password, tenant:tenant}')
-    # Extract the necessary information
-    SP_APP_ID=$(echo $SP_INFO | jq -r .appId)
-    SP_PASSWORD=$(echo $SP_INFO | jq -r .password)
-    TENANT_ID=$(echo $SP_INFO | jq -r .tenant)
-    display_progress "Service principal created"
-    display_blank_line
-    display_progress "Deploying sample app inside the ARO cluster"
-    az vm run-command invoke \
-      --resource-group $SPOKE_RG_NAME \
-      --name $LINUX_JUMPBOX_VM_NAME \
-      --command-id RunShellScript \
-      --scripts "wget -O script.sh https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/bicepWithAVM/vm-scripts/linux/application_deployment.sh && chmod +x script.sh && bash script.sh \"$SPOKE_RG_NAME\" \"$FRONT_DOOR_FQDN\" \"$SP_APP_ID\" \"$SP_PASSWORD\" \"$TENANT_ID\""
-    display_progress "Sample app deployed in ARO cluster"
-    display_blank_line
-
-    display_message info "You can now open the application at http://$FRONT_DOOR_FQDN"
-    display_blank_line
-else
-    display_progress "Skipping sample app deployment"
-    display_blank_line
-fi
