@@ -1,20 +1,45 @@
 #!/bin/bash
 
+# Check if both arguments are provided
+if [ $# -ne 5 ]; then
+    echo "Usage: $0 <SPOKE_RG_NAME> <FRONT_DOOR_FQDN> <SP_APP_ID> <SP_PASSWORD> <TENANT_ID>"
+    exit 1
+fi
+
+# Set variables from command-line arguments
+SPOKE_RG_NAME=$1
+FRONT_DOOR_FQDN=$2
+SP_APP_ID=$3
+SP_PASSWORD=$4
+TENANT_ID=$5
+
+echo "Logging in using the service principal..."
+az login --service-principal -u $SP_APP_ID -p $SP_PASSWORD --tenant $TENANT_ID
+
 echo "Setting up environment..."
-SPOKE_RG_NAME=$SPOKE_RG_NAME
 AROCLUSTER=$(az aro list -g $SPOKE_RG_NAME --query "[0].name" -o tsv)
 LOCATION=$(az aro show -g $SPOKE_RG_NAME -n $AROCLUSTER --query location -o tsv)
-FRONT_DOOR_FQDN=$(az network front-door show -g $SPOKE_RG_NAME --query "frontendEndpoints[0].hostName" -o tsv)
 apiServer=$(az aro show -g $SPOKE_RG_NAME -n $AROCLUSTER --query apiserverProfile.url -o tsv)
 webConsole=$(az aro show -g $SPOKE_RG_NAME -n $AROCLUSTER --query consoleProfile.url -o tsv)
+echo "ARO Cluster: $AROCLUSTER"
+echo "Location: $LOCATION"
 
 # Log in to ARO cluster
 echo "Logging in to ARO cluster..."
 kubeadmin_password=$(az aro list-credentials --name $AROCLUSTER --resource-group $SPOKE_RG_NAME --query kubeadminPassword --output tsv)
 oc login $apiServer -u kubeadmin -p $kubeadmin_password
 
-oc new-project contoso
-oc adm policy add-scc-to-user anyuid -z default
+# Check if the project exists, if not create it
+CONTOSO_EXISITS=$(oc projects | grep contoso)
+if [ -z "$CONTOSO_EXISITS" ]; then
+  echo "Creating project..."
+  oc new-project contoso
+  oc adm policy add-scc-to-user anyuid -z default
+else
+  echo "Project already exists"
+  oc project contoso
+  oc adm policy add-scc-to-user anyuid -z default
+fi
 
 echo "Creating Deployment..."
 cat <<EOF | oc apply -f -
@@ -50,6 +75,8 @@ spec:
         fsGroup: 0
 EOF
 
+sleep 10
+
 echo "Creating Service..."
 cat <<EOF | oc apply -f -
 apiVersion: v1
@@ -67,6 +94,8 @@ spec:
     app: contoso-website
   type: ClusterIP
 EOF
+
+sleep 10
 
 echo "Creating Ingress..."
 cat <<EOF | oc apply -f -

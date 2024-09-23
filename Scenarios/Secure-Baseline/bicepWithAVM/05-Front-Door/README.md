@@ -20,7 +20,7 @@ This template deploys the following resources:
 The parameters can be set using the cli command `--parameters <parameter-name>=<value>` or in the parameters file `main.bicepparam`. Below you can find a table with all parameters. The required parameters are:
 
 - `internalLoadBalancerResourceId`: The resource ID of the internal load balancer for the ARO cluster.
-- `workerNodesSubnetResourceId`: The resource ID of the subnet where the ARO worker nodes are deployed.
+- `frontDoorSubnetResourceId`: The resource ID of the front door subnet.
 - `originHostName`: The hostname of the ARO cluster's API server or application endpoint.
 
 <details>
@@ -36,7 +36,7 @@ The parameters can be set using the cli command `--parameters <parameter-name>=<
 | `wafPolicyName`                  | string | Name of the Front Door Web Application Firewall (WAF) policy                                                                | Generated using `generateUniqueGlobalName` function                                                     |
 | `privateLinkServiceName`         | string | Name of the Private Link Service                                                                                            | Generated using `generateResourceName` function                                                         |
 | `internalLoadBalancerResourceId` | string | Resource ID of the internal Load Balancer                                                                                   |                                                                                                          |
-| `workerNodesSubnetResourceId`    | string | Resource ID of the Worker Subnet                                                                                            |                                                                                                          |
+| `frontDoorSubnetResourceId`    | string | Resource ID of the Azure Front Door subnet Subnet                                                                                            |                                                                                                          |
 | `frontDoorProfileName`           | string | Name of the Azure Front Door profile                                                                                        | Generated using `generateResourceName` function                                                         |
 | `endpointName`                   | string | Name of the endpoint                                                                                                        | `'endpoint-${substring(uniqueString(resourceGroup().id), 0, 6)}'`                                      |
 | `originGroupName`                | string | Name of the origin group                                                                                                    | `'default-origin-group'`                                                                                |

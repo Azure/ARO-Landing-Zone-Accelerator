@@ -4,4 +4,4 @@ param internalLoadBalancerResourceId = '<internalLoadBalancerResourceId>'
 
 param originHostName = '<originHostName>'
 
-param workerNodesSubnetResourceId = '<workerNodesSubnetResourceId>'
+param frontDoorSubnetResourceId = '<workerNodesSubnetResourceId>'

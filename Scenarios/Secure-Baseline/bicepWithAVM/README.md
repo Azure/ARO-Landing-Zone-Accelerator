@@ -1,8 +1,5 @@
 # ARO Secure Baseline - Bicep with Azure Verified Modules (AVM)
 
-> [!CAUTION]
-> **THIS IMPLEMENTATION IS IN PROGRESS.**
-
 These [Bicep templates](#bicep-templates) are designed to deploy a secure baseline [Azure Red Hat OpenShift (ARO)](https://learn.microsoft.com/azure/openshift/) cluster. This deployment is based on the [Azure Red Hat OpenShift Landing Zone Accelerator](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/app-platform/azure-red-hat-openshift/landing-zone-accelerator) documentation.
 
 A deployment of ARO-hosted workloads typically requires a separation of duties and lifecycle management in different areas, such as prerequisites, the host network, cluster infrastructure, the shared services, and the application workloads themselves. This reference implementation is no different. Also, be aware that our primary purpose is to illustrate the topology and decisions involved in the deployment of an ARO cluster. We feel a "step-by-step" flow will help you learn the pieces of the solution and will give you insight into the relationship between them. Ultimately, lifecycle/SDLC management of your cluster and its dependencies will depend on your situation (organizational structures, standards, processes and tools), and will be implemented as appropriate for your needs.
@@ -13,7 +10,7 @@ This reference architecture is designed to deploy a secure baseline ARO cluster 
 
 ![Architectural diagram for the secure baseline scenario.](./media/aro_lza_avm.png)
 
-This landing zone accelerator provides end-to-end [Bicep templates](#bicep-templates) that are composed mainly of [Azure Verified Modules (AVM)](https://azure.github.io/Azure-Verified-Modules/). AVM is an initiative to consolidate and set the standards for what a good Infrastructure as Code (IaC) module should look like. These templates are divided into six main components that are descibed in the [Core Architecture Components](#core-architecture-components) section below. When you deploy these templates, you will have a secure ARO cluster that is compliant with the ARO landing zone accelerator guidance and best practices. Optionally, you can also deploy a workload known as the Ratings app that is also featured in the [Azure Kubernetes Services Workshop](https://docs.microsoft.com/en-us/learn/modules/aks-workshop/). Adapt, update, and extend these templates to meet your specific requirements. They are designed to be a starting point for your own implementation and to accelerate your deployment of a secure ARO cluster. Review carefully and modify them to meet your own requirements.
+This landing zone accelerator provides end-to-end [Bicep templates](#bicep-templates) that are composed mainly of [Azure Verified Modules (AVM)](https://azure.github.io/Azure-Verified-Modules/). AVM is an initiative to consolidate and set the standards for what a good Infrastructure as Code (IaC) module should look like. These templates are divided into six main components that are descibed in the [Core Architecture Components](#core-architecture-components) section below. When you deploy these templates, you will have a secure ARO cluster that is compliant with the ARO landing zone accelerator guidance and best practices. Optionally, you can also deploy a workload known as `Contoso Website`. Adapt, update, and extend these templates to meet your specific requirements. They are designed to be a starting point for your own implementation and to accelerate your deployment of a secure ARO cluster. Review carefully and modify them to meet your own requirements.
 
 ## Core Architecture Components
 
@@ -118,8 +115,8 @@ This step-by-step guide will help you deploy a secure baseline ARO cluster using
 2. [Spoke](./02-Spoke/README.md)
 3. [Supporting Services](./03-SupportingServices/README.md)
 4. [ARO Cluster](./04-AROCluster/README.md)
-5. [Workload](./05-Workload/README.md)
-6. [Azure Front Door](./06-FrontDoor/README.md)
+5. [Azure Front Door](./05-Front-Door/README.md)
+6. [Workload - Sample App](./06-Sample-App/README.md)
 
 ### Prerequisites
 

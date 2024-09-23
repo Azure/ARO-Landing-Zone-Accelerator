@@ -119,6 +119,19 @@ param jumpboxSubnetAddressPrefix string = '10.1.5.0/24'
 @description('The name of the network security group for the jumpbox subnet. Defaults to the naming convention `<abbreviation-nsg>-<jumpboxSubnetName>`.')
 param jumpboxNetworkSecurityGroupName string = generateResourceNameFromParentResourceName('networkSecurityGroup', jumpboxSubnetName, null, hash)
 
+/* ---------------------------- Front Door Subnet --------------------------- */
+
+@description('The name of the front door subnet. Defaults to the naming convention `<abbreviation-subnet>-frontdoor-<workloadName>-<lower-case-env>-<location-short>[-<hash>]`.')
+@minLength(1)
+@maxLength(80)
+param frontDoorSubnetName string = generateResourceName('subnet', 'frontdoor-${workloadName}', env, location, null, hash)
+
+@description('The CIDR for the front door subnet. Defaults to 10.1.6.0/24')
+param frontDoorSubnetAddressPrefix string = '10.1.6.0/24'
+
+@description('The name of the network security group for the front door subnet. Defaults to the naming convention `<abbreviation-nsg>-<frontDoorSubnetName>`.')
+param frontDoorNetworkSecurityGroupName string = generateResourceNameFromParentResourceName('networkSecurityGroup', frontDoorSubnetName, null, hash)
+
 /* ------------------------------ Other Subnets ----------------------------- */
 
 @description('The configuration for other subnets (Optional).')
@@ -187,6 +200,12 @@ var predefinedSubnets = [
     addressPrefix: jumpboxSubnetAddressPrefix
     networkSecurityGroupResourceId: jumpboxNetworkSecurityGroup.outputs.resourceId
   }
+  {
+    name: frontDoorSubnetName
+    addressPrefix: frontDoorSubnetAddressPrefix
+    privateLinkServiceNetworkPolicies: 'Disabled'
+    networkSecurityGroupResourceId: frontDoorNetworkSecurityGroup.outputs.resourceId
+  }
 ]
 
 var subnets = concat(predefinedSubnets, otherSubnets ?? [])
@@ -254,6 +273,18 @@ module jumpboxNetworkSecurityGroup 'br/public:avm/res/network/network-security-g
   }
 }
 
+module frontDoorNetworkSecurityGroup 'br/public:avm/res/network/network-security-group:0.3.1' = {
+  name: take('${deployment().name}-frontdoor-nsg', 64)
+  scope: resourceGroup
+  params: {
+    name: frontDoorNetworkSecurityGroupName
+    location: location
+    tags: tags
+    enableTelemetry: enableAvmTelemetry
+    diagnosticSettings: diagnosticsSettings
+  }
+}
+
 /* ------------------------------- Route Table ------------------------------ */
 
 module aroRouteTable 'br/public:avm/res/network/route-table:0.2.3' = if (deployAroRouteTable) {
@@ -298,6 +329,9 @@ output privateEndpointsSubnetResourceId string = virtualNetwork.outputs.subnetRe
 
 @description('The resource id of the jumpbox subnet.')
 output jumpboxSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[3]
+
+@description('The resource id of the front door subnet.')
+output frontDoorSubnetResourceId string = virtualNetwork.outputs.subnetResourceIds[4]
 
 @description('The resource id of the private endpoints network security group.')
 output routeTableResourceId string = deployAroRouteTable ? aroRouteTable.outputs.resourceId : ''
