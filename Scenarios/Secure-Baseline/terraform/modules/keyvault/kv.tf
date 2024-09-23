@@ -1,6 +1,7 @@
+
+
 # NOTE: This KV is supporting the VM creation. There are additional KV resources that get created in the supporting stages. These may be consolidated at a later date.
 
-data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "kv" {
   name = var.kv_name

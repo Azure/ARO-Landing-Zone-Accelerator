@@ -1,13 +1,20 @@
+locals {
+  name_prefix = var.cluster_name
+  pull_secret = var.pull_secret_path != null && var.pull_secret_path != "" ? file(var.pull_secret_path) : null
+}
+
+data "azurerm_subscription" "current" {}
+
 data "azurerm_client_config" "current" {}
 
 # Resource Groups
 resource "azurerm_resource_group" "hub" {
-  name     = var.hub_name
+  name     = "${var.hub_name}-rg"
   location = var.location
 }
 
 resource "azurerm_resource_group" "spoke" {
-  name     = var.spoke_name
+  name     = "${var.spoke_name}-rg"
   location = var.location
 }
 
@@ -18,24 +25,24 @@ resource "azurerm_log_analytics_workspace" "la" {
   sku                 = "PerGB2018"
 }
 
+#Vnet module
 module "vnet" {
   source = "./modules/vnet"
 
   hub_name    = var.hub_name
-  hub_rg_name = azurerm_resource_group.hub.name
+  hub_resource_group_name = azurerm_resource_group.hub.name
 
   spoke_name    = var.spoke_name
-  spoke_rg_name = azurerm_resource_group.spoke.name
-
-  diag_name = "${var.hub_name}${random_string.random.result}"
+  spoke_resource_group_name = azurerm_resource_group.spoke.name
 
   location = var.location
-  la_id    = azurerm_log_analytics_workspace.la.id
+  subscription_id = var.subscription_id
+
+
 }
 
-
 module "kv" {
-  source = "./modules/keyvault"
+  source = "./modules/kv"
 
   kv_name             = "${var.hub_name}${random_string.random.result}"
   location            = var.location
@@ -43,6 +50,7 @@ module "kv" {
   vm_admin_username   = random_string.user.result
   vm_admin_password   = random_password.pw.result
 }
+
 
 module "vm" {
   source = "./modules/vm"
@@ -52,7 +60,8 @@ module "vm" {
   bastion_subnet_id   = module.vnet.bastion_subnet_id
   kv_id               = module.kv.kv_id
   vm_subnet_id        = module.vnet.vm_subnet_id
-}
+} 
+
 
 module "supporting" {
   source = "./modules/supporting"
@@ -61,8 +70,8 @@ module "supporting" {
   hub_vnet_id                = module.vnet.hub_vnet_id
   spoke_vnet_id              = module.vnet.spoke_vnet_id
   private_endpoint_subnet_id = module.vnet.private_endpoint_subnet_id
-  spoke_rg_name = azurerm_resource_group.spoke.name
-  hub_rg_name = azurerm_resource_group.hub.name
+  spoke_resource_group_name = azurerm_resource_group.spoke.name
+  hub_resource_group_name = azurerm_resource_group.hub.name
 
   depends_on = [
     module.vnet
@@ -73,8 +82,10 @@ module "serviceprincipal" {
   source = "./modules/serviceprincipal"
 
   aro_spn_name = var.aro_spn_name
-  spoke_rg_name = azurerm_resource_group.spoke.name
-  hub_rg_name = azurerm_resource_group.hub.name
+  spoke_resource_group_name = azurerm_resource_group.spoke.name
+  hub_resource_group_name = azurerm_resource_group.hub.name
+  spoke_vnet_id = module.vnet.spoke_vnet_id
+  spoke_name = module.vnet.spoke_network_name
 
   depends_on = [
     module.vnet
@@ -93,35 +104,10 @@ module "aro" {
   sp_client_id = module.serviceprincipal.sp_client_id
   sp_client_secret = module.serviceprincipal.sp_client_secret
   aro_rp_object_id = var.aro_rp_object_id
-  spoke_rg_name = azurerm_resource_group.spoke.name
-  base_name = var.aro_base_name
+  spoke_resource_group_name = azurerm_resource_group.spoke.name
   domain = var.aro_domain
 
   depends_on = [
     module.serviceprincipal
   ]
-}
-
-module "frontdoor" {
-  source = "./modules/frontdoor"
-
-  location = var.location
-  aro_worker_subnet_id = module.vnet.worker_subnet_id
-  la_id = azurerm_log_analytics_workspace.la.id
-  random = random_string.random.result
-  aro_resource_group_name = module.aro.cluster_resource_group_name
-  spoke_rg_name = azurerm_resource_group.spoke.name
-  
-  depends_on = [
-    module.aro
-  ]
-}
-
-module "containerinsights" {
-  source = "./modules/containerinsights"
-
-  location = azurerm_log_analytics_workspace.la.location
-  workspace_resource_id = azurerm_log_analytics_workspace.la.id
-  workspace_name = azurerm_log_analytics_workspace.la.name
-  spoke_rg_name = azurerm_resource_group.hub.name
 }

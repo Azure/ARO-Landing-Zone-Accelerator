@@ -64,10 +64,23 @@ variable "aro_rp_object_id" {
   type = string
 }
 
-variable "aro_base_name" {
-  type = string
-}
 
 variable "aro_domain" {
   type = string
+  default = "null"
+}
+
+variable "cluster_name" {
+  type        = string
+  default     = "aro-cluster"
+  description = "ARO cluster name"
+}
+
+variable "pull_secret_path" {
+  type        = string
+  default     = null
+  description = <<EOF
+  Pull Secret for the ARO cluster
+  Default null
+  EOF
 }

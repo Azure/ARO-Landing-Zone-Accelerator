@@ -1,10 +1,15 @@
 # General
 
-variable "hub_rg_name" {
+variable "subscription_id" {
+  description = "The subscription ID"
+  type        = string
+}
+
+variable "hub_resource_group_name" {
   type = string
 }
 
-variable "spoke_rg_name" {
+variable "spoke_resource_group_name" {
   type = string
 }
 
@@ -18,9 +23,6 @@ variable "hub_name" {
   type = string
 }
 
-variable "diag_name" {
-  type = string
-}
 
 variable "hub_prefix" {
   type = list
@@ -116,6 +118,6 @@ variable "fw_name" {
 
 # Monitoring
 
-variable "la_id" {
-  type = string
+data "azuread_service_principal" "aro_resource_provisioner" {
+    display_name            = "Azure Red Hat OpenShift RP"
 }
