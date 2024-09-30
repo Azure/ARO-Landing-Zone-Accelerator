@@ -87,7 +87,7 @@ To deploy this hub, follow these steps:
 1. Navigate to the directory containing the Bicep file.
 
     ```bash
-    cd ARO-Landing-Zone-Accelerator/Scenarios/Secure-Baseline/bicepWithAVM/01-Hub/
+    cd ARO-Landing-Zone-Accelerator/Scenarios/Secure-Baseline/bicep/01-Hub/
     ```
 
 1. Deploy the template:

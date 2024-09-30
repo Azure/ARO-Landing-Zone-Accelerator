@@ -436,7 +436,7 @@ module linuxVM 'br/public:avm/res/compute/virtual-machine:0.6.0' = if (deployLin
       enabled: true 
       fileData:[
         {
-          uri: 'https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/bicepWithAVM/vm-scripts/linux/install_packages.sh'
+          uri: 'https://raw.githubusercontent.com/Azure/ARO-Landing-Zone-Accelerator/main/Scenarios/Secure-Baseline/bicep/vm-scripts/linux/install_packages.sh'
         }
       ]
     }

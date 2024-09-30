@@ -14,7 +14,7 @@ The deployment of this solution can be done individually through various means. 
 
 * [Terraform](./terraform/README.md) 
 * [Bicep](./bicep/README.md) (Experimental, still in development)
-* [Bicep with Azure Verified Modules (AVM)](./bicepWithAVM/README.md)
+* [Bicep with Azure Verified Modules (AVM)](./bicep/README.md)
 
 Below is the architecture of this scenario:
 ![Architectural diagram for the secure baseline scenario.](../../media/aro_landing_zone_Architecture.png)
@@ -30,6 +30,6 @@ For more information about the architecture, please check out the [ARO Landing Z
 
 Pick one of these options below
 
-:arrow_forward: [Bicep with AVM](./bicepWithAVM/README.md)
+:arrow_forward: [Bicep with AVM](./bicep/README.md)
 
 :arrow_forward: [Terraform](./terraform/README.md)
