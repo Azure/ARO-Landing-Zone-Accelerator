@@ -343,6 +343,18 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
   }
 } 
 
+/* ------------------------------- Telemetry ------------------------------- */
+@description('Enable usage and telemetry feedback to Microsoft.')
+var telemetryId = '1adc75a7-5143-4889-b19b-46b2d976020c-${location}'
+module telemetry './telemetry.bicep' = {
+  scope: resourceGroup
+  name: 'telemetry'
+  params: {
+    enableTelemetry: enableAvmTelemetry
+    telemetryId: telemetryId
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                   OUTPUTS                                  */
 /* -------------------------------------------------------------------------- */
