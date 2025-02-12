@@ -1,5 +1,3 @@
-## ARO Cluster
-
 locals {
     domain = var.domain != null ? var.domain : random_string.domain.result
 }
@@ -11,7 +9,12 @@ resource "random_string" "domain" {
   numeric          = false
 }
 
-# See docs at https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redhat_openshift_cluster
+
+resource "azuread_application" "aro" {
+  display_name = "aro"
+  owners = [data.azuread_client_config.current.object_id]
+}
+
 resource "azurerm_role_assignment" "resource_provider_assignment" {
   count                = length(var.roles)
   scope                = data.azurerm_subscription.current.id
@@ -19,10 +22,11 @@ resource "azurerm_role_assignment" "resource_provider_assignment" {
   principal_id         = var.aro_rp_object_id
 }
 
+# See docs at https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redhat_openshift_cluster
 resource "azurerm_redhat_openshift_cluster" "cluster" {
-  name                = var.cluster_name
+  name                = var.base_name
   location            = var.location
-  resource_group_name = var.spoke_resource_group_name
+  resource_group_name = var.spoke_rg_name
   tags                = var.tags
 
 
@@ -70,4 +74,3 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
     azurerm_role_assignment.resource_provider_assignment
   ]
 }
-

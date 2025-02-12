@@ -1,23 +1,29 @@
-module "hub_network" {
-  source              = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version             = "~> 0.2"
-  location            = var.location
-  resource_group_name = var.hub_resource_group_name
-  address_space       = var.hub_prefix
-  name                = var.hub_name
-  // Optional: Define subnets
-  subnets = {
-    "fw" = {
-      name             = "AzureFirewallSubnet"
-      address_prefixes = var.fw_subnet_prefix
-    }
-    "bastion" = {
-      name             = "AzureBastionSubnet"
-      address_prefixes = var.bastion_subnet_prefix
-    }
-    "vm" = {
-     name              = var.vm_subnet_name
-      address_prefixes = var.vm_subnet_prefix 
-    }
-  }
+resource "azurerm_virtual_network" "hub" {
+  name = var.hub_name
+  location = var.location
+  resource_group_name = var.hub_rg_name
+
+  address_space = var.hub_prefix
+
+}
+
+resource "azurerm_subnet" "fw" {
+  name = "AzureFirewallSubnet"
+  resource_group_name = var.hub_rg_name
+  virtual_network_name = azurerm_virtual_network.hub.name
+  address_prefixes = var.fw_subnet_prefix
+}
+
+resource "azurerm_subnet" "bastion" {
+  name = "AzureBastionSubnet"
+  resource_group_name = var.hub_rg_name
+  virtual_network_name = azurerm_virtual_network.hub.name
+  address_prefixes = var.bastion_subnet_prefix
+}
+
+resource "azurerm_subnet" "vm" {
+  name = var.vm_subnet_name
+  resource_group_name = var.hub_rg_name
+  virtual_network_name = azurerm_virtual_network.hub.name
+  address_prefixes = var.vm_subnet_prefix
 }

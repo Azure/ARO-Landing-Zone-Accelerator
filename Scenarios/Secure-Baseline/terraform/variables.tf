@@ -64,12 +64,14 @@ variable "aro_rp_object_id" {
   type = string
 }
 
+variable "aro_base_name" {
+  type = string
+}
 
 variable "aro_domain" {
   type = string
   default = "null"
 }
-
 variable "cluster_name" {
   type        = string
   default     = "aro-cluster"

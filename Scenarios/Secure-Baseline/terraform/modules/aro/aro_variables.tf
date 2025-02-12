@@ -1,8 +1,54 @@
-
-
 data "azuread_client_config" "current" {}
 
 data "azurerm_subscription" "current" {}
+
+data "azurerm_resource_group" "spoke" {
+  name = var.spoke_rg_name
+}
+
+variable "base_name" {
+  type = string
+  default = "aro"
+  description = "ARO cluster name"
+}
+
+variable "spoke_rg_name" {
+  type = string
+  default = "spoke-aro"
+}
+
+variable "spoke_vnet_id" {
+  description = "The ID of the spoke VNet"
+  type        = string
+}
+
+variable "master_subnet_id" {
+  type = string
+  description = "master subnet"
+}
+
+variable "worker_subnet_id" {
+  type = string
+  description = "worker subnet"
+}
+
+variable "location" {
+  type        = string
+  default     = "eastus"
+  description = "Azure region"
+}
+
+variable "sp_client_id" {
+  description = "Service principal client id"
+}
+
+variable "sp_client_secret" {
+  description = "Service principal secret"
+}
+
+variable "aro_rp_object_id" {
+  type = string
+}
 
 variable "roles" {
   description = "Roles to be assigned to the Principal"
@@ -17,16 +63,6 @@ variable "roles" {
   ]
 }
 
-variable "aro_rp_object_id" {
-  type = string
-}
-
-variable "cluster_name" {
-  type        = string
-  default     = "nddemo"
-  description = "ARO cluster name"
-}
-
 variable "pull_secret_path" {
   type        = string
   default     = null
@@ -36,41 +72,6 @@ variable "pull_secret_path" {
   EOF
 }
 
-variable "location" {
-  type        = string
-  default     = "eastus"
-  description = "Azure region"
-}
-
-variable "spoke_vnet_id" {
-  description = "The ID of the spoke VNet"
-  type        = string
-}
-
-variable "master_subnet_id" {
-  description = "master subnet"
-
-}
-
-variable "worker_subnet_id" {
-  description = "worker subnet"
-  
-}
-
-variable "sp_client_id" {
-  description = "Service principal client id"
-
-}
-
-variable "sp_client_secret" {
-  description = "Service principal secret"
-
-}
-
-variable "spoke_resource_group_name" {
-  description = "spoke_resource_group_name"
-
-}
 variable "domain" {
   type        = string
   default = null
@@ -94,9 +95,9 @@ variable "aro_version" {
   type        = string
   description = <<EOF
   ARO version
-  Default "4.15.27"
+  Default "4.15.35"
   EOF
-  default     = "4.15.27"
+  default     = "4.15.35"
 }
 
 variable "main_vm_size" {
@@ -159,7 +160,7 @@ variable "outbound_type" {
 
 variable "acr_private" {
   type        = bool
-  default     = false
+  default     = true
   description = <<EOF
   Deploy ACR for Private ARO clusters.
   Default "false"
