@@ -2,6 +2,10 @@ variable "location" {
   type = string
 }
 
+variable "ingress_ip" {
+  type = string
+}
+
 variable "afd_name" {
   type = string
   default = "aroafd"

@@ -78,7 +78,7 @@ module "supporting" {
 
 module "serviceprincipal" {
   source = "./modules/serviceprincipal"
-
+  spoke_name    = var.spoke_name
   aro_spn_name = var.aro_spn_name
   spoke_rg_name = azurerm_resource_group.spoke.name
   hub_rg_name = azurerm_resource_group.hub.name
@@ -116,8 +116,9 @@ module "frontdoor" {
   aro_worker_subnet_id = module.vnet.worker_subnet_id
   la_id = azurerm_log_analytics_workspace.la.id
   random = random_string.random.result
-  aro_resource_group_name = module.aro.cluster_resource_group_name
+  aro_resource_group_name = module.aro.aro_resource_group_name
   spoke_rg_name = azurerm_resource_group.spoke.name
+  ingress_ip = module.aro.ingress_ip
   
   depends_on = [
     module.aro
