@@ -1,14 +1,14 @@
+
 data "azurerm_client_config" "current" {}
 
-data "external" "aro_ilb_name" {
-  program = [
-    "az", "network", "lb", "list", "-g", var.aro_resource_group_name, "--query", "[0].{name:name}", "-o", "json"
-  ]
+data "azurerm_resources" "aro-internal-lb" {
+  resource_group_name = var.aro_resource_group_name
+  type = "Microsoft.Network/loadBalancers"
 }
 
 data "azurerm_lb" "aro_ilb" {
-  name = data.external.aro_ilb_name.result.name
-  resource_group_name = var.aro_resource_group_name
+  name = data.azurerm_resources.aro-internal-lb.resources[0].name
+  resource_group_name = data.azurerm_resources.aro-internal-lb.resources[0].resource_group_name
 }
 
 resource "azurerm_private_link_service" "pl" {
