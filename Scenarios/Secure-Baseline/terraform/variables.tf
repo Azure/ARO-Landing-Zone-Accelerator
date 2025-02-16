@@ -78,7 +78,7 @@ variable "cluster_name" {
   description = "ARO cluster name"
 }
 
-variable "pull_secret_path" {
+variable "rh_pull_secret" {
   type        = string
   default     = null
   description = <<EOF

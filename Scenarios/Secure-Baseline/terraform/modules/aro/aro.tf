@@ -33,7 +33,7 @@ resource "azurerm_redhat_openshift_cluster" "cluster" {
 
   cluster_profile {
     domain      = var.domain
-    pull_secret = var.pull_secret_path
+    pull_secret = var.rh_pull_secret
     version     = var.aro_version
   }
 

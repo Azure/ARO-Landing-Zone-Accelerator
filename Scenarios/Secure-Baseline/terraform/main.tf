@@ -1,21 +1,15 @@
-locals {
-  name_prefix = var.cluster_name
-  pull_secret = var.pull_secret_path != null && var.pull_secret_path != "" ? file(var.pull_secret_path) : null
-}
-
 data "azurerm_subscription" "current" {}
-
 data "azurerm_client_config" "current" {}
 
 # Resource Groups
 resource "azurerm_resource_group" "hub" {
-  name     = var.hub_name
-  location = var.location
+  name                = var.hub_name
+  location            = var.location
 }
 
 resource "azurerm_resource_group" "spoke" {
-  name     = var.spoke_name
-  location = var.location
+  name                = var.spoke_name
+  location            = var.location
 }
 
 resource "azurerm_log_analytics_workspace" "la" {
@@ -28,18 +22,14 @@ resource "azurerm_log_analytics_workspace" "la" {
 module "vnet" {
   source = "./modules/vnet"
 
-  hub_name    = var.hub_name
-  hub_rg_name = azurerm_resource_group.hub.name
-
-  spoke_name    = var.spoke_name
-  spoke_rg_name = azurerm_resource_group.spoke.name
-
-  diag_name = "${var.hub_name}${random_string.random.result}"
-
-  location = var.location
-  la_id    = azurerm_log_analytics_workspace.la.id
+  hub_name            = var.hub_name
+  hub_rg_name         = azurerm_resource_group.hub.name
+  spoke_name          = var.spoke_name
+  spoke_rg_name       = azurerm_resource_group.spoke.name
+  diag_name           = "${var.hub_name}${random_string.random.result}"
+  location            = var.location
+  la_id               = azurerm_log_analytics_workspace.la.id
 }
-
 
 module "kv" {
   source = "./modules/keyvault"
@@ -68,8 +58,8 @@ module "supporting" {
   hub_vnet_id                = module.vnet.hub_vnet_id
   spoke_vnet_id              = module.vnet.spoke_vnet_id
   private_endpoint_subnet_id = module.vnet.private_endpoint_subnet_id
-  spoke_rg_name = azurerm_resource_group.spoke.name
-  hub_rg_name = azurerm_resource_group.hub.name
+  spoke_rg_name              = azurerm_resource_group.spoke.name
+  hub_rg_name                = azurerm_resource_group.hub.name
 
   depends_on = [
     module.vnet
@@ -92,11 +82,10 @@ module "aro" {
   source = "./modules/aro"
 
   location = var.location
-
   spoke_vnet_id = module.vnet.spoke_vnet_id
   master_subnet_id = module.vnet.master_subnet_id
   worker_subnet_id = module.vnet.worker_subnet_id
-
+  rh_pull_secret = var.rh_pull_secret
   sp_client_id = module.serviceprincipal.sp_client_id
   sp_client_secret = module.serviceprincipal.sp_client_secret
   aro_rp_object_id = var.aro_rp_object_id
