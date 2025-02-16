@@ -51,17 +51,6 @@ if ($VSCodeInstallResult -eq 0) {
 cd $Downloaddir
 Log("Cleaning up VSCode Setup")
 Remove-Item .\VSCodeSetup.exe
-Log("Setting up VSCode keybindings for F8 shurtcut")
-$keybindings = '
-// Place your key bindings in this file to override the defaultsauto[]
-[
-    {
-        "key": "f8",
-        "command": "workbench.action.terminal.runSelectedText"
-    }
-]
-'
-$keybindings | Out-File "$env:APPDATA\Code\User\keybindings.json" -Encoding utf8
 
 Log("#############################")
 Log("#Install Azure CLI")

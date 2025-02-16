@@ -1,50 +1,39 @@
 # Terraform Deployment
 
+
+A deployment of ARO-hosted workloads typically requires a separation of duties and lifecycle management in different areas, such as prerequisites, the host network, cluster infrastructure, the shared services, and the application workloads themselves. This reference implementation is no different.
+
+There are various ways to secure your ARO cluster. From a network security perspective, these can be classified into securing the control plane and securing the workload. When it comes to securing the control plane, one of the best ways to do that is by using a private cluster, where the control plane or API server has internal IP addresses that are defined in the [RFC1918 - Address Allocation for Private Internet](https://datatracker.ietf.org/doc/html/rfc1918) document. By using a private cluster, you can ensure network traffic between your API server and your node pools remains on the private network only.
+
+This reference architecture is designed to deploy a secure baseline ARO cluster following the [Hub and Spoke network topology](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/hub-spoke-network-topology). The complete architecture is illustrated in the diagram below:
+
+![Architectural diagram for the secure baseline scenario.](./media/aro_landing_zone_Architecture.png)
+
+## Core Architecture Components
+
 This Terraform deployment will deploy a secure baseline Azure RedHat Openshift (ARO) cluster. This deployment is based on the [Azure Red Hat OpenShift Landing Zone Accelerator](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/app-platform/azure-red-hat-openshift/landing-zone-accelerator) documentation. There is a [single Terraform deployment](main.tf) that will deploy the following:
 
 - Hub and Spoke Network Topology
 - Hub resource group with the following resources:
-  - [Log Analytics Workspace](main.tf)
-  - [Azure Firewall](modules/vnet/firewall.tf)
-  - [Virtual Network](modules/vnet/hub.tf)
-  - [Key Vault](modules/keyvault/keyvault.tf)
-  - [UDR](modules/vnet/udr.tf)
-  - [Bastion Host and 2 jumpboxes](modules/vm/vm.tf)
+  - [Log Analytics Workspace](main.tf) used to collect log data centrally.
+  - [Azure Firewall](modules/vnet/firewall.tf) used to protect the hub virtual network and its peered networks from unwanted traffic.
+  - [Virtual Network](modules/vnet/hub.tf) Hub virtual network: the central point of connectivity to the on-premises network and the internet
+  - [Key Vault](modules/keyvault/keyvault.tf) used to store users credentials to access management VMs
+  - [Bastion Host and 2 jumpboxes](modules/vm/vm.tf) host used to provide secure RDP and SSH connectivity to the virtual machines in the spoke virtual networks
 - Spoke resource group
-  - [Virtual Network](modules/vnet/spoke.tf)
+  - [Virtual Network](modules/vnet/spoke.tf) the virtual network where the ARO cluster is deployed
+  - [UDR](modules/vnet/udr.tf) is used to redirect all egress traffic from the spoke to the azure firewall in the hub.
+  - [Azure RedHat Openshift Cluster](modules/aro/aro.tf) fully managed Openshift cluster that is monitored and operated jointly by Microsoft and Red Hat.
+  - [Front Door](modules/supporting/frontdoor.tf) is used to route external traffic to workloads deployed on the ARO cluster.
+  - [Service Principal](modules/serviceprincipal/serviceprincipal.tf) with `Contributor` role on both Hub and Spoke virtual networks
   - Supporting Services:
-    - [Azure Container Registry](modules/supporting/acr.tf)
-    - [Key Vault](modules/supporting/sup_kv.tf)
-    - [Cosmos DB](modules/supporting/cosmos.tf)
-    - [Azure RedHat Openshift Cluster](modules/aro/aro.tf)
-    - [Front Door](modules/supporting/frontdoor.tf)
-- [Service Principal](modules/serviceprincipal/serviceprincipal.tf) with `Contributor` role on both Hub and Spoke virtual networks
-
-### Log Analytics Workspace
-
-Log Analytics Workspace is deployed to the hub resource group. It is used to collect logs from the spoke and the hub. If you prefer to use a different Log Analytics Workspace for your ARO workloads, you can deploy one in the spoke and update the terraform templates to ensure that the spoke resources use it.
-
-### UDR
-
-UDR should be implemented in the spoke network. This is a temporary implementation and will be moved to the spoke network in a future release.
-
-The service principal should not have the contributor role on the hub virtual network, only on the spoke virtual network. This is a temporary implementation due to the presence of UDR in the HUB resource group.
-
-### Hub Key Vault
-
-The hub key vault provides public access and is deployed to store the credentials of the jumpboxes.
-
-### Front Door
-
-Front door use the private IP address of the internal load balancer of the ARO cluster. This internal load balancer is part of the control planed of the ARO cluster and is managed by Azure.
-
-## Terraform State Management
-
-In this example, state is to be stored in an Azure Storage Account. The storage account is not created as part of the terraform templates but it is the first step of the deployment. All deployments reference this storage account to either store state or reference variables from other parts of the deployment however you may choose to use other tools for state management, like Terraform Cloud after making the necessary code changes.
-
+    - [Azure Container Registry](modules/supporting/acr.tf) used to store and manage container images for the ARO cluster.
+    - [Key Vault](modules/supporting/sup_kv.tf) used to store and manage sensitive information such as secrets, keys, and certificates.
 
 
 ## Prerequisites
+
+All commands will be using bash - if you are using a Windows machine, you can either use [Git Bash](https://git-scm.com/downloads) or [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) (prefered).
 
 1. Install the following component:
 
@@ -71,192 +60,144 @@ In this example, state is to be stored in an Azure Storage Account. The storage 
     az account set --subscription <name-of-subscription>
     ```
 
-1. Register the RedHatOpenShift provider
+1. Register the following providers
 
     ```bash
-    az provider register --namespace Microsoft.RedHatOpenShift --wait
+    az provider register --namespace 'Microsoft.RedHatOpenShift' --wait
+    az provider register --namespace 'Microsoft.Compute' --wait
+    az provider register --namespace 'Microsoft.Storage' --wait
+    az provider register --namespace 'Microsoft.Authorization' --wait
     ```
 
-1. Identify the resource provider id for ARO. You'll need it later.
+     
+## Terraform State Management
 
-    - `Bash`:
+In this example, state is to be stored in an Azure Storage Account. The storage account is not created as part of the terraform templates but it is the first step of the deployment. All deployments reference this storage account to either store state or reference variables from other parts of the deployment however you may choose to use other tools for state management, like Terraform Cloud after making the necessary code changes.
 
-        ```bash
-        ARO_RP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].id" -o tsv)
-        echo $ARO_RP_OBJECT_ID
-        ```
+1. Define some variables:
 
-    - `PowerShell`:
+    ```bash
+    REGION=<REGION>
+    STORAGEACCOUNTNAME=<UNIQUENAME>
+    CONTAINERNAME=arolzaterraform
+    TFSTATE_RG=rg-aro-lza-terraform
+    ```
 
-        ```powershell
-        $ARO_RP_OBJECT_ID = az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].id" -o tsv
-        Write-Output $ARO_RP_OBJECT_ID
-        ```
+    Where `<REGION>` is the region where you want to deploy the storage account and `<UNIQUENAME>` is a unique name for the storage account.
 
-1. Create the storage account for state management
+1. Create the resource group:
 
-    1. Define some variables
+    ```bash
+    az group create --name $TFSTATE_RG --location $REGION
+    ```
 
-        - `Bash`:
+1. Create the storage account:
 
-            ```bash
-            REGION=<REGION>
-            STORAGEACCOUNTNAME=<UNIQUENAME>
-            CONTAINERNAME=arolzaterraform
-            TFSTATE_RG=rg-aro-lza-terraform
-            ```
+    ```bash
+    az storage account create --name $STORAGEACCOUNTNAME --resource-group $TFSTATE_RG --location $REGION --sku Standard_GRS
+    ```
 
-        - `PowerShell`:
+1. Create the storage container within the storage account:
 
-            ```powershell
-            $REGION="<REGION>"
-            $STORAGEACCOUNTNAME="<UNIQUENAME>"
-            $CONTAINERNAME="arolzaterraform"
-            $TFSTATE_RG="rg-aro-lza-terraform"
-            ```
-        Where `<REGION>` is the region where you want to deploy the storage account and `<UNIQUENAME>` is a unique name for the storage account.
+    ```bash
+    az storage container create --name $CONTAINERNAME --account-name $STORAGEACCOUNTNAME --resource-group $TFSTATE_RG
+    ```
 
-    1. Create the resource group
-
-        ```bash
-        az group create --name $TFSTATE_RG --location $REGION
-        ```
-    
-    1. Create the storage account
-
-        ```bash
-        az storage account create --name $STORAGEACCOUNTNAME --resource-group $TFSTATE_RG --location $REGION --sku Standard_GRS
-        ```
-
-    1. Create the storage container within the storage account
-
-        ```bash
-        az storage container create --name $CONTAINERNAME --account-name $STORAGEACCOUNTNAME --resource-group $TFSTATE_RG
-        ```
-
-1. Review carrefully the implementation of the LZA and all the parameters before deploying the solution.
-
-    > **Important**
-    >
-    >The service principal required for ARO with a `Contributor` role on the spoke virtual network is created as part of this deployment. If you don't have the rights to create it with the deployment. Create it before running the deployment and pass the object id as a parameter to the deployment. You will need to update the terraform templates to use the object id instead of creating the service principal.
-    >
-    > This is true for any resource. In the future the LZA will provide more flexibility to use existing resources. Even with using existing resources, ensure to review carefully the parameters and the implementation of the LZA before deploying it to guarantee that it is aligned with your requirements and policies.
-    >
 
 ## Deployment steps
 
-To deploy the landing zone, follow the steps below.
+Review carefully the implementation of the LZA and all the parameters before deploying the solution.
 
-> **Note**
+> **Important**
 >
-> For Powershell, replace `\` with ``` ` ```.
+> The service principal required for ARO with a `Contributor` role on the spoke virtual network is created as part of this deployment. If you don't have the rights to create it with the deployment, create it before running the deployment and pass the object ID as a parameter to the deployment. You will need to update the Terraform templates to use the object ID instead of creating the service principal.
+>
+> This is true for any resource. In the future, the LZA will provide more flexibility to use existing resources. Even when using existing resources, ensure to review carefully the parameters and the implementation of the LZA before deploying it to guarantee that it is aligned with your requirements and policies.
 >
 
-1. Initialize Terraform
+1. Review and configure terraform variable in variables.tf file.
 
-    ```bash
-    terraform init -backend-config="resource_group_name=$TFSTATE_RG" -backend-config="storage_account_name=$STORAGEACCOUNTNAME" -backend-config="container_name=$CONTAINERNAME"
-    ```
-
-1. Set the following parameters:
-
-    - `Bash`:
-        
-        ```bash
-        TENANT_ID=$(az account show --query tenantId -o tsv)
-        SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-        LOCATION=<YOUR_REGION>
-        ARO_BASE_NAME=<YOUR_ARO_CLUSTER_BASENAME>
-        ARO_DOMAIN=<YOU_ARO_UNIQUE_DNS_NAME>
-        ```
-
-    - `PowerShell`:
-
-        ```powershell
-        $TENANT_ID = az account show --query tenantId -o tsv
-        $SUBSCRIPTION_ID = az account show --query id -o tsv
-        $LOCATION="<YOUR_REGION>"
-        $ARO_BASE_NAME="<YOUR_ARO_CLUSTER_BASENAME>"
-        $ARO_DOMAIN="<YOU_ARO_UNIQUE_DNS_NAME>"
-        ```
-
-    Where `<YOUR_REGION>` is the region where you wamt to deploy the landing zone, `<YOUR_ARO_CLUSTER_BASENAME>` is the base name for the ARO cluster and `<YOU_ARO_UNIQUE_DNS_NAME>` is the unique DNS name for the ARO cluster.
-
-    > **Note**
-    >
-    > You can also set the parameters in [variables.tf](variables.tf) file. If you are adding the parameters in the variables file, you need to remove all the `-var ...=$...` from the 2 next steps.
-    >
+The following table provide a list of all variables available.
+You must provide a value to all variables set as required, you can chose to customize or keep default value for the other variables.
 
     <details>
     <summary>Click to see the full list of parameters.</summary>
 
-    | Name              | Required | Default Value | Description       |
-    | ----------------- | -------- | ------------- | ----------------- |
-    | tenant_id         |    x     |               | The tenant ID     |
-    | subscription_id   |    x     |               | The subscription ID |
-    | location          |          | "eastus"      | The location of the resources |
-    | hub_name          |          | "hub-aro"     | The name of the hub |
-    | spoke_name        |          | "spoke-aro"   | The name of the spoke |
-    | aro_spn_name      |          | "aro-lza-sp"  | The name of the ARO service principal |
-    | aro_rp_object_id  |    x     |               | The object ID of the ARO resource provider |
-    | aro_base_name     |    x     |               | The base name for ARO resources |
-    | aro_domain        |    x     |               | The domain for ARO resources |
+    | Name                | Required | Default Value | Description                                      |
+    | ------------------- | -------- | ------------- | ------------------------------------------------ |
+    | tenant_id           |    x     |               | The Entra tenant ID                              |
+    | subscription_id     |    x     |               | The Azure subscription ID                        |
+    | location            |          | "eastasia"    | The location of the resources                    |
+    | hub_name            |          | "hub-lz-aro"  | The name of the hub                              |
+    | spoke_name          |          |"spoke-lz-aro" | The name of the spoke                            |
+    | aro_spn_name        |          | "aro-lz-sp"   | The name of the ARO service principal            |
+    | aro_rp_object_id    |    x     |               | The object ID of the ARO resource provider       |
+    | aro_base_name       |          | "aro-cluster" | The ARO cluster name                             |
+    | aro_domain          |    x     |               | The domain for ARO resources - must be unique    |
+    | vm_admin_username   |          | "arolzadmin"  | The admin username for the virtual machines      |
+    | rh_pull_secret      |          |    null       | RH pull secret to enable operators and registries|
 
     </details>
+
+you can retrieve your tenantid, subscriptionid and aro resource provider id with the following commands:
+
+```bash
+    ARO_RP_OBJECT_ID=$(az ad sp list --display-name "Azure Red Hat OpenShift RP" --query "[0].id" -o tsv)
+    echo $ARO_RP_OBJECT_ID
+
+    TENANT_ID=$(az account show --query tenantId -o tsv)
+    echo $TENANT_ID
+
+    SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+    echo $SUBSCRIPTION_ID
+```
+
+If you wish to customize the ARO Cluster specs such as VM Size for control plane and worker nodes or the number of nodes - you will need to edit the [variable.tf](./modules/aro/aro_variables.tf) in the aro module and change the values for aro_version, main_vm_size, worker_vm_size and worker_node_count.
+
+> **Important**
+>
+> Updating the rh_pull_secret value for an existing cluster will redeploy the ARO cluster.
+>
+
+1. Initialize Terraform
+
+ Variables should already been set from the account storage creation step.
+
+```bash
+terraform init -backend-config="resource_group_name=$TFSTATE_RG" -backend-config="storage_account_name=$STORAGEACCOUNTNAME" -backend-config="container_name=$CONTAINERNAME"
+```
 
 1. Validate the configuration
 
     ```bash
-    terraform plan \
-      -var tenant_id= $TENANT_ID \
-      -var subscription_id=$SUBSCRIPTION_ID \
-      -var location=$LOCATION \
-      -var aro_rp_object_id= $ARO_RP_OBJECT_ID \
-      -var aro_base_name=$ARO_BASE_NAME \
-      -var aro_domain=$ARO_DOMAIN
+    terraform plan
     ```
 
     
-1. Deploy the landing zone
+2. Deploy the landing zone
 
     ```bash
-    terraform apply \
-      --auto-approve \
-      -var tenant_id= $TENANT_ID \
-      -var subscription_id=$SUBSCRIPTION_ID \
-      -var location=$LOCATION \
-      -var aro_rp_object_id= $ARO_RP_OBJECT_ID \
-      -var aro_base_name=$ARO_BASE_NAME \
-      -var aro_domain=$ARO_DOMAIN
+    terraform apply --auto-approve
     ```
 
 ## Post Deployment Tasks
 
-There are a few tasks that need to be completed after the deployment. For some tasks there are scripts to be run from one of the jumpbox. The jumpboxes are created during the deployment (read how to get credentials below).
-
-These are the post deployment tasks:
-
-* [AAD Integration](./post_deployment/aad-RBAC)
-* [Container Insights Integration](./post_deployment/containerinsights)
-* [Application Deployment](./post_deployment/appdeployment)
-* Disable `kubeadmin` login
-
 ### Retrieve Jumpbox and ARO credentials
 
-To retrieve the credentials for the jumpboxes, you need to be Secret Officer on the hub key vault. Then you can execute the following commands:
+To retrieve the credentials for the jumpboxes, you need to be Secret Officer on the hub key vault. Then you can execute the following command to retrieve the password for default user "arolzadmin":
 
 ```bash
-az keyvault secret show --name "vmadminusername" --vault-name "<your-unique-keyvault-name>" --query "value"
 az keyvault secret show --name "vmadminpassword" --vault-name "<your-unique-keyvault-name>" --query "value"
 ```
 
-Where `<your-unique-keyvault-name>` is the name of the key vault created during the deployment.
+Where `<your-unique-keyvault-name>` is the name of the key vault created during the deployment in the hub resource group.
 
 > **Note**
 >
 > * The credentials are the same for the Linux and the Windows jumpboxes.
 > * Windows jumpbox can be used to access Azure portal and RedHat Openshift portal using a remote desktop client.
 > * For CI/CD and CLI commands, either use the Linux jumpbox or the Windows jumpbox.
+> * both jumpboxes will have tools preinstalled: azure cli, kubectl, oc, helm. The windows jumpbox will also have VSCode and Git installed.
 >
 
 ## Cleanup

@@ -37,3 +37,7 @@ variable "jumpbox_size" {
 variable "kv_id" {
   type = string
 }
+
+variable "vm_admin_username" {
+  type = string
+}

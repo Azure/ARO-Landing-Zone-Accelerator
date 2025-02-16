@@ -1,9 +1,3 @@
-
-data "azurerm_key_vault_secret" "admin_username" {
-  name = "vmadminusername"
-  key_vault_id = var.kv_id
-}
-
 data "azurerm_key_vault_secret" "admin_password" {
   name = "vmadminpassword"
   key_vault_id = var.kv_id
@@ -46,7 +40,7 @@ resource "azurerm_linux_virtual_machine" "jumpbox" {
   resource_group_name   = var.resource_group_name
   location              = var.location
   size                  = var.jumpbox_size
-  admin_username        = data.azurerm_key_vault_secret.admin_username.value
+  admin_username        = var.vm_admin_username
   admin_password        = data.azurerm_key_vault_secret.admin_password.value
   network_interface_ids = [azurerm_network_interface.jumpbox.id]
   disable_password_authentication = false
@@ -103,7 +97,7 @@ resource "azurerm_windows_virtual_machine" "Jumpbox2" {
   resource_group_name = var.resource_group_name
   location = var.location
   size = var.jumpbox_size
-  admin_username = data.azurerm_key_vault_secret.admin_username.value
+  admin_username = var.vm_admin_username
   admin_password = data.azurerm_key_vault_secret.admin_password.value
   network_interface_ids = [
     azurerm_network_interface.Jumpbox2.id

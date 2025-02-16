@@ -49,6 +49,7 @@ module "vm" {
   bastion_subnet_id   = module.vnet.bastion_subnet_id
   kv_id               = module.kv.kv_id
   vm_subnet_id        = module.vnet.vm_subnet_id
+  vm_admin_username   = var.vm_admin_username
 }
 
 module "supporting" {
