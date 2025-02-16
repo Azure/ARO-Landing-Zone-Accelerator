@@ -3,13 +3,13 @@
 variable "tenant_id" {
   type        = string
   description = "The Tenant ID for the Azure subscription"
-  default     = "value"
+  default     = "yourvalue"
 }
 
 variable "subscription_id" {
   type        = string
   description = "The Subscription ID for the Azure subscription"
-  default     = "value"
+  default     = "yourvalue"
 }
 
 variable "location" {
@@ -70,7 +70,7 @@ resource "random_string" "random" {
 
 variable "aro_rp_object_id" {
   type        = string
-  default     = "value"
+  default     = "yourvalue"
   description = "The object ID of the ARO resource provider"
 }
 
@@ -82,7 +82,7 @@ variable "aro_base_name" {
 
 variable "aro_domain" {
   type        = string
-  default     = "value"
+  default     = "yourvalue"
   description = "The domain name for the ARO cluster - must be unique"
 }
 

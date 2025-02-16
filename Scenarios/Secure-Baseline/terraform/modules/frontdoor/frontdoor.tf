@@ -45,7 +45,7 @@ resource "azurerm_cdn_frontdoor_origin_group" "aro" {
     interval_in_seconds = 100
     path                = "/"
     protocol            = "Http"
-    request_type        = "HEAD"
+    request_type        = "GET"
   }
 
   load_balancing {}
@@ -66,6 +66,8 @@ resource "azurerm_cdn_frontdoor_origin" "aro" {
     location               = var.location
     private_link_target_id = azurerm_private_link_service.pl.id
   }
+
+  depends_on = [ azurerm_cdn_frontdoor_origin_group.aro ]
 }
 
 
@@ -89,5 +91,10 @@ resource "azurerm_monitor_diagnostic_setting" "afd_diag" {
   metric {
     category = "AllMetrics"
   }
+
+  depends_on = [ azurerm_cdn_frontdoor_endpoint.fd,
+                azurerm_cdn_frontdoor_origin_group.aro, 
+                azurerm_cdn_frontdoor_origin.aro 
+                ]  
 }
 

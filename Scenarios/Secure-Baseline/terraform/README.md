@@ -29,6 +29,7 @@ This Terraform deployment will deploy a secure baseline Azure RedHat Openshift (
   - Supporting Services:
     - [Azure Container Registry](modules/supporting/acr.tf) used to store and manage container images for the ARO cluster.
     - [Key Vault](modules/supporting/sup_kv.tf) used to store and manage sensitive information such as secrets, keys, and certificates.
+    - Private endpoints and Private link service will also be deployed in order to provider private connectivity to Key Vault, Azure Container Registry and Azure Storage.
 
 
 ## Prerequisites
@@ -119,25 +120,22 @@ Review carefully the implementation of the LZA and all the parameters before dep
 
 The following table provide a list of all variables available.
 You must provide a value to all variables set as required, you can chose to customize or keep default value for the other variables.
+   
 
-    <details>
-    <summary>Click to see the full list of parameters.</summary>
+| Name | Required | Default Value | Description |
+|------|----------|---------------|-------------|
+| tenant_id | ✓ | | The Entra tenant ID |
+| subscription_id | ✓ | | The Azure subscription ID |
+| location | | eastasia | The location of the resources |
+| hub_name | | hub-lz-aro | The name of the hub |
+| spoke_name | | spoke-lz-aro | The name of the spoke |
+| aro_spn_name | | aro-lz-sp | The name of the ARO service principal |
+| aro_rp_object_id | ✓ | | The object ID of the ARO resource provider |
+| aro_base_name | | aro-cluster | The ARO cluster name |
+| aro_domain | ✓ | | The domain for ARO resources - must be unique |
+| vm_admin_username | | arolzadmin | The admin username for the virtual machines |
+| rh_pull_secret | | null | RH pull secret to enable operators and registries |
 
-    | Name                | Required | Default Value | Description                                      |
-    | ------------------- | -------- | ------------- | ------------------------------------------------ |
-    | tenant_id           |    x     |               | The Entra tenant ID                              |
-    | subscription_id     |    x     |               | The Azure subscription ID                        |
-    | location            |          | "eastasia"    | The location of the resources                    |
-    | hub_name            |          | "hub-lz-aro"  | The name of the hub                              |
-    | spoke_name          |          |"spoke-lz-aro" | The name of the spoke                            |
-    | aro_spn_name        |          | "aro-lz-sp"   | The name of the ARO service principal            |
-    | aro_rp_object_id    |    x     |               | The object ID of the ARO resource provider       |
-    | aro_base_name       |          | "aro-cluster" | The ARO cluster name                             |
-    | aro_domain          |    x     |               | The domain for ARO resources - must be unique    |
-    | vm_admin_username   |          | "arolzadmin"  | The admin username for the virtual machines      |
-    | rh_pull_secret      |          |    null       | RH pull secret to enable operators and registries|
-
-    </details>
 
 you can retrieve your tenantid, subscriptionid and aro resource provider id with the following commands:
 
@@ -180,9 +178,15 @@ terraform init -backend-config="resource_group_name=$TFSTATE_RG" -backend-config
     terraform apply --auto-approve
     ```
 
+The deployment takes up to 90 minutes. Once the deployment is finished terraform will output the following informations :
+
+![terraform_output](./media/terraform_output.png)
+
+Take note of these values as we will use them in following steps.
+
 ## Post Deployment Tasks
 
-### Retrieve Jumpbox and ARO credentials
+### Retrieve Jumpboxes credentials
 
 To retrieve the credentials for the jumpboxes, you need to be Secret Officer on the hub key vault. Then you can execute the following command to retrieve the password for default user "arolzadmin":
 
@@ -197,25 +201,183 @@ Where `<your-unique-keyvault-name>` is the name of the key vault created during 
 > * The credentials are the same for the Linux and the Windows jumpboxes.
 > * Windows jumpbox can be used to access Azure portal and RedHat Openshift portal using a remote desktop client.
 > * For CI/CD and CLI commands, either use the Linux jumpbox or the Windows jumpbox.
-> * both jumpboxes will have tools preinstalled: azure cli, kubectl, oc, helm. The windows jumpbox will also have VSCode and Git installed.
+> * both jumpboxes will have tools preinstalled: azure cli, kubectl, oc, and helm. The windows jumpbox will also have VSCode and Git installed.
+> * When connecting to the Windows Jumpbox for the first time, a startup script will proceed to the installation of the tools and reboot. Wait for the reboot to happen before executing anything on the VM.
 >
+
+### Associate Azure Frontdoor endpoint to ARO ingress.
+
+Terraform has preconfigured FrontDoor but we need to approve the connection to the private link service and associate Azure Frontdoor public endpoint to the ingress of ARO via a route.
+
+1. login into Azure Portal and review the different resources created
+
+2. Navigate to the spoke resource group and select the private link service "aro-pls"
+
+3. Go to settings and select "Private endpoint connections". A connection should be listed in pending state, select the connection, click on approve and provide a meaningful message for the approval.
+
+![PE_connection](./media/PE_connection.png)
+
+1. Navigate to the spoke resource group and select the Frontdoor and CDN profile "aroafd".
+
+2. go to "Front Door manager" and click on "+ Add a route" for your endpoint.
+
+![AFD_route1](./media/AFD_route1.png)
+
+3. Enter a name such as "conto-app", set to accept only HTTPS protocol and disable "redirect all traffic to use HTTPS (we will terminate the encryption at the AFD endpoint and not the ingress). Select "aro-origin-group" as Origin group and ensure to select "HTTP Only" for the forwarding protocol then click ADD.
+
+![AFD_route2](./media/AFD_route2.png)
+
+AFD is now configured, it will redirect incoming request with a path "/" on its endpoint to the ARO ingress controler on port 80. We will now deploy our contoso website on ARO and expose it to this endpoint.
+
+![AFD_route3](./media/AFD_route3.png)
+
+### Deploy Contoso Website
+
+For the following steps, you will need to use one of the jumpbox as ARO can be accessed only from the virtual network.
+
+1. Connect to a jumpbox in the hub using bastion service. For the step by step we will be using the linux jumpbox. You can use the jumpboxes credentials retrieved earlier. If you select "password from keyvault", be sure to have the "secret officer role" assigned to your identity and the proper access policy.
+
+![bastion1](./media/bastion1.png)
+
+2. reboot the system as there will be a system restart required due to the preinstallation of the required tools.
+
+```bash
+sudo reboot now
+```
+![bastion2](./media/bastion2.png)
+
+3. Click on reconnect and the bastion service will relog you in the VM as soon as it becomes available.
+
+4. login to azure with azure cli, open a browser locally on your machine to access the login page and enter your code
+```bash
+az login --use-device-code
+```
+
+5. login with OC Cli into the ARO cluster
+```bash
+# replace "spoke-lz-aro" and "aro-cluster" with the names of your spoke resource group and ARO cluster name respectively if you did not use the default values in terraform.
+
+# retrieve kubeadmin user password
+kubeadmin_password=$(az aro list-credentials -n aro-cluster -g spoke-lz-aro --query kubeadminPassword --output tsv)
+
+# if you want to retrive the credentails in clear run the following.
+az aro list-credentials -g spoke-lz-aro -n aro-cluster
+
+# retrieve apiserver endpoint
+apiServer=$(az aro show -g spoke-lz-aro -n aro-cluster --query apiserverProfile.url -o tsv)
+
+# connect to the cluster
+oc login $apiServer -u kubeadmin -p $kubeadmin_password
+
+# verify your permissions by running a cluster scope command
+oc get nodes
+```
+
+6. Create a new project
+
+```bash
+# create new project
+oc new-project contoso
+
+# set security constraints
+oc adm policy add-scc-to-user anyuid -z default
+```
+
+7. Deploy the application
+```bash
+cat <<EOF | oc apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contoso-website
+  namespace: contoso
+spec:
+  selector:
+    matchLabels:
+      app: contoso-website
+  template:
+    metadata:
+      labels:
+        app: contoso-website
+    spec:
+      containers:
+      - name: contoso-website
+        image: mcr.microsoft.com/mslearn/samples/contoso-website
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+          name: http
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+EOF
+```
+
+8. Create the service
+
+```bash
+cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: contoso-service
+  namespace: contoso
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: http
+      name: http
+  selector:
+    app: contoso-website
+  type: ClusterIP
+EOF
+```
+
+9. Create the ingress specifying the FrontDoor endpoint as "host". DO NOT USE UPPER CASE when setting up the value of the host.
+
+```bash
+cat <<EOF | oc apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: contoso-ingress
+  namespace: contoso
+spec:
+  rules:
+    - host: $your_frontdoor_endpoint_fqdn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: contoso-service
+                port:
+                  number: 80
+EOF
+```
+
+10. access the contoso website.
+
+open a browser and connect to your website using https://$your_frontdoor_endpoint_fqdn
+
+![contoso](./media/contoso.png)
+
+
 
 ## Cleanup
 
-1. Delete the ARO cluster
+```bash
+# from the same directory where the plan and apply were executed
+terraform destroy
+``` 
 
-    ```bash
-    az aro delete --resource-group <SPOKE_RESOURCE_GROUP_NAME> --name <ARO_CLUSTER_NAME> -y
-    ```
 
-    Where `<SPOKE_RESOURCE_GROUP_NAME>` is the name of the spoke resource group and `<ARO_CLUSTER_NAME>` is the name of the ARO cluster.
-
-1. Delete the resource groups
-
-    ```bash
-    az group delete -n <SPOKE_RESOURCE_GROUP_NAME> -y
-    az group delete -n <HUB_RESOURCE_GROUP_NAME> -y
-    ```
-
-    Where `<SPOKE_RESOURCE_GROUP_NAME>` is the name of the spoke resource group and `<HUB_RESOURCE_GROUP_NAME>` is the name of the hub resource group.
 

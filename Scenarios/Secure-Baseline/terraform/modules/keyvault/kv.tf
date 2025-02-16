@@ -36,14 +36,6 @@ resource "azurerm_key_vault" "kv" {
   }
 }
 
-
-
-resource "azurerm_key_vault_secret" "vm_admin_username" {
-  name = "vmadminusername"
-  value = var.vm_admin_username
-  key_vault_id = azurerm_key_vault.kv.id
-}
-
 resource "azurerm_key_vault_secret" "vm_admin_password" {
   name = "vmadminpassword"
   value = var.vm_admin_password
