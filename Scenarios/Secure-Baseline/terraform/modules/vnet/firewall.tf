@@ -52,7 +52,7 @@ resource "azurerm_firewall_network_rule_collection" "aro" {
 
 # Minimum Required FQDN / application rules
 resource "azurerm_firewall_application_rule_collection" "min" {
-  name = "Minimum-reqired-FQDN"
+  name = "Minimum-required-FQDN"
   azure_firewall_name = azurerm_firewall.fw.name
   resource_group_name = var.hub_rg_name
   priority = 200
@@ -87,6 +87,7 @@ resource "azurerm_firewall_application_rule_collection" "min" {
       type = "Https"
     }
   }
+  depends_on = [ azurerm_firewall_network_rule_collection.aro ]
 }
 
 # FIRST GROUP: INSTALLING AND DOWNLOADING PACKAGES AND TOOLS
@@ -118,6 +119,8 @@ resource "azurerm_firewall_application_rule_collection" "aro" {
       type = "Https"
     }
   }
+  depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min ]
 }
 
 # SECOND GROUP: TELEMETRY
@@ -149,6 +152,9 @@ resource "azurerm_firewall_application_rule_collection" "telem" {
       type = "Https"
     }
   }
+    depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min,
+                 azurerm_firewall_application_rule_collection.aro ]
 }
 
 # THIRD GROUP: CLOUD APIs
@@ -177,6 +183,10 @@ resource "azurerm_firewall_application_rule_collection" "cloud" {
       type = "Https"
     }
   }
+    depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min,
+                 azurerm_firewall_application_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.telem ]
 }
 
 # FOURTH GROUP: OTHER OPENSHIFT REQUIREMENTS
@@ -208,6 +218,11 @@ resource "azurerm_firewall_application_rule_collection" "open_shift" {
       type = "Https"
     }
   }
+  depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min,
+                 azurerm_firewall_application_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.telem,
+                 azurerm_firewall_application_rule_collection.cloud ]
 }
 
 # FIFTH GROUP: MICROSOFT & RED HAT ARO MONITORING SERVICE
@@ -240,6 +255,12 @@ resource "azurerm_firewall_application_rule_collection" "monitoring" {
       type = "Https"
     }
   }
+  depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min,
+                 azurerm_firewall_application_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.telem,
+                 azurerm_firewall_application_rule_collection.cloud,
+                 azurerm_firewall_application_rule_collection.open_shift ]
 }
 
 # SIXTH GROUP: ONBOARDING ARO ON TO ARC
@@ -281,6 +302,13 @@ resource "azurerm_firewall_application_rule_collection" "arc" {
       type = "Https"
     }
   }
+  depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min,
+                 azurerm_firewall_application_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.telem,
+                 azurerm_firewall_application_rule_collection.cloud,
+                 azurerm_firewall_application_rule_collection.open_shift,
+                 azurerm_firewall_application_rule_collection.monitoring ]
 }
 
 # SEVENTH GROUP: Azure Monitor Container Insights extension for Arc
@@ -313,6 +341,14 @@ resource "azurerm_firewall_application_rule_collection" "container_insights_arc"
       type = "Https"
     }
   }
+  depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min,
+                 azurerm_firewall_application_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.telem,
+                 azurerm_firewall_application_rule_collection.cloud,
+                 azurerm_firewall_application_rule_collection.open_shift,
+                 azurerm_firewall_application_rule_collection.monitoring,
+                 azurerm_firewall_application_rule_collection.arc ]
 }
 
 # EIGHTH GROUP: Docker HUB, GCR Optional for testing purpose
@@ -345,6 +381,15 @@ resource "azurerm_firewall_application_rule_collection" "docker_hub" {
       type = "Https"
     }
   }
+  depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min,
+                 azurerm_firewall_application_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.telem,
+                 azurerm_firewall_application_rule_collection.cloud,
+                 azurerm_firewall_application_rule_collection.open_shift,
+                 azurerm_firewall_application_rule_collection.monitoring,
+                 azurerm_firewall_application_rule_collection.arc,
+                 azurerm_firewall_application_rule_collection.container_insights_arc ]
 }
 
 # NINETH GROUP: Miscellaneous - Optional for testing purpose
@@ -373,6 +418,16 @@ resource "azurerm_firewall_application_rule_collection" "misc" {
       type = "Https"
     }
   }
+  depends_on = [ azurerm_firewall_network_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.min,
+                 azurerm_firewall_application_rule_collection.aro,
+                 azurerm_firewall_application_rule_collection.telem,
+                 azurerm_firewall_application_rule_collection.cloud,
+                 azurerm_firewall_application_rule_collection.open_shift,
+                 azurerm_firewall_application_rule_collection.monitoring,
+                 azurerm_firewall_application_rule_collection.arc,
+                 azurerm_firewall_application_rule_collection.container_insights_arc,
+                 azurerm_firewall_application_rule_collection.docker_hub ]
 }
 
 resource "azurerm_virtual_network_dns_servers" "hub" {
@@ -380,76 +435,12 @@ resource "azurerm_virtual_network_dns_servers" "hub" {
   dns_servers = ["${azurerm_firewall.fw.ip_configuration[0].private_ip_address}"]
 }
 
+resource "time_sleep" "wait_120_seconds" {
+  depends_on = [azurerm_firewall_application_rule_collection.misc]
+  create_duration = "60s"
+}
+
 resource "azurerm_virtual_network_dns_servers" "spoke" {
   virtual_network_id = azurerm_virtual_network.spoke.id
   dns_servers = ["${azurerm_firewall.fw.ip_configuration[0].private_ip_address}"]
-}
-
-# Diagnostic Settings
-resource "azurerm_monitor_diagnostic_setting" "fw_diag" {
-  name = var.diag_name
-  target_resource_id = azurerm_firewall.fw.id
-  log_analytics_workspace_id = var.la_id
-  log_analytics_destination_type = "AzureDiagnostics"
-  
-  enabled_log {
-    category = "AzureFirewallApplicationRule"  
-  }
-
-  enabled_log {
-    category = "AzureFirewallNetworkRule"
-  }
-
-  enabled_log {
-    category = "AzureFirewallDnsProxy"
-    }
-  
-  enabled_log {
-    category = "AZFWApplicationRule"
-  }
-  
-  enabled_log {
-    category = "AZFWApplicationRuleAggregation"
-    }
-
-  enabled_log {
-    category = "AZFWDnsQuery"
-  }
-
-  enabled_log {
-    category = "AZFWFqdnResolveFailure"
-  }
-
-  enabled_log {
-    category = "AZFWIdpsSignature"
-  }
-
-  enabled_log {
-    category = "AZFWNatRule"
-  }
-
-  enabled_log {
-    category = "AZFWNatRuleAggregation"
-  }
-
-  enabled_log {
-    category = "AZFWNetworkRule"
-  }
-
-  enabled_log {
-    category = "AZFWNetworkRuleAggregation"
-  }
-
-  enabled_log {
-    category = "AZFWThreatIntel"
-  }
-
-  enabled_log {
-    category = "AZFWFatFlow"
-  }
-
-  metric {
-  category = "AllMetrics"
-  enabled  = false
- }
 }

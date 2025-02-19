@@ -26,7 +26,7 @@ module "vnet" {
   hub_rg_name         = azurerm_resource_group.hub.name
   spoke_name          = var.spoke_name
   spoke_rg_name       = azurerm_resource_group.spoke.name
-  diag_name           = "${var.hub_name}${random_string.random.result}"
+  diag_name           = var.azfw_diag_settings_name
   location            = var.location
   la_id               = azurerm_log_analytics_workspace.la.id
 }
