@@ -5,6 +5,7 @@ resource "azurerm_key_vault" "sub_kv" {
   tenant_id = data.azurerm_client_config.current.tenant_id
   sku_name = "standard"
   purge_protection_enabled = false
+  public_network_access_enabled = false
   network_acls {
     bypass = "AzureServices"
     default_action = "Deny"
