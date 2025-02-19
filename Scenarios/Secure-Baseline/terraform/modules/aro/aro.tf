@@ -20,6 +20,13 @@ resource "azurerm_role_assignment" "resource_provider_assignment" {
   scope                = data.azurerm_subscription.current.id
   role_definition_name = var.roles[count.index].role
   principal_id         = var.aro_rp_object_id
+
+  lifecycle {
+    ignore_changes = [
+      principal_id,
+      role_definition_name
+    ]
+  }
 }
 
 # See docs at https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redhat_openshift_cluster

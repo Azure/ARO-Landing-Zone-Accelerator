@@ -435,11 +435,6 @@ resource "azurerm_virtual_network_dns_servers" "hub" {
   dns_servers = ["${azurerm_firewall.fw.ip_configuration[0].private_ip_address}"]
 }
 
-resource "time_sleep" "wait_120_seconds" {
-  depends_on = [azurerm_firewall_application_rule_collection.misc]
-  create_duration = "60s"
-}
-
 resource "azurerm_virtual_network_dns_servers" "spoke" {
   virtual_network_id = azurerm_virtual_network.spoke.id
   dns_servers = ["${azurerm_firewall.fw.ip_configuration[0].private_ip_address}"]
