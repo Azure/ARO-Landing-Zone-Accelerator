@@ -74,7 +74,7 @@ resource "azurerm_virtual_machine_extension" "jumpbox" {
 
   settings = <<SETTINGS
   {
-    "fileUris": ["https://raw.githubusercontent.com/alainvetier/ARO-Landing-Zone-Accelerator/refs/heads/feature-aro-azurerm/Scenarios/Secure-Baseline/terraform/modules/vm/install_packages.sh"],
+    "fileUris": ["https://raw.githubusercontent.com/alainvetier/ARO-Landing-Zone-Accelerator/refs/heads/main/Scenarios/Secure-Baseline/terraform/modules/vm/install_packages.sh"],
     "commandToExecute": "bash install_packages.sh"
   }
   SETTINGS
@@ -134,7 +134,7 @@ resource "azurerm_virtual_machine_extension" "Jumpbox2_script" {
 
   settings = <<SETTINGS
   {
-    "fileUris": ["https://raw.githubusercontent.com/alainvetier/ARO-Landing-Zone-Accelerator/refs/heads/feature-aro-azurerm/Scenarios/Secure-Baseline/terraform/modules/vm/script.ps1"],
+    "fileUris": ["https://raw.githubusercontent.com/alainvetier/ARO-Landing-Zone-Accelerator/refs/heads/main/Scenarios/Secure-Baseline/terraform/modules/vm/script.ps1"],
     "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File script.ps1"
   }
   SETTINGS

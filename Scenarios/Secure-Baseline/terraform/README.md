@@ -29,7 +29,7 @@ This Terraform deployment will deploy a secure baseline Azure RedHat Openshift (
   - Supporting Services:
     - [Azure Container Registry](modules/supporting/acr.tf) used to store and manage container images for the ARO cluster.
     - [Key Vault](modules/supporting/sup_kv.tf) used to store and manage sensitive information such as secrets, keys, and certificates.
-    - Private endpoints and Private link service will also be deployed in order to provider private connectivity to Key Vault, Azure Container Registry and Azure Storage.
+    - Private endpoints and Private link service will also be deployed in order to provide private connectivity to Key Vault, Azure Container Registry and Azure Storage.
 
 
 ## Prerequisites
@@ -46,6 +46,9 @@ All commands will be using bash - if you are using a Windows machine, you can ei
 
     ```bash
     git clone https://github.com/Azure/ARO-Landing-Zone-Accelerator.git
+
+    #navigate to the working folder.
+    cd ARO-Landing-Zone-Accelerator/Scenarios/Secure-Baseline/terraform/
     ```
 
 1. Authenticate with Azure CLI
@@ -71,7 +74,12 @@ All commands will be using bash - if you are using a Windows machine, you can ei
     ```
 
      
-## Terraform State Management
+## Terraform State Management (Optional)
+
+> **Important**
+>
+>This step is optional, you are free to store your terraform state to the location of your choice. If you skip the steps below, the state will be stored in the current folder where you will be executing terraform. For a production deployment it is recommend to use a remote store for your state such as an Azure Storage Account. Please note that if you will be using Azure Storage Account the default authentication will be using shared access key, it is recommend to use RBAC instead.
+>
 
 In this example, state is to be stored in an Azure Storage Account. The storage account is not created as part of the terraform templates but it is the first step of the deployment. All deployments reference this storage account to either store state or reference variables from other parts of the deployment however you may choose to use other tools for state management, like Terraform Cloud after making the necessary code changes.
 
@@ -154,18 +162,22 @@ If you wish to customize the ARO Cluster specs such as VM Size for control plane
 
 > **Important**
 >
-> Updating the rh_pull_secret value for an existing cluster will redeploy the ARO cluster.
+> Updating the rh_pull_secret value for an existing cluster will redeploy the ARO cluster. The value is expected to be in json format. The RH Pull Secret can always be added/updated after the deloyment using this [guidance](https://learn.microsoft.com/en-us/azure/openshift/howto-add-update-pull-secret).
 >
 
-1. Initialize Terraform
+2. Initialize Terraform
 
  Variables should already been set from the account storage creation step.
 
 ```bash
+# If storing the state on Azure Storage Account
 terraform init -backend-config="resource_group_name=$TFSTATE_RG" -backend-config="storage_account_name=$STORAGEACCOUNTNAME" -backend-config="container_name=$CONTAINERNAME"
+
+# If storing the state localy
+terraform init
 ```
 
-1. Validate the configuration
+3. Validate the configuration
 
     ```bash
     terraform plan
@@ -217,13 +229,13 @@ Terraform has preconfigured FrontDoor but we need to approve the connection to t
 
 ![PE_connection](./media/PE_connection.png)
 
-1. Navigate to the spoke resource group and select the Frontdoor and CDN profile "aroafd".
+4. Navigate to the spoke resource group and select the Frontdoor and CDN profile "aroafd".
 
 2. go to "Front Door manager" and click on "+ Add a route" for your endpoint.
 
 ![AFD_route1](./media/AFD_route1.png)
 
-3. Enter a name such as "conto-app", set to accept only HTTPS protocol and disable "redirect all traffic to use HTTPS (we will terminate the encryption at the AFD endpoint and not the ingress). Select "aro-origin-group" as Origin group and ensure to select "HTTP Only" for the forwarding protocol then click ADD.
+6. Enter a name such as "conto-app", set to accept only HTTPS protocol and disable "redirect all traffic to use HTTPS (we will terminate the encryption at the AFD endpoint and not the ingress). Select "aro-origin-group" as Origin group and ensure to select "HTTP Only" for the forwarding protocol then click ADD.
 
 ![AFD_route2](./media/AFD_route2.png)
 
@@ -378,6 +390,6 @@ open a browser and connect to your website using https://$your_frontdoor_endpoin
 # from the same directory where the plan and apply were executed
 terraform destroy
 ``` 
-
+Terraform may ask you to manually delete any private endpoint connection in the private link aro-pls first. The cleanup will also be much faster if you delete the azure firewall from the portal as well before running the terraform destroy command.
 
 
