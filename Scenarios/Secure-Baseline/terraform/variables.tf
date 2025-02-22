@@ -102,10 +102,3 @@ variable "vm_admin_username" {
   description = "The admin username for the Jumpbox VMs"
   
 }
-
-variable "azfw_diag_settings_name" {
-  type        = string
-  default     = "aro-azfw-diag"
-  description = "diagnostic name for azure firewall"
-  
-}

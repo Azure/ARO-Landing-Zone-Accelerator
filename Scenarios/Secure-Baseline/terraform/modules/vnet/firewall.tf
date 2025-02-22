@@ -439,3 +439,72 @@ resource "azurerm_virtual_network_dns_servers" "spoke" {
   virtual_network_id = azurerm_virtual_network.spoke.id
   dns_servers = ["${azurerm_firewall.fw.ip_configuration[0].private_ip_address}"]
 }
+
+# Diagnostic Settings
+resource "azurerm_monitor_diagnostic_setting" "fw_diag" {
+  name = var.diag_name
+  target_resource_id = azurerm_firewall.fw.id
+  log_analytics_workspace_id = var.la_id
+  log_analytics_destination_type = "AzureDiagnostics"
+  
+  enabled_log {
+    category = "AzureFirewallApplicationRule"  
+  }
+
+  enabled_log {
+    category = "AzureFirewallNetworkRule"
+  }
+
+  enabled_log {
+    category = "AzureFirewallDnsProxy"
+    }
+  
+  enabled_log {
+    category = "AZFWApplicationRule"
+  }
+  
+  enabled_log {
+    category = "AZFWApplicationRuleAggregation"
+    }
+
+  enabled_log {
+    category = "AZFWDnsQuery"
+  }
+
+  enabled_log {
+    category = "AZFWFqdnResolveFailure"
+  }
+
+  enabled_log {
+    category = "AZFWIdpsSignature"
+  }
+
+  enabled_log {
+    category = "AZFWNatRule"
+  }
+
+  enabled_log {
+    category = "AZFWNatRuleAggregation"
+  }
+
+  enabled_log {
+    category = "AZFWNetworkRule"
+  }
+
+  enabled_log {
+    category = "AZFWNetworkRuleAggregation"
+  }
+
+  enabled_log {
+    category = "AZFWThreatIntel"
+  }
+
+  enabled_log {
+    category = "AZFWFatFlow"
+  }
+
+  metric {
+  category = "AllMetrics"
+  enabled  = false
+ }
+}
