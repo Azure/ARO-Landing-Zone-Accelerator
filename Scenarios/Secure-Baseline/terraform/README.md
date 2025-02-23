@@ -13,7 +13,7 @@ This reference architecture is designed to deploy a secure baseline ARO cluster 
 
 This Terraform deployment will deploy a secure baseline Azure RedHat Openshift (ARO) cluster. This deployment is based on the [Azure Red Hat OpenShift Landing Zone Accelerator](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/app-platform/azure-red-hat-openshift/landing-zone-accelerator) documentation. There is a [single Terraform deployment](main.tf) that will deploy the following:
 
-- Hub and Spoke Network Topology
+- [Hub and Spoke Network Topology](https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke)
 - Hub resource group with the following resources:
   - [Log Analytics Workspace](main.tf) used to collect log data centrally.
   - [Azure Firewall](modules/vnet/firewall.tf) used to protect the hub virtual network and its peered networks from unwanted traffic.
@@ -124,7 +124,7 @@ Review carefully the implementation of the LZA and all the parameters before dep
 > This is true for any resource. In the future, the LZA will provide more flexibility to use existing resources. Even when using existing resources, ensure to review carefully the parameters and the implementation of the LZA before deploying it to guarantee that it is aligned with your requirements and policies.
 >
 
-1. Review and configure terraform variable in variables.tf file.
+1. Review and configure terraform variable in the main variables.tf file.
 
 The following table provide a list of all variables available.
 You must provide a value to all variables set as required, you can chose to customize or keep default value for the other variables.
@@ -158,7 +158,10 @@ you can retrieve your tenantid, subscriptionid and aro resource provider id with
     echo $SUBSCRIPTION_ID
 ```
 
-If you wish to customize the ARO Cluster specs such as VM Size for control plane and worker nodes or the number of nodes - you will need to edit the [variable.tf](./modules/aro/aro_variables.tf) in the aro module and change the values for aro_version, main_vm_size, worker_vm_size and worker_node_count.
+
+Every component can be further customized via their respective variable.tf file including network adress spaces values
+
+For example if you wish to customize the ARO Cluster specs such as VM Size for control plane and worker nodes or the number of nodes - you will need to edit the [variable.tf](./modules/aro/aro_variables.tf) in the aro module and change the values for aro_version, main_vm_size, worker_vm_size and worker_node_count.
 
 > **Important**
 >
