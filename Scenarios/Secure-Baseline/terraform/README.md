@@ -382,6 +382,20 @@ open a browser and connect to your website using https://$your_frontdoor_endpoin
 
 ![contoso](./media/contoso.png)
 
+### Day 2 Operations
+
+These are optional steps but highly recommended to increase your security posture with ARO an gain more visibility into your cluster activities.
+
+[Configuring Microsoft Entra authentication for ARO](https://learn.microsoft.com/en-us/azure/openshift/configure-azure-ad-ui)
+
+[Use Azure Container Registry with ARO](https://learn.microsoft.com/en-us/azure/openshift/howto-use-acr-with-aro)
+
+[Use Azure Key Vault for Secrets Store](https://learn.microsoft.com/en-us/azure/openshift/howto-use-key-vault-secrets)
+
+[Enable Container insights and Azure Policies via Azure Arc Onboarding](https://cloud.redhat.com/experts/aro/azure-arc-integration/)
+
+[Adding or updating Red Hat pull secret](https://learn.microsoft.com/en-us/azure/openshift/howto-add-update-pull-secret)
+
 
 
 ## Cleanup
