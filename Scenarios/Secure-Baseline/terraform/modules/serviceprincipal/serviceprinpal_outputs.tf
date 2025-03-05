@@ -6,3 +6,8 @@ output "sp_client_secret" {
     value = azuread_service_principal_password.aro-lza-sp.value
     sensitive=true
 }
+
+#output "sp_client_secret" {
+#    value = azuread_application_password.sp_client_secret.value
+#    sensitive=true
+#}
