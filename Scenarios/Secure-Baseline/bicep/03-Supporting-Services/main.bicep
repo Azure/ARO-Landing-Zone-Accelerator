@@ -79,8 +79,8 @@ param keyVaultName string = generateUniqueGlobalName('keyVault', workloadName, e
 @description('The SKU of the key vault. Defaults to premium.')
 param keyVaultSku keyVaultSkuType = 'premium'
 
-@description('Enable purge protection. Defaults to true. If disk encryption set is enabled, it is set to true as it is required by the cluster.')
-param enablePurgeProtection bool = true || deployDiskEncryptionSet
+@description('Enable purge protection. Defaults to true.')
+param enablePurgeProtection bool = true
 
 @description('The number of days tp retain soft deleted keys. Defaults to 90.')
 @minValue(7)
@@ -108,7 +108,7 @@ param secrets secretType[] = []
 /* --------------------------- Disk Encryption Set -------------------------- */
 
 @description('Flag to determine if the disk encryption set should be deployed. Defaults to false.')
-param deployDiskEncryptionSet bool = true
+param deployDiskEncryptionSet bool = false
 
 @description('The name of the disk encryption set. Defaults to the naming convention `<abbreviation-disk-encryption-set>-<workloadName>-<lower-case-env>-<location-short>-[-<hash>]`.')
 param diskEncryptionSetName string = generateResourceName('diskEncryptionSet', workloadName, env, location, null, hash)
