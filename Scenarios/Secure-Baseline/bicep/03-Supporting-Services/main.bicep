@@ -392,6 +392,7 @@ module registry 'br/public:avm/res/container-registry/registry:0.3.1' = {
     privateEndpoints: [containerRegistryEndpoint]
     acrAdminUserEnabled: true
     anonymousPullEnabled: false
+    diagnosticSettings: diagnosticsSettings
   }
 }
 
